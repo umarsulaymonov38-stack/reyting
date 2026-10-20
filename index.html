@@ -103,6 +103,11 @@ input,button{touch-action:manipulation}
 .feat li{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:8px 10px;font-size:13px;font-weight:600}
 .login{display:flex;flex-direction:column;justify-content:center;margin:0}
 .login h2{margin:0 0 4px;font-size:22px}
+/* Kirish sahifasidagi o'quvchi surati */
+.hart.photo{padding:0;min-height:560px;justify-content:flex-end;background:var(--nv)}.hart.photo:before{display:none}
+.hph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 0}
+.hov{position:relative;padding:120px 18px 18px;background:linear-gradient(to top,rgba(22,33,61,.97) 45%,rgba(22,33,61,0))}
+.hart.photo .bubble{margin:0}.hart.photo .bubble:after{display:none}
 /* Yuklanmoqda */
 .ld{display:flex;align-items:center;gap:10px;color:var(--mut);padding:18px 4px}
 .spin{width:20px;height:20px;border-radius:50%;border:3px solid var(--ln);border-top-color:var(--ac);animation:sp .8s linear infinite}
@@ -111,7 +116,7 @@ input,button{touch-action:manipulation}
 .empty{display:flex;align-items:center;gap:14px}.empty svg{flex:none}
 footer{max-width:1080px;margin:0 auto;padding:0 16px 24px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--mut);font-size:12px}
 footer svg{width:40px;height:25px}
-@media(max-width:760px){.hero{grid-template-columns:1fr}.hart{padding:16px}.feat{display:none}.hrow svg{width:min(100%,250px)}}
+@media(max-width:760px){.hero{grid-template-columns:1fr}.hart{padding:16px}.hart.photo{min-height:420px}.hov{padding:90px 14px 14px}.feat{display:none}.hrow svg{width:min(100%,250px)}}
 @media(max-width:600px){main{padding:12px 8px 24px}.card{padding:12px;border-radius:16px}.hin{padding:10px 12px;gap:10px}header .logo{height:44px}header .masc{display:none}.clk b{font-size:18px}.clk span{display:none}.tab{padding:10px 12px}.chip{padding:9px 13px}th{font-size:11px}th .ic{font-size:21px}.nm{min-width:120px}.kpi div{min-width:calc(50% - 5px)}.kpi b{font-size:24px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
@@ -165,7 +170,7 @@ const retryView=e=>{$('view').innerHTML=empty("Server bilan ulanib bo'lmadi.",es
 const th=()=>CR.map(x=>`<th title="${x.k}"><span class="ic">${x.i}</span>${x.k}</th>`).join('');
 const cname=id=>(CL.find(c=>c.id==id)||{}).name||'';
 function loginView(){$('out').style.display='none';$('chips').innerHTML='';const L=S.lt||0;
- $('view').innerHTML=`<div class="hero"><div class="hart"><div class="hrow"><svg viewBox="0 0 600 374" aria-hidden="true"><use href="#mascot"/></svg><div class="bubble"><b>Assalomu alaykum!</b><br>Yuksalish maktabining reyting tizimiga xush kelibsiz.</div></div><ul class="feat"><li>📊 Kunlik ball va reyting</li><li>📅 Davomat nazorati</li><li>💳 To'lovlar holati</li><li>🍽️ Kunlik taomnoma</li></ul></div><div class="card login"><h2>Tizimga kirish</h2><div class="tabs2"><button class="tab ${L==0?'on':''}" data-lt="0">🔑 Kirish</button><button class="tab ${L==1?'on':''}" data-lt="1">👪 Ota-ona: ro'yxatdan o'tish</button></div>`+(L==0?
+ $('view').innerHTML=`<div class="hero"><div class="hart photo"><img class="hph" src="img/oquvchi.jpg" alt="Yuksalish maktabi o'quvchisi" width="853" height="1280"><div class="hov"><div class="bubble"><b>Assalomu alaykum!</b><br>Yuksalish maktabining reyting tizimiga xush kelibsiz.</div><ul class="feat"><li>📊 Kunlik ball va reyting</li><li>📅 Davomat nazorati</li><li>💳 To'lovlar holati</li><li>🍽️ Kunlik taomnoma</li></ul></div></div><div class="card login"><h2>Tizimga kirish</h2><div class="tabs2"><button class="tab ${L==0?'on':''}" data-lt="0">🔑 Kirish</button><button class="tab ${L==1?'on':''}" data-lt="1">👪 Ota-ona: ro'yxatdan o'tish</button></div>`+(L==0?
  `<p class="mut">Telefon raqamingiz va parolingizni kiriting (ota-ona ham, o'qituvchi ham).</p><input class="fld" id="lph" type="tel" placeholder="Telefon raqam: +998 90 123 45 67" autocomplete="username"><input class="fld" id="lpw" type="password" placeholder="Parol" autocomplete="current-password"><label class="mut"><input type="checkbox" id="sp"> Parolni ko'rsatish</label><br><button class="btn" id="lgo">Kirish</button>`:
  L==1?`<p class="mut">Faqat birinchi marta. Telefon raqamingiz maktabda o'quvchi ma'lumotiga yozilgan bo'lishi kerak. Parolni o'zingiz o'ylab topasiz.</p><input class="fld" id="rn" placeholder="Ism familiyangiz"><input class="fld" id="rph" type="tel" placeholder="Telefon: +998 90 123 45 67"><input class="fld" id="rpw" type="password" placeholder="Parol (kamida 6 belgi)" autocomplete="new-password"><label class="mut"><input type="checkbox" id="sp"> Parolni ko'rsatish</label><br><button class="btn" id="rgo">Ro'yxatdan o'tish</button>`:
  `<input class="fld" id="em" type="email" placeholder="Admin emaili"><input class="fld" id="pw" type="password" placeholder="Parol"><label class="mut"><input type="checkbox" id="sp"> Parolni ko'rsatish</label><br><button class="btn" id="tgo">Admin kirishi</button>`)+`<p><button class="tab" id="net">🔌 Ulanishni tekshirish</button></p></div></div>`}

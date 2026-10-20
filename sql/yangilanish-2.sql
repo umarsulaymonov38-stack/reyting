@@ -187,6 +187,9 @@ create table if not exists public.books (
 );
 create index if not exists books_grp_idx on public.books (grp, class_id);
 alter table public.books enable row level security;
+-- Jadvalga API orqali kirish huquqi (yangi Supabase loyihalarida avtomatik berilmaydi)
+grant select, insert, delete on public.books to authenticated;
+grant usage, select on sequence public.books_id_seq to authenticated;
 drop policy if exists books_read on public.books;
 create policy books_read on public.books for select to authenticated using (true);
 drop policy if exists books_add on public.books;

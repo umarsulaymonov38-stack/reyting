@@ -208,3 +208,6 @@ create policy darsliklar_add on storage.objects for insert to authenticated
 drop policy if exists darsliklar_del on storage.objects;
 create policy darsliklar_del on storage.objects for delete to authenticated
   using (bucket_id = 'darsliklar' and (public.yk_role() = 'admin' or owner = auth.uid()));
+
+-- API (PostgREST) yangi jadval va funksiyalarni darhol ko'rishi uchun
+notify pgrst, 'reload schema';

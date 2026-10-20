@@ -15,20 +15,36 @@ update public.classes set subject = 'Ingliz tili'
  where coalesce(grp, '') <> '' and kind is distinct from 'rep' and coalesce(subject, '') = '';
 
 do $$
-declare g int; n text; cid bigint; k int;
+declare g int; n text; cid bigint; k int; sid_auto boolean; cid_auto boolean;
 begin
+  -- id ustuni avtomatik to'ldirilmasa (default yo'q bo'lsa), keyingi raqamni o'zimiz beramiz
+  select column_default is not null or is_identity = 'YES' into cid_auto from information_schema.columns
+   where table_schema = 'public' and table_name = 'classes' and column_name = 'id';
+  select column_default is not null or is_identity = 'YES' into sid_auto from information_schema.columns
+   where table_schema = 'public' and table_name = 'students' and column_name = 'id';
   foreach g in array array[5, 6, 7] loop
     foreach n in array array['ALFA', 'BETTA', 'GAMMA'] loop
       select id into cid from public.classes
        where grade = g and upper(grp) = n and subject = 'Matematika' limit 1;
       if cid is null then
-        insert into public.classes (name, grade, grp, subject)
-        values (g || '-sinf Matematika ' || initcap(n), g, n, 'Matematika')
-        returning id into cid;
+        if cid_auto then
+          insert into public.classes (name, grade, grp, subject)
+          values (g || '-sinf Matematika ' || initcap(n), g, n, 'Matematika')
+          returning id into cid;
+        else
+          insert into public.classes (id, name, grade, grp, subject)
+          values ((select coalesce(max(id), 0) + 1 from public.classes), g || '-sinf Matematika ' || initcap(n), g, n, 'Matematika')
+          returning id into cid;
+        end if;
       end if;
       for k in 1..15 loop
         if not exists (select 1 from public.students where class_id = cid and slot = k) then
-          insert into public.students (class_id, slot, full_name) values (cid, k, '');
+          if sid_auto then
+            insert into public.students (class_id, slot, full_name) values (cid, k, '');
+          else
+            insert into public.students (id, class_id, slot, full_name)
+            values ((select coalesce(max(id), 0) + 1 from public.students), cid, k, '');
+          end if;
         end if;
       end loop;
       -- ota-ona telefoni yoziladigan qator (agar bazada buni trigger o'zi yaratmasa)

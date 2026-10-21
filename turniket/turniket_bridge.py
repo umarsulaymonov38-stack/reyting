@@ -5,6 +5,7 @@ Maktab ichki tarmog'idagi kompyuterda ishlaydi: har bir turniketdan (ISAPI orqal
 yangi o'tishlarni o'qiydi va platformaga yuboradi. Turniketlarni internetga ochish shart emas.
 
 Ishga tushirish:
+  python turniket_bridge.py --setup     sozlash: kalit va parolni so'raydi, config.json ni o'zi yaratadi
   python turniket_bridge.py --test      ulanishni tekshirish (turniketlar va platforma)
   python turniket_bridge.py --sync-ids  turniketdagi ro'yxatni o'quvchilar bilan ism bo'yicha bog'lash
   python turniket_bridge.py             doimiy ishlash (har N soniyada yangi o'tishlarni yuborish)
@@ -150,8 +151,34 @@ def run_once(devices, platform, state):
     return sent
 
 
+def setup(cfg_name):
+    """config.json ni savol-javob orqali yaratish (faylni qo'lda tahrirlash shart emas)."""
+    import getpass
+    base = load_json(cfg_name) or load_json("config.namuna.json")
+    if not base:
+        sys.exit("config.namuna.json topilmadi: turniket papkasidagi barcha fayllar joyidami?")
+    print("\n=== Turniket ko'prigini sozlash ===\n")
+    print("1) Supabase'dagi TURNIKET KALITI (SQL natijasida chiqqan uzun yozuv).")
+    print("   Nusxalab, shu yerga sichqonchaning o'ng tugmasi bilan joylang va Enter bosing:")
+    token = input("   Kalit: ").strip().strip('"')
+    while len(token) < 20:
+        token = input("   Kalit juda qisqa, qaytadan joylang: ").strip().strip('"')
+    user = input("\n2) Turniket logini [admin]: ").strip() or "admin"
+    print("\n3) Turniket paroli (4 ta eshikda bir xil deb olinadi).")
+    print("   Diqqat: yozayotganingiz ekranda KO'RINMAYDI — bu normal. Yozib, Enter bosing.")
+    pw = getpass.getpass("   Parol: ")
+    while not pw:
+        pw = getpass.getpass("   Parol bo'sh bo'lmasin: ")
+    base["token"] = token
+    for d in base["devices"]:
+        d["user"], d["password"] = user, pw
+    save_json(cfg_name, base)
+    print("\n✅ config.json saqlandi. Endi tekshiruv boshlanadi...\n")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--setup", action="store_true", help="kalit va parolni kiritib, config.json yaratish")
     ap.add_argument("--test", action="store_true", help="ulanishni tekshirish")
     ap.add_argument("--sync-ids", action="store_true", help="turniket ro'yxatini o'quvchilar bilan bog'lash")
     ap.add_argument("--config", default="config.json")
@@ -160,6 +187,9 @@ def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S",
                         handlers=[logging.StreamHandler(), logging.FileHandler(os.path.join(HERE, "turniket.log"), encoding="utf-8")])
     requests.packages.urllib3.disable_warnings()
+    if a.setup or not load_json(a.config):
+        setup(a.config)
+        a.test = True
     cfg = load_json(a.config)
     if not cfg:
         sys.exit(f"{a.config} topilmadi. config.namuna.json dan nusxa olib, to'ldiring.")

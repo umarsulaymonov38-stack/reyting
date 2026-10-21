@@ -50,6 +50,7 @@ class Device:
         self.name = cfg.get("name") or cfg["host"]
         self.base = ("https://" if cfg.get("https") else "http://") + cfg["host"]
         self.user, self.pw = cfg["user"], cfg["password"]
+        self.locked_out = False
         self.s = requests.Session()
         self.s.auth = HTTPDigestAuth(self.user, self.pw)
         self.s.verify = False
@@ -130,12 +131,19 @@ def run_once(devices, platform, state):
     sent = 0
     for d in devices:
         st = state.setdefault(d.name, {})
+        if d.locked_out:
+            continue  # parol noto'g'ri: qayta urinish qurilmani qulflab qo'yadi
         last = st.get("last")
         start = dt.datetime.fromisoformat(last) - dt.timedelta(minutes=2) if last else now.replace(hour=0, minute=0, second=0)
         seen = set(st.get("seen", []))
         try:
             items = d.events(start, now + dt.timedelta(minutes=1))
         except Exception as e:  # noqa: BLE001 — bitta turniket ishlamasa, qolganlari davom etadi
+            if "401" in str(e):
+                d.locked_out = True
+                log.error("%s: login yoki parol noto'g'ri — qurilma qulflanmasligi uchun bu eshikka boshqa urinilmaydi. "
+                          "Parolni to'g'rilab (1-SOZLASH.bat), dasturni qayta ishga tushiring.", d.name)
+                continue
             if not st.get("err"):  # bir xil xatoni har 20 soniyada qayta yozmaslik uchun
                 log.warning("%s: turniketdan o'qib bo'lmadi: %s", d.name, e)
             st["err"] = True

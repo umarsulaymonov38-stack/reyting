@@ -4,9 +4,9 @@
   "token": "SQL natijasida chiqqan turniket kalitini shu yerga yozing",
   "poll_seconds": 20,
   "devices": [
-    { "name": "1-eshik", "host": "192.168.1.101", "user": "admin", "password": "TURNIKET_PAROLI" },
-    { "name": "2-eshik", "host": "192.168.1.102", "user": "admin", "password": "TURNIKET_PAROLI" },
-    { "name": "3-eshik", "host": "192.168.1.103", "user": "admin", "password": "TURNIKET_PAROLI" },
-    { "name": "4-eshik", "host": "192.168.1.104", "user": "admin", "password": "TURNIKET_PAROLI" }
+    { "name": "1-eshik", "host": "192.168.0.8", "user": "admin", "password": "TURNIKET_PAROLI" },
+    { "name": "2-eshik", "host": "192.168.0.6", "user": "admin", "password": "TURNIKET_PAROLI" },
+    { "name": "3-eshik", "host": "192.168.0.7", "user": "admin", "password": "TURNIKET_PAROLI" },
+    { "name": "4-eshik", "host": "192.168.0.3", "user": "admin", "password": "TURNIKET_PAROLI" }
   ]
 }

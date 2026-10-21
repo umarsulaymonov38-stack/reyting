@@ -48,7 +48,9 @@ def save_json(name, data):
 class Device:
     def __init__(self, cfg):
         self.name = cfg.get("name") or cfg["host"]
-        self.base = ("https://" if cfg.get("https") else "http://") + cfg["host"]
+        self.host = cfg["host"]
+        # Ko'p qurilmalarda veb-kirish faqat HTTPS orqali ochiq; HTTPS ishlamasa — HTTP
+        self.base = ("http://" if cfg.get("https") is False else "https://") + self.host
         self.user, self.pw = cfg["user"], cfg["password"]
         self.locked_out = False
         self.s = requests.Session()
@@ -56,15 +58,24 @@ class Device:
         self.s.verify = False
 
     def post(self, path, body):
-        r = self.s.post(self.base + path, json=body, timeout=15)
+        try:
+            r = self.s.post(self.base + path, json=body, timeout=15, allow_redirects=False)
+        except requests.exceptions.ConnectionError:
+            if not self.base.startswith("https://"):
+                raise
+            self.base = "http://" + self.host  # HTTPS yopiq — oddiy HTTP orqali
+            r = self.s.post(self.base + path, json=body, timeout=15, allow_redirects=False)
+        if r.status_code in (301, 302, 303, 307, 308) and self.base.startswith("http://"):
+            self.base = "https://" + self.host  # qurilma HTTPS ga yo'naltiryapti
+            r = self.s.post(self.base + path, json=body, timeout=15, allow_redirects=False)
         # Ba'zi qurilmalarda veb-kirish "Basic" usulida sozlangan bo'ladi
         if r.status_code == 401 and "basic" in r.headers.get("WWW-Authenticate", "").lower() \
                 and "digest" not in r.headers.get("WWW-Authenticate", "").lower():
             self.s.auth = HTTPBasicAuth(self.user, self.pw)
-            r = self.s.post(self.base + path, json=body, timeout=15)
+            r = self.s.post(self.base + path, json=body, timeout=15, allow_redirects=False)
         if r.status_code == 401:
-            raise RuntimeError("login yoki parol noto'g'ri (401). Brauzerda http://%s ga shu login-parol bilan kirib tekshiring"
-                               % self.base.split("//", 1)[1])
+            raise RuntimeError("login yoki parol noto'g'ri yoki qurilma vaqtincha qulflangan (401). "
+                               "Brauzerda https://%s ga shu login-parol bilan kirib tekshiring; qulflangan bo'lsa 30 daqiqa kuting" % self.host)
         if r.status_code == 403:
             raise RuntimeError("ruxsat yo'q (403): foydalanuvchida huquq yetarli emas yoki ISAPI o'chirilgan")
         r.raise_for_status()

@@ -20,7 +20,7 @@ import time
 
 try:
     import requests
-    from requests.auth import HTTPDigestAuth
+    from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 except ImportError:
     sys.exit("'requests' kutubxonasi yo'q. O'rnatish: pip install requests")
 
@@ -49,12 +49,23 @@ class Device:
     def __init__(self, cfg):
         self.name = cfg.get("name") or cfg["host"]
         self.base = ("https://" if cfg.get("https") else "http://") + cfg["host"]
+        self.user, self.pw = cfg["user"], cfg["password"]
         self.s = requests.Session()
-        self.s.auth = HTTPDigestAuth(cfg["user"], cfg["password"])
+        self.s.auth = HTTPDigestAuth(self.user, self.pw)
         self.s.verify = False
 
     def post(self, path, body):
         r = self.s.post(self.base + path, json=body, timeout=15)
+        # Ba'zi qurilmalarda veb-kirish "Basic" usulida sozlangan bo'ladi
+        if r.status_code == 401 and "basic" in r.headers.get("WWW-Authenticate", "").lower() \
+                and "digest" not in r.headers.get("WWW-Authenticate", "").lower():
+            self.s.auth = HTTPBasicAuth(self.user, self.pw)
+            r = self.s.post(self.base + path, json=body, timeout=15)
+        if r.status_code == 401:
+            raise RuntimeError("login yoki parol noto'g'ri (401). Brauzerda http://%s ga shu login-parol bilan kirib tekshiring"
+                               % self.base.split("//", 1)[1])
+        if r.status_code == 403:
+            raise RuntimeError("ruxsat yo'q (403): foydalanuvchida huquq yetarli emas yoki ISAPI o'chirilgan")
         r.raise_for_status()
         return r.json()
 
@@ -173,7 +184,7 @@ def setup(cfg_name):
     for d in base["devices"]:
         d["user"], d["password"] = user, pw
     save_json(cfg_name, base)
-    print("\n✅ config.json saqlandi. Endi tekshiruv boshlanadi...\n")
+    print("\n[OK] config.json saqlandi. Endi tekshiruv boshlanadi...\n")
 
 
 def main():
@@ -201,16 +212,16 @@ def main():
         for d in devices:
             try:
                 n = len(d.events(dt.datetime.now(TZ).replace(hour=0, minute=0, second=0, microsecond=0), dt.datetime.now(TZ)))
-                log.info("✅ %s: ulandi, bugun %d ta voqea", d.name, n)
+                log.info("[OK]   %s: ulandi, bugun %d ta voqea", d.name, n)
             except Exception as e:  # noqa: BLE001
                 ok = False
-                log.error("❌ %s: %s", d.name, e)
+                log.error("[XATO] %s: %s", d.name, e)
         try:
             platform.push([])
-            log.info("✅ Platforma: ulandi, kalit to'g'ri")
+            log.info("[OK]   Platforma: ulandi, kalit to'g'ri")
         except Exception as e:  # noqa: BLE001
             ok = False
-            log.error("❌ Platforma: %s", e)
+            log.error("[XATO] Platforma: %s", e)
         sys.exit(0 if ok else 1)
 
     if a.sync_ids:

@@ -141,8 +141,12 @@ td.ok{color:var(--ok);font-weight:700}td.lt{color:var(--ac-d);font-weight:700}td
 .fb{border-top:1px solid var(--ln);padding:10px 0}.fbh{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}.fbh .fdel{margin-left:auto;padding:6px 10px}.fbb{white-space:pre-wrap;word-break:break-word;margin-bottom:4px}
 .sd p.mut .i{margin-right:5px;color:var(--ac)}.arr{font-size:11px;color:var(--ok);font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}.arr.late{color:var(--ac-d)}
 .ios{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--ac2);font-size:14px;line-height:1.5}
+.goodw{border:2px solid var(--ok);background:linear-gradient(160deg,var(--ok2),var(--card))}.goodw>b{color:var(--ok)}.goodw ul{margin:6px 0;padding-left:20px}.goodw li{padding:3px 0}
+.al{border-left:4px solid var(--ln);background:var(--zb);border-radius:10px;padding:8px 12px;margin:8px 0;line-height:1.6}.al.g{border-color:var(--ok);background:var(--ok2)}.al.r{border-color:var(--bad);background:#fdece4}.al.y{border-color:#d4a017;background:#fdf6dc}
+:root[data-theme="dark"] .payw,:root[data-theme="dark"] .goodw,:root[data-theme="dark"] .al{background:var(--card)}
+.kidc{margin-top:12px}.kidc+.kidc{border-top:1px solid var(--ln);padding-top:12px}
 .payw{border:2px solid var(--bad);background:linear-gradient(160deg,#fff1ec,var(--card))}.payw>b{color:var(--bad)}.payw ul{margin:6px 0;padding-left:20px}.payw li{padding:3px 0}.payw .lt{color:var(--bad);font-weight:700}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .payw{background:var(--card)}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .payw,:root:not([data-theme="light"]) .goodw,:root:not([data-theme="light"]) .al{background:var(--card)}}
 tr.cur td{background:var(--ac2)!important}
 /* Yuklanmoqda */
 .ld{display:flex;align-items:center;gap:10px;color:var(--mut);padding:18px 4px}
@@ -295,23 +299,58 @@ function payCalc(pays,firstDay,sy){const t=nowT(),pm={};(pays||[]).forEach(p=>pm
  return {rows:months.map(k=>({m:lbl(k),paid:!!(pm[k]&&pm[k].paid),on:(pm[k]&&pm[k].paid_on)||''})),
   late:months.filter(k=>!(pm[k]&&pm[k].paid)).map(k=>({m:lbl(k),d:Math.floor((today-day(k+'-'+String(PAY_DUE).padStart(2,'0')))/864e5)})).filter(x=>x.d>=0)}}
 const lateLi=x=>`<li><b>${x.m}</b> — ${x.d?`<span class="lt">${x.d} kun kechikmoqda</span>`:"bugun to'lov kuni"}</li>`;
-const payTable=(rows,i,title)=>`<div class="card"><div class="top"><b>${ic('card')}${title}</b><button class="tab payPdf" data-k="${i}" style="margin-left:auto">${ic('printer')}PDF / Chop etish</button></div>
+const payTable=(rows,i,title,sel='')=>`<div class="card"><div class="top"><b>${ic('card')}${title}</b>${sel}<button class="tab payPdf" data-k="${i}" style="margin-left:auto">${ic('printer')}PDF / Chop etish</button></div>
  <div class="wrap"><table style="min-width:0"><tr><th class="l">Oy</th><th>Holati</th><th>To'langan sana</th></tr>${rows.map(r=>`<tr><td class="l">${r.m}</td><td>${r.paid?"✅ To'langan":"❌ To'lanmagan"}</td><td>${r.on?fd2(r.on):'—'}</td></tr>`).join('')||'<tr><td colspan="3" class="mut">Hali ma\'lumot yo\'q</td></tr>'}</table></div></div>`;
-// Barcha farzandlar bir oynada: bugungi davomat, to'lov holati; har biri uchun alohida to'lov eslatmasi va tarixi
+// Barcha farzandlar bir oynada: har bir farzandning sinfi, fan guruhlari va repetitorlari, bugungi davomat,
+// so'nggi 3 kundagi past/yuqori baholar, to'lov eslatmasi va farzand tanlab ko'riladigan to'lovlar tarixi
+const nkey=s=>String(s||'').toLowerCase().replace(/[^\p{L}\p{N} ]/gu,'').split(/\s+/).filter(Boolean).sort().join(' ');
+const sumBy=(r,cr)=>cr.reduce((a,x)=>a+(x.c=='att'?(+(r||{}).att==1?1:0):(+(r||{})[x.c]||0)),0);
+const enTyp=e=>e.main?'Sinf':e.rep?'Repetitor':isLang(e.c)?"Til to'garagi":'Fan guruhi';
+function enAtt(e){const r=e.today;if(!r||r.att==null)return e.main?{i:'⏳',t:'hali belgilanmagan',k:''}:null;
+ if(r.att==1)return{i:'✅',t:e.main?'maktabga keldi'+(r.arrived_at?' — '+fdt(r.arrived_at).slice(-5):''):'darsda qatnashdi',k:'g'};
+ return r.excused?{i:'🟡',t:e.main?'sababli kelmadi':'darsga sababli kelmadi',k:'y'}:{i:'❌',t:e.main?'maktabga kelmadi':'darsga kelmadi',k:'r'}}
+// Past baho: 5 ballik mezonda 2 va undan past, repetitor bahosi 10 dan 4 va past, test 40% dan past, kunlik vazifalar bali 50% dan past.
+// Yuqori: 5 ballikda 5, repetitor bahosi 9–10, test 90% va yuqori, kunlik vazifalar 90% va yuqori.
+function enMarks(e){const out=[];
+ (e.recent||[]).forEach(r=>{const bad=[],good=[];
+  if(e.rep){if(r.grade!=null){(+r.grade<=4?bad:+r.grade>=9?good:[]).push(`baho ${+r.grade}/10`)}if(r.test!=null){(+r.test<40?bad:+r.test>=90?good:[]).push(`kunlik test ${+r.test}%`)}}
+  else if(e.c.grp){CRG.slice(1).forEach(x=>{if(r[x.c]==null)return;(+r[x.c]<=2?bad:+r[x.c]>=5?good:[]).push(`${x.k}: ${+r[x.c]}/5`)})}
+  else if(CR51.slice(1).some(x=>r[x.c]!=null)){const t=sumBy(r,CR51),m=51;(t<m*.5?bad:t>=m*.9?good:[]).push(`kunlik vazifalar bali ${t}/${m}`)}
+  if(bad.length)out.push({b:1,d:r.day,t:bad.join(', ')});if(good.length)out.push({b:0,d:r.day,t:good.join(', ')})});
+ return out}
 async function parentAll(){const t=nowT(),y=+t.d.slice(0,4),mo=+t.d.slice(5,7),sy=mo>=9?y:y-1;
  const{data,error}=await sb.rpc('parent_overview',{p_from:sy+'-09-01'});if(error||!data||!data.length)return null;
- S.payKids=data.map(k=>{const c=CL.find(x=>x.id==k.class_id)||{},rep=c.kind=='rep',pc=rep?{rows:[],late:[]}:payCalc(k.pays,k.first_day,sy);return{...k,c,rep,...pc,cls:clsLbl(c)}});
- const K=S.payKids,att=k=>k.att==null?'<span class="mut">— hali belgilanmagan</span>':k.att==1?`✅ keldi${k.arrived_at?' <span class="mut">'+fdt(k.arrived_at).slice(-5)+'</span>':''}`:k.excused?'🟡 sababli':'❌ kelmadi';
- const late=K.filter(k=>k.late.length);
- const b=late.length?`<div class="card payw"><b>${ic('card')}To'lov eslatmasi</b><p>Hurmatli ota-ona! Quyidagi to'lovlar hali qayd etilmagan:</p>
+ const E=data.map(k=>{const c=CL.find(x=>x.id==k.class_id)||{},rep=c.kind=='rep',main=!rep&&!c.grp&&!isLang(c),
+   today=k.today!==undefined?k.today:(k.att!=null?{att:k.att,excused:k.excused,arrived_at:k.arrived_at}:null),
+   pc=main||(k.pays&&k.pays.length)?payCalc(k.pays,k.first_day,sy):{rows:[],late:[]};if(!main)pc.late=[];
+   return{...k,c,rep,main,today,...pc,cls:clsLbl(c)}});
+ // Bir farzand bir nechta sinf/guruhda alohida yozilgan bo'ladi — ism-familiya bo'yicha birlashtiramiz
+ const G=[];E.forEach(e=>{const key=nkey(e.full_name);let g=G.find(x=>x.key==key);if(!g)G.push(g={key,name:e.full_name,en:[]});g.en.push(e);if(e.main)g.name=e.full_name});
+ G.forEach(g=>g.en.sort((a,b)=>(b.main-a.main)||(a.rep-b.rep)||clsCmp(a.c,b.c)));
+ S.payKids=E.filter(e=>e.rows.length);const K=S.payKids;
+ const dt=d=>d==t.d?'bugun':fd2(d).slice(0,5);
+ // 1. Bugungi davomat belgisi
+ const td=`<div class="card"><b>${ic('cal')}Bugun — ${t.lbl}</b>${G.map(g=>{const L=g.en.map(e=>({e,a:enAtt(e)})).filter(x=>x.a);
+  return `<div class="al ${(L.find(x=>x.e.main)||L[0]||{a:{}}).a.k||''}"><b>${esc(g.name)}</b>${L.length?L.map(x=>`<div>${x.a.i} ${x.e.main?'':`<span class="mut">${esc(x.e.cls)}:</span> `}${x.a.t}</div>`).join(''):'<div class="mut">Bugun hali belgilanmagan</div>'}</div>`}).join('')}</div>`;
+ // 2. Baholar bo'yicha ogohlantirish va maqtov
+ const M=[];G.forEach(g=>g.en.forEach(e=>enMarks(e).forEach(m=>M.push({...m,n:g.name,cls:e.cls}))));M.sort((a,b)=>b.b-a.b||(a.d<b.d?1:-1));
+ const ml=m=>`<li><b>${esc(m.n)}</b> <span class="mut">(${esc(m.cls)}, ${dt(m.d)})</span> — ${esc(m.t)}</li>`,bad=M.filter(m=>m.b),good=M.filter(m=>!m.b);
+ const mk=(bad.length?`<div class="card payw"><b>${ic('shield')}Diqqat: past baholar</b><p>Hurmatli ota-ona! So'nggi kunlarda quyidagi past natijalar qayd etildi:</p><ul>${bad.map(ml).join('')}</ul><p class="mut">Farzandingiz bilan suhbatlashing yoki o'qituvchisi bilan bog'laning.</p></div>`:'')
+  +(good.length?`<div class="card goodw"><b>${ic('star')}Tabriklaymiz: yaxshi natijalar</b><ul>${good.map(ml).join('')}</ul></div>`:'');
+ // 3. To'lov eslatmasi (asosiy sinf uchun, har bir farzandga alohida)
+ const late=E.filter(e=>e.late.length);
+ const pr=late.length?`<div class="card payw"><b>${ic('card')}To'lov eslatmasi</b><p>Hurmatli ota-ona! Quyidagi to'lovlar hali qayd etilmagan:</p>
   ${late.map(k=>`<p style="margin:8px 0 2px"><b>${esc(k.full_name)}</b> <span class="mut">(${esc(k.cls)})</span></p><ul>${k.late.map(lateLi).join('')}</ul>`).join('')}
   <p class="mut">To'lov har oyning ${PAY_DUE}-sanasigacha, har bir farzand uchun alohida amalga oshiriladi. To'lagan bo'lsangiz, maktab qayd etgach, eslatma o'zi yo'qoladi.</p></div>`:'';
- const ov=K.length>1?`<div class="card"><b>${ic('users')}Farzandlarim (${K.length})</b><div class="wrap"><table style="min-width:0"><tr><th class="l">Farzand</th><th>Bugun</th><th>To'lov</th><th></th></tr>
-  ${K.map(k=>`<tr${k.id==ME.student_id?' class="cur"':''}><td class="l"><b>${esc(k.full_name)}</b><br><span class="mut">${esc(k.cls)}</span></td><td>${att(k)}</td>
-  <td>${k.rep?'<span class="mut">—</span>':k.late.length?`<span class="lt">❌ ${k.late.length} oy to'lanmagan</span>`:"✅ to'langan"}</td>
-  <td>${k.id==ME.student_id?'<span class="mut">ko\'rilmoqda</span>':`<button class="tab kidgo" data-id="${k.id}">Batafsil</button>`}</td></tr>`).join('')}</table></div></div>`:'';
- const tb=K.map((k,i)=>k.rep?'':payTable(k.rows,i,`To'lovlar tarixi — ${esc(k.full_name)} (${sy}–${sy+1})`)).join('');
- return {b:b+ov,t:tb}}
+ // 4. Farzandlarim: har birining sinfi, fan guruhlari, to'garaklari va repetitorlari
+ const ov=`<div class="card"><b>${ic('users')}Farzandlarim (${G.length})</b>${G.map(g=>`<div class="kidc"><b class="cn2">${esc(g.name)}</b><div class="wrap"><table style="min-width:0"><tr><th class="l">Sinf / guruh</th><th>Turi</th><th>Bugun</th><th></th></tr>
+  ${g.en.map(e=>{const a=enAtt(e);return`<tr${e.id==ME.student_id?' class="cur"':''}><td class="l">${esc(e.cls)}</td><td><span class="rl">${enTyp(e)}</span></td><td>${a?a.i+' '+a.t:'<span class="mut">—</span>'}</td>
+  <td>${e.id==ME.student_id?'<span class="mut">ko\'rilmoqda</span>':`<button class="tab kidgo" data-id="${e.id}">Batafsil</button>`}</td></tr>`}).join('')}</table></div></div>`).join('')}</div>`;
+ // 5. To'lovlar tarixi: farzandni tanlab ko'riladi
+ const pi=Math.max(0,K.findIndex(k=>k.late.length)),ph=K.length?`<div id="phw">${payHist(pi)}</div>`:'';
+ return {b:td+mk+pr+ov,t:ph}}
+const payHist=i=>{const K=S.payKids,k=K[i],t=nowT(),y=+t.d.slice(0,4),sy=+t.d.slice(5,7)>=9?y:y-1;
+ return payTable(k.rows,i,`To'lovlar tarixi (${sy}–${sy+1} o'quv yili)`,K.length>1?`<select class="fld" id="phk" style="width:auto">${K.map((x,j)=>`<option value="${j}"${j==i?' selected':''}>${esc(x.full_name)} — ${esc(x.cls)}</option>`).join('')}</select>`:`<span class="mut">${esc(k.full_name)} — ${esc(k.cls)}</span>`)};
 async function fbParent(){const{data,error}=await sb.from('feedback').select('id,category,body,created_at').order('created_at',{ascending:false}).limit(10);if(error)return '';
  return `<div class="card"><b>${ic('msg')}Fikr-mulohazalar</b><p class="mut">Maktab haqidagi fikr, taklif yoki e'tirozingizni yozing. Xabaringizni maktab ma'muriyati o'qiydi.</p>
  <select class="fld" id="fbk">${FBC.map(x=>`<option>${x}</option>`).join('')}</select><textarea class="fld" id="fbt" rows="4" maxlength="2000" placeholder="Fikringizni yozing…"></textarea>
@@ -535,6 +574,7 @@ document.addEventListener('change',async e=>{const t=e.target;
  if(t.id=='bkf'){S.bkf=t.files[0]||null;$('bkn').textContent=S.bkf?S.bkf.name+' · '+fsz(S.bkf.size):'';return}
  if(t.id=='sp')['pw','lpw','rpw','tpw'].forEach(i=>{const x=$(i);if(x)x.type=t.checked?'text':'password'});
  if(t.id=='dt'&&t.value){S.date=t.value;S.month=t.value.slice(0,7);render()}
+ if(t.id=='phk'){$('phw').innerHTML=payHist(+t.value);return}
  if(t.id=='kid'){const{error}=await sb.rpc('switch_kid',{p_id:t.value});if(error)flash(netMsg(error));else await loadMe(ME.id);return}
  if(t.id=='mnf'&&t.files[0])rs(t.files[0],u=>{S.mph=u;$('mnp').textContent='✅ rasm tanlandi'},240);
  if(t.id=='mo'&&t.value){S.month=t.value;render()}

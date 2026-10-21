@@ -49,8 +49,8 @@ class Device:
     def __init__(self, cfg):
         self.name = cfg.get("name") or cfg["host"]
         self.host = cfg["host"]
-        # Ko'p qurilmalarda veb-kirish faqat HTTPS orqali ochiq; HTTPS ishlamasa — HTTP
-        self.base = ("http://" if cfg.get("https") is False else "https://") + self.host
+        # Avval HTTP (ISAPI odatda shu orqali ishlaydi); qurilma HTTPS ga yo'naltirsa yoki HTTP yopiq bo'lsa — HTTPS
+        self.base = ("https://" if cfg.get("https") else "http://") + self.host
         self.user, self.pw = cfg["user"], cfg["password"]
         self.locked_out = False
         self.s = requests.Session()
@@ -61,9 +61,9 @@ class Device:
         try:
             r = self.s.post(self.base + path, json=body, timeout=15, allow_redirects=False)
         except requests.exceptions.ConnectionError:
-            if not self.base.startswith("https://"):
+            if self.base.startswith("https://"):
                 raise
-            self.base = "http://" + self.host  # HTTPS yopiq — oddiy HTTP orqali
+            self.base = "https://" + self.host  # HTTP yopiq — HTTPS orqali
             r = self.s.post(self.base + path, json=body, timeout=15, allow_redirects=False)
         if r.status_code in (301, 302, 303, 307, 308) and self.base.startswith("http://"):
             self.base = "https://" + self.host  # qurilma HTTPS ga yo'naltiryapti
@@ -183,7 +183,6 @@ def run_once(devices, platform, state):
 
 def setup(cfg_name):
     """config.json ni savol-javob orqali yaratish (faylni qo'lda tahrirlash shart emas)."""
-    import getpass
     base = load_json(cfg_name) or load_json("config.namuna.json")
     if not base:
         sys.exit("config.namuna.json topilmadi: turniket papkasidagi barcha fayllar joyidami?")
@@ -195,14 +194,14 @@ def setup(cfg_name):
         token = input("   Kalit juda qisqa, qaytadan joylang: ").strip().strip('"')
     user = input("\n2) Turniket logini [admin]: ").strip() or "admin"
     print("\n3) Har bir eshik (turniket) paroli.")
-    print("   Diqqat: yozayotganingiz ekranda KO'RINMAYDI — bu normal. Yozib, Enter bosing.")
-    print("   Oldingi eshik bilan bir xil bo'lsa — hech narsa yozmay Enter bosing.")
+    print("   Parol ekranda ko'rinadi — xato yozmaganingizni tekshirib, Enter bosing.")
+    print("   (Bu oynani rasmga olmang.) Oldingi eshik bilan bir xil bo'lsa — hech narsa yozmay Enter bosing.")
     base["token"] = token
     pw = ""
     for d in base["devices"]:
-        new = getpass.getpass(f"   {d.get('name')} ({d['host']}) paroli: ")
+        new = input(f"   {d.get('name')} ({d['host']}) paroli: ").strip()
         while not new and not pw:
-            new = getpass.getpass("   Parol bo'sh bo'lmasin: ")
+            new = input("   Parol bo'sh bo'lmasin: ").strip()
         pw = new or pw
         d["user"], d["password"] = user, pw
     save_json(cfg_name, base)
@@ -234,7 +233,7 @@ def main():
         for d in devices:
             try:
                 n = len(d.events(dt.datetime.now(TZ).replace(hour=0, minute=0, second=0, microsecond=0), dt.datetime.now(TZ)))
-                log.info("[OK]   %s: ulandi, bugun %d ta voqea", d.name, n)
+                log.info("[OK]   %s: ulandi (%s), bugun %d ta voqea", d.name, d.base.split(":")[0].upper(), n)
             except Exception as e:  # noqa: BLE001
                 ok = False
                 log.error("[XATO] %s: %s", d.name, e)

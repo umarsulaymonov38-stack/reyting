@@ -183,13 +183,16 @@ def setup(cfg_name):
     while len(token) < 20:
         token = input("   Kalit juda qisqa, qaytadan joylang: ").strip().strip('"')
     user = input("\n2) Turniket logini [admin]: ").strip() or "admin"
-    print("\n3) Turniket paroli (4 ta eshikda bir xil deb olinadi).")
+    print("\n3) Har bir eshik (turniket) paroli.")
     print("   Diqqat: yozayotganingiz ekranda KO'RINMAYDI — bu normal. Yozib, Enter bosing.")
-    pw = getpass.getpass("   Parol: ")
-    while not pw:
-        pw = getpass.getpass("   Parol bo'sh bo'lmasin: ")
+    print("   Oldingi eshik bilan bir xil bo'lsa — hech narsa yozmay Enter bosing.")
     base["token"] = token
+    pw = ""
     for d in base["devices"]:
+        new = getpass.getpass(f"   {d.get('name')} ({d['host']}) paroli: ")
+        while not new and not pw:
+            new = getpass.getpass("   Parol bo'sh bo'lmasin: ")
+        pw = new or pw
         d["user"], d["password"] = user, pw
     save_json(cfg_name, base)
     print("\n[OK] config.json saqlandi. Endi tekshiruv boshlanadi...\n")

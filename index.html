@@ -144,6 +144,10 @@ td.ok{color:var(--ok);font-weight:700}td.lt{color:var(--ac-d);font-weight:700}td
 .goodw{border:2px solid var(--ok);background:linear-gradient(160deg,var(--ok2),var(--card))}.goodw>b{color:var(--ok)}.goodw ul{margin:6px 0;padding-left:20px}.goodw li{padding:3px 0}
 .al{border-left:4px solid var(--ln);background:var(--zb);border-radius:10px;padding:8px 12px;margin:8px 0;line-height:1.6}.al.g{border-color:var(--ok);background:var(--ok2)}.al.r{border-color:var(--bad);background:#fdece4}.al.y{border-color:#d4a017;background:#fdf6dc}
 :root[data-theme="dark"] .payw,:root[data-theme="dark"] .goodw,:root[data-theme="dark"] .al{background:var(--card)}
+.fold>summary{list-style:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;cursor:pointer;user-select:none;min-height:30px}.fold>summary::-webkit-details-marker{display:none}
+.fold>summary>b{margin:0;display:flex;align-items:center;gap:6px}.payw.fold>summary>b{color:var(--bad)}.chev{margin-left:auto;width:30px;height:30px;border-radius:50%;background:var(--ac2);flex:none;position:relative}.chev::after{content:'';position:absolute;left:10px;top:8px;width:8px;height:8px;border:solid var(--ac-d);border-width:0 2.5px 2.5px 0;transform:rotate(45deg);transition:transform .2s}
+.fold[open] .chev::after{transform:rotate(-135deg);top:12px}.fold .fbd{margin-top:10px}.fold .fbd .card{box-shadow:none;border:0;padding:0;margin:0;background:none}
+.bdg{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--zb);color:var(--mut)}.bdg.r{background:#fdece4;color:var(--bad)}
 .kidc{margin-top:12px}.kidc+.kidc{border-top:1px solid var(--ln);padding-top:12px}
 .payw{border:2px solid var(--bad);background:linear-gradient(160deg,#fff1ec,var(--card))}.payw>b{color:var(--bad)}.payw ul{margin:6px 0;padding-left:20px}.payw li{padding:3px 0}.payw .lt{color:var(--bad);font-weight:700}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .payw,:root:not([data-theme="light"]) .goodw,:root:not([data-theme="light"]) .al{background:var(--card)}}
@@ -339,16 +343,17 @@ async function parentAll(){const t=nowT(),y=+t.d.slice(0,4),mo=+t.d.slice(5,7),s
   +(good.length?`<div class="card goodw"><b>${ic('star')}Tabriklaymiz: yaxshi natijalar</b><ul>${good.map(ml).join('')}</ul></div>`:'');
  // 3. To'lov eslatmasi (asosiy sinf uchun, har bir farzandga alohida)
  const late=E.filter(e=>e.late.length);
- const pr=late.length?`<div class="card payw"><b>${ic('card')}To'lov eslatmasi</b><p>Hurmatli ota-ona! Quyidagi to'lovlar hali qayd etilmagan:</p>
+ const nl=late.reduce((a,k)=>a+k.late.length,0),pr=late.length?fold(`${ic('card')}To'lov eslatmasi`,`<span class="bdg r">❌ ${nl} oy to'lanmagan</span>`,`<p>Hurmatli ota-ona! Quyidagi to'lovlar hali qayd etilmagan:</p>
   ${late.map(k=>`<p style="margin:8px 0 2px"><b>${esc(k.full_name)}</b> <span class="mut">(${esc(k.cls)})</span></p><ul>${k.late.map(lateLi).join('')}</ul>`).join('')}
-  <p class="mut">To'lov har oyning ${PAY_DUE}-sanasigacha, har bir farzand uchun alohida amalga oshiriladi. To'lagan bo'lsangiz, maktab qayd etgach, eslatma o'zi yo'qoladi.</p></div>`:'';
+  <p class="mut">To'lov har oyning ${PAY_DUE}-sanasigacha, har bir farzand uchun alohida amalga oshiriladi. To'lagan bo'lsangiz, maktab qayd etgach, eslatma o'zi yo'qoladi.</p>`,'payw'):'';
  // 4. Farzandlarim: har birining sinfi, fan guruhlari, to'garaklari va repetitorlari
- const ov=`<div class="card"><b>${ic('users')}Farzandlarim (${G.length})</b>${G.map(g=>`<div class="kidc"><b class="cn2">${esc(g.name)}</b><div class="wrap"><table style="min-width:0"><tr><th class="l">Sinf / guruh</th><th>Turi</th><th>Bugun</th><th></th></tr>
+ const ov=fold(`${ic('users')}Farzandlarim`,`<span class="bdg">${G.length} ta</span>`,G.map(g=>`<div class="kidc"><b class="cn2">${esc(g.name)}</b><div class="wrap"><table style="min-width:0"><tr><th class="l">Sinf / guruh</th><th>Turi</th><th>Bugun</th><th></th></tr>
   ${g.en.map(e=>{const a=enAtt(e);return`<tr${e.id==ME.student_id?' class="cur"':''}><td class="l">${esc(e.cls)}</td><td><span class="rl">${enTyp(e)}</span></td><td>${a?a.i+' '+a.t:'<span class="mut">—</span>'}</td>
-  <td>${e.id==ME.student_id?'<span class="mut">ko\'rilmoqda</span>':`<button class="tab kidgo" data-id="${e.id}">Batafsil</button>`}</td></tr>`}).join('')}</table></div></div>`).join('')}</div>`;
+  <td>${e.id==ME.student_id?'<span class="mut">ko\'rilmoqda</span>':`<button class="tab kidgo" data-id="${e.id}">Batafsil</button>`}</td></tr>`}).join('')}</table></div></div>`).join(''));
  // 5. To'lovlar tarixi: farzandni tanlab ko'riladi
- const pi=Math.max(0,K.findIndex(k=>k.late.length)),ph=K.length?`<div id="phw">${payHist(pi)}</div>`:'';
+ const pi=Math.max(0,K.findIndex(k=>k.late.length)),ph=K.length?fold(`${ic('card')}To'lovlar tarixi`,`<span class="bdg">${K.length>1?K.length+' ta farzand':esc(K[0].full_name)}</span>`,`<div id="phw">${payHist(pi)}</div>`):'';
  return {b:td+mk+pr+ov,t:ph}}
+const fold=(title,badge,body,cls='')=>`<details class="card fold ${cls}"><summary><b>${title}</b>${badge}<span class="chev"></span></summary><div class="fbd">${body}</div></details>`;
 const payHist=i=>{const K=S.payKids,k=K[i],t=nowT(),y=+t.d.slice(0,4),sy=+t.d.slice(5,7)>=9?y:y-1;
  return payTable(k.rows,i,`To'lovlar tarixi (${sy}–${sy+1} o'quv yili)`,K.length>1?`<select class="fld" id="phk" style="width:auto">${K.map((x,j)=>`<option value="${j}"${j==i?' selected':''}>${esc(x.full_name)} — ${esc(x.cls)}</option>`).join('')}</select>`:`<span class="mut">${esc(k.full_name)} — ${esc(k.cls)}</span>`)};
 async function fbParent(){const{data,error}=await sb.from('feedback').select('id,category,body,created_at').order('created_at',{ascending:false}).limit(10);if(error)return '';
@@ -468,9 +473,7 @@ async function setView(){const tl=await q(sb.from('teacher_classes').select('use
 async function parentView(){const mm=S.month.split('-'),a=S.month+'-01',b=S.month+'-'+String(new Date(Date.UTC(+mm[0],+mm[1],0)).getUTCDate()).padStart(2,'0');
  const[me,kids]=await Promise.all([q(sb.from('students').select('full_name,class_id').eq('id',ME.student_id).single()),q(sb.rpc('my_kids'))]);
  const c=CL.find(x=>x.id==me.class_id)||{},kind=c.kind=='rep'?'r':(c.grp||(c.grade||0)>7)?'u':'p';setMode(c);S.kc=c;S.kn=me.full_name;
- const pay=kind=='r'?null:await q(sb.from('payments').select('paid,paid_on').eq('student_id',ME.student_id).eq('month',S.month+'-01').maybeSingle());
  const head=`<div class="card"><div class="top"><b class="cn2">${esc(me.full_name)}</b><span class="mut">${esc(c.name||'')}${c.kind=='rep'?' (Repetitor)':''}</span></div>${kids.length>1?`<div class="top"><b>Farzand:</b><select class="fld" id="kid" style="width:auto">${kids.map(k=>`<option value="${k.id}" ${k.id==ME.student_id?'selected':''}>${esc(k.full_name)} — ${esc(cname(k.class_id))}</option>`).join('')}</select></div>`:''}<div class="top"><b>Oy:</b><input type="month" id="mo" value="${S.month}"></div>`;
- const payH=pay===null?'':`<p>${ic('card')}To'lov (${MON[+S.month.slice(5)-1]}): <b>${pay&&pay.paid?"✅ to'langan":"⏳ hali to'lanmagan"}</b></p>`;
  const dd=x=>x.day.slice(8)+'.'+x.day.slice(5,7);
  if(kind=='r'){
   const[rk,rows]=await Promise.all([q(sb.rpc('rep_my_rank',{p_from:a,p_to:b})),q(sb.from('rep_daily').select('*').eq('student_id',ME.student_id).gte('day',a).lte('day',b).order('day'))]);const r=rk&&rk[0];
@@ -480,10 +483,10 @@ async function parentView(){const mm=S.month.split('-'),a=S.month+'-01',b=S.mont
  const kpi=`<div class="kpi"><div><b>${r?r.total:0}</b>jami ball</div><div><b>${r?r.class_rank+'/'+r.class_size:'—'}</b>${ic('school')}sinfda o'rin</div><div><b>${r?r.school_rank+'/'+r.school_size:'—'}</b>${ic('trophy')}${kind=='p'?"1–7-sinflar orasida":"reytingda"} o'rin</div></div>`;
  if(kind=='p'){
   const t=nowT().d,menu=await q(sb.from('menu').select('id,day,meal,name').gte('day',t).order('day').order('id').limit(30));await menuPh(menu);const days={};menu.forEach(m=>(days[m.day]=days[m.day]||[]).push(m));
-  return head+kpi+payH+`</div><div class="card"><b>Kunlik vazifalar</b><div class="wrap"><table><tr><th>Sana</th>${th()}<th>Jami</th></tr>${rows.length?rows.map(x=>`<tr><td>${dd(x)}</td>${CR.map(k=>`<td>${k.c=='att'?attIc(x):(x[k.c]??'—')}</td>`).join('')}<td class="tot">${sum(x)}</td></tr>`).join(''):'<tr><td colspan="8" class="mut">Bu oy ma\'lumot yo\'q</td></tr>'}</table></div></div>
+  return head+kpi+`</div><div class="card"><b>Kunlik vazifalar</b><div class="wrap"><table><tr><th>Sana</th>${th()}<th>Jami</th></tr>${rows.length?rows.map(x=>`<tr><td>${dd(x)}</td>${CR.map(k=>`<td>${k.c=='att'?attIc(x):(x[k.c]??'—')}</td>`).join('')}<td class="tot">${sum(x)}</td></tr>`).join(''):'<tr><td colspan="8" class="mut">Bu oy ma\'lumot yo\'q</td></tr>'}</table></div></div>
   <div class="card"><b>${ic('food')}Kunlik taomlanish (retsept)</b>${Object.keys(days).length?Object.keys(days).map(d=>`<p><b>${d.slice(8)}.${d.slice(5,7)}</b></p>${days[d].map(m=>`<div class="top">${m.photo?`<img class="cl" style="height:64px;width:64px;object-fit:cover;border-radius:10px" src="${m.photo}">`:''}<div><b>${esc(m.meal)}</b><br><span style="white-space:pre-line">${esc(m.name)}</span></div></div>`).join('')}`).join(''):'<p class="mut">Taomnoma hali kiritilmagan.</p>'}</div>`}
  const g=!!c.grp;
- return head+kpi+payH+`</div><div class="card"><b>Davomat${g?' va baholar':''}</b><div class="wrap"><table><tr><th>Sana</th><th>Davomat</th>${g?'<th>Uyga vazifa</th><th>Sinfdagi faollik</th><th>Tartib-intizom</th>':''}</tr>${rows.length?rows.map(x=>`<tr><td>${dd(x)}</td><td>${attIc(x)}</td>${g?`<td>${x.hw??'—'}</td><td>${x.activity??'—'}</td><td>${x.behavior??'—'}</td>`:''}</tr>`).join(''):'<tr><td colspan="5" class="mut">Bu oy ma\'lumot yo\'q</td></tr>'}</table></div></div>`}
+ return head+kpi+`</div><div class="card"><b>Davomat${g?' va baholar':''}</b><div class="wrap"><table><tr><th>Sana</th><th>Davomat</th>${g?'<th>Uyga vazifa</th><th>Sinfdagi faollik</th><th>Tartib-intizom</th>':''}</tr>${rows.length?rows.map(x=>`<tr><td>${dd(x)}</td><td>${attIc(x)}</td>${g?`<td>${x.hw??'—'}</td><td>${x.activity??'—'}</td><td>${x.behavior??'—'}</td>`:''}</tr>`).join(''):'<tr><td colspan="5" class="mut">Bu oy ma\'lumot yo\'q</td></tr>'}</table></div></div>`}
 // Taom rasmlari o'zgarmaydi: bir marta yuklab, telefonda saqlab qo'yamiz (har safar qayta yuklanmaydi)
 async function menuPh(rows){let c={};try{c=JSON.parse(localStorage.getItem('ysh_mph')||'{}')}catch(e){}
  const need=rows.filter(m=>!(m.id in c)).map(m=>m.id);

@@ -1,6 +1,6 @@
 // Yuksalish veb-ilovasi: har doim avval internetdan ENG YANGI versiya olinadi,
 // internet bo'lmasa — oxirgi saqlangan nusxa ochiladi. Ma'lumotlar (Supabase) keshlanmaydi.
-const CACHE = 'yuksalish-v1';
+const CACHE = 'yuksalish-v2';
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'img/oquvchi.jpg'];
 
 self.addEventListener('install', e => {

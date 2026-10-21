@@ -8,7 +8,7 @@ alter table public.rep_daily    add column if not exists excused boolean not nul
 -- Turniketdan o'tgan o'quvchi "keldi" bo'ladi va "sababli" belgisi olib tashlanadi
 create or replace function public.tk_push(p_token text, p_events jsonb) returns int
 language plpgsql security definer set search_path = public as $$
-declare e record; sid bigint; eid bigint; d date; n int := 0;
+declare e record; sid public.students.id%type; eid bigint; d date; n int := 0;
 begin
   if not exists (select 1 from public.tk_config where token = p_token) then
     raise exception 'Kalit noto''g''ri' using errcode = '28000';
@@ -18,7 +18,7 @@ begin
     select s.id into sid from public.students s join public.classes c on c.id = s.class_id
      where s.ext_id = e.emp and c.kind is distinct from 'rep' and coalesce(c.grp, '') = '' limit 1;
     insert into public.turnstile_events (emp_no, student_id, ts, door)
-    values (e.emp, sid, e.ts, coalesce(e.door, '')) on conflict do nothing returning id into eid;
+    values (e.emp, sid::text, e.ts, coalesce(e.door, '')) on conflict do nothing returning id into eid;
     if eid is not null and sid is not null then
       d := (e.ts at time zone 'Asia/Tashkent')::date;
       insert into public.daily_scores (student_id, day, att, arrived_at) values (sid, d, 1, e.ts)

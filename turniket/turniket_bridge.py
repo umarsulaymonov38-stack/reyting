@@ -74,12 +74,26 @@ class Device:
             self.s.auth = HTTPBasicAuth(self.user, self.pw)
             r = self.s.post(self.base + path, json=body, timeout=15, allow_redirects=False)
         if r.status_code == 401:
-            raise RuntimeError("login yoki parol noto'g'ri yoki qurilma vaqtincha qulflangan (401). "
-                               "Brauzerda https://%s ga shu login-parol bilan kirib tekshiring; qulflangan bo'lsa 30 daqiqa kuting" % self.host)
+            raise RuntimeError("kirish rad etildi (401) [%s]. Brauzerda kirish ishlasa — qurilma vaqtincha qulflangan bo'lishi mumkin, "
+                               "30 daqiqa kuting" % self.why(r))
         if r.status_code == 403:
             raise RuntimeError("ruxsat yo'q (403): foydalanuvchida huquq yetarli emas yoki ISAPI o'chirilgan")
         r.raise_for_status()
         return r.json()
+
+    @staticmethod
+    def why(r):
+        """401 javobidan sababni ajratib olish (tashxis uchun)."""
+        import re
+        txt, out = r.text or "", []
+        for k in ("subStatusCode", "statusString", "lockStatus", "unlockTime", "retryLoginTime", "isActivated"):
+            m = re.search(r'"?%s"?\s*[:>]\s*"?([^"<,}]+)' % k, txt)
+            if m:
+                out.append("%s=%s" % (k, m.group(1).strip()))
+        auth = r.headers.get("WWW-Authenticate", "")
+        out.append("usul=" + (auth.split(" ", 1)[0] or "-"))
+        out.append(r.url.split(":", 1)[0].upper())
+        return ", ".join(out)
 
     def events(self, start, end):
         """Berilgan oraliqdagi barcha kirish-nazorat voqealari (sahifalab)."""

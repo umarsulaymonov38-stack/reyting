@@ -221,7 +221,8 @@ def run_once(devices, platform, state):
         if new:
             try:
                 res = platform.map_ids([{"emp": k, "name": v} for k, v in new.items()])
-                known.update(new)
+                miss = {m["emp"] for m in res.get("boglanmadi", [])}
+                known.update({k: v for k, v in new.items() if k not in miss})  # bog'lanmaganlar keyingi safar qayta tekshiriladi
                 if res.get("boglandi"):
                     log.info("%s: %s ta yangi o'quvchi turniket bilan bog'landi", d.name, res["boglandi"])
             except Exception as e:  # noqa: BLE001

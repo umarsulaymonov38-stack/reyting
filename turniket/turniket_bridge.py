@@ -321,7 +321,12 @@ def main():
             except Exception as e:  # noqa: BLE001
                 log.error("%s: ro'yxatni olib bo'lmadi: %s", d.name, e)
         log.info("Turniketlarda jami %d ta shaxs", len(people))
-        res = platform.map_ids([{"emp": k, "name": v} for k, v in people.items()])
+        res, items = {"boglandi": 0, "oldin_boglangan": 0, "boglanmadi": []}, [{"emp": k, "name": v} for k, v in people.items()]
+        for i in range(0, len(items), 100):  # platforma vaqt chegarasiga sig'ishi uchun qismlarga bo'lib yuboriladi
+            r = platform.map_ids(items[i:i + 100])
+            res["boglandi"] += r["boglandi"]
+            res["oldin_boglangan"] += r["oldin_boglangan"]
+            res["boglanmadi"] += r["boglanmadi"]
         log.info("Bog'landi: %s, avval bog'langan: %s, bog'lanmadi: %d", res["boglandi"], res["oldin_boglangan"], len(res["boglanmadi"]))
         path = os.path.join(HERE, "boglanmaganlar.csv")
         with open(path, "w", encoding="utf-8-sig") as f:

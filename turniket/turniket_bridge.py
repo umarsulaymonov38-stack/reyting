@@ -58,6 +58,9 @@ class Device:
         self.base = ("https://" if cfg.get("https") else "http://") + self.host
         self.user, self.pw = cfg["user"], cfg["password"]
         self.locked_out = False
+        self.new_session()
+
+    def new_session(self):
         self.s = requests.Session()
         self.s.auth = HTTPDigestAuth(self.user, self.pw)
         self.s.verify = False
@@ -77,6 +80,10 @@ class Device:
         if r.status_code == 401 and "basic" in r.headers.get("WWW-Authenticate", "").lower() \
                 and "digest" not in r.headers.get("WWW-Authenticate", "").lower():
             self.s.auth = HTTPBasicAuth(self.user, self.pw)
+            r = self.s.post(self.base + path, json=body, timeout=15, allow_redirects=False)
+        if r.status_code == 401 and not r.headers.get("WWW-Authenticate"):
+            # Qurilma eski kirish kalitini (nonce) rad etdi — ulanishni yangidan ochib, bir marta qayta urinamiz
+            self.new_session()
             r = self.s.post(self.base + path, json=body, timeout=15, allow_redirects=False)
         if r.status_code == 401 and not r.headers.get("WWW-Authenticate"):
             # Parol to'g'ri, lekin qurilma bu so'rovga ruxsat bermadi (ba'zi proshivkalarda shaxslar ro'yxati yopiq)

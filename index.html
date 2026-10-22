@@ -405,6 +405,7 @@ async function render(){
  const A=ME.role=='admin',c0=CL.find(x=>x.id==S.cls)||{},rp=c0.kind=='rep';setMode(c0);const T=(i,t)=>ic(i)+t,tabs=rp?[T('edit','Kunlik jadval'),T('trophy',"O'quvchilar reytingi"),T('target','Guruhlar reytingi'),T('user',"O'qituvchi")]:[T('edit','Baholash'),T('trophy',"O'quvchilar reytingi"),T('school','Sinflar reytingi')].concat(A?[T('userx','Kelmaganlar'),T('card',"To'lov"),T('sliders','Sozlamalar'),T('food','Taomnoma'),T('msg','Fikr-mulohazalar')]:[]);
  const V=rp?[repDaily,repRank,repGroups,repTeacher]:[bahoView,rateView,clsView].concat(A?[absView,payView,setView,menuView,fbView]:[]);
  if(!rp&&[1,2].includes(grpOf(c0))){tabs.splice(2,0,T('chart','Oylik infografika'));V.splice(2,0,infoView)}
+ if(!A&&!rp&&canPh(c0)){tabs.splice(1,0,T('phone','Ota-ona telefonlari'));V.splice(1,0,phView)}
  if(!A){tabs.push(T('chart',"O'quvchilar va statistika"));V.push(tchView)}
  if(BOOKS){tabs.push(T('books','Fan darsliklari'));V.push(booksView)}
  tabs.push(T('award',"O'qituvchilar reytingi"));V.push(ratingView);
@@ -547,6 +548,13 @@ async function infoView(){const r=mr(S.month),c=CL.find(x=>x.id==S.cls)||{};
  <div class="card"><b>${ic('chart')}${esc(S.inf.c)} — ${S.inf.m}: o'quvchilar ballari</b>${infoHtml(S.inf)}</div>
  <div class="card"><b>${ic('trophy')}Mezonlar bo'yicha eng yaxshi 3 o'quvchi — ${S.inf.m}</b>${topHtml(top)}</div>`}
 const topHtml=top=>`<div class="tops">${top.map(x=>`<div class="tp3"><b>${ic(x.c.i)}${x.c.k}</b><span class="mut" style="font-size:12px">maks. ${crMax(x.c)} ball</span>${x.l.length?x.l.map((r,i)=>`<div class="tr"><span>${MD3[i]} ${esc(r.n)}</span><b>${r.k[x.c.c]}</b></div>`).join(''):'<div class="mut">Hali ball yo\'q</div>'}</div>`).join('')}</div>`;
+// Sinf rahbari uchun: o'quvchilarning ota-ona telefon raqamlarini kiritish
+async function phView(){const st=(await q(sb.from('students').select('id,slot,full_name').eq('class_id',S.cls).order('slot'))).filter(x=>x.full_name.trim()),ids=st.map(x=>x.id);
+ const sp=ids.length?await q(sb.from('student_private').select('student_id,parent_phone,claimed_by').in('student_id',ids)):[],ph={};sp.forEach(x=>ph[x.student_id]=x);
+ const n=st.filter(x=>(ph[x.id]||{}).parent_phone).length,cl=st.filter(x=>(ph[x.id]||{}).claimed_by).length;
+ return `<div class="card"><b>${ic('phone')}Ota-onalar telefon raqamlari</b><p class="mut">Har bir o'quvchi qatoriga ota-onasining telefon raqamini yozing (masalan, <b>+998 90 123 45 67</b>) — o'zi saqlanadi. Ota-ona shu raqam bilan platformada <b>«Ota-ona: ro'yxatdan o'tish»</b> orqali kiradi.</p>
+ <div class="kpi"><div><b>${st.length}</b>o'quvchi</div><div><b>${n}</b>${ic('phone')}raqam kiritilgan</div><div><b>${cl}</b>${ic('users')}ota-ona ulangan</div></div>
+ <div class="wrap"><table><tr><th>№</th><th class="l">O'quvchi</th><th>Ota-ona telefoni</th><th></th><th>Holat</th></tr>${st.map((x,i)=>`<tr><td>${i+1}</td><td class="l">${esc(x.full_name)}</td><td><input class="nm" type="tel" inputmode="tel" style="min-width:150px" data-p="${x.id}" value="${esc((ph[x.id]||{}).parent_phone)}" placeholder="+998..."></td><td><button class="tab pdel" data-id="${x.id}" title="Telefonni o'chirish">${ic('trash')}</button></td><td>${(ph[x.id]||{}).claimed_by?'✅ ulangan':'—'}</td></tr>`).join('')||'<tr><td colspan="5" class="mut">Avval «Baholash» bo\'limida o\'quvchilar ism-familiyasini kiriting.</td></tr>'}</table></div></div>`}
 async function tchView(){const mm=S.month.split('-'),a=S.month+'-01',b=S.month+'-'+String(new Date(Date.UTC(+mm[0],+mm[1],0)).getUTCDate()).padStart(2,'0'),c=CL.find(x=>x.id==S.cls)||{},rp=c.kind=='rep';
  const st=await q(sb.from('students').select('id,slot,full_name').eq('class_id',S.cls).order('slot')),ids=st.map(x=>x.id);
  const[sp,rows]=await Promise.all([q(sb.from('student_private').select('student_id,parent_phone,claimed_by').in('student_id',ids)),q(sb.from(rp?'rep_daily':'daily_scores').select('*').gte('day',a).lte('day',b).in('student_id',ids))]),ph={};sp.forEach(x=>ph[x.student_id]=x);

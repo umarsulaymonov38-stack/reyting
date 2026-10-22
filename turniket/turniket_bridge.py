@@ -26,6 +26,7 @@ except ImportError:
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TZ = dt.timezone(dt.timedelta(hours=5))  # Toshkent vaqti
+USER_DAYS = 14  # shaxslar ro'yxati yopiq bo'lsa, necha kunlik o'tishlardan yig'iladi
 log = logging.getLogger("turniket")
 
 
@@ -43,6 +44,10 @@ def save_json(name, data):
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=1)
     os.replace(tmp, path)
+
+
+class LoginError(RuntimeError):
+    """Login yoki parol noto'g'ri — qayta urinish qurilmani qulflab qo'yadi."""
 
 
 class Device:
@@ -73,8 +78,11 @@ class Device:
                 and "digest" not in r.headers.get("WWW-Authenticate", "").lower():
             self.s.auth = HTTPBasicAuth(self.user, self.pw)
             r = self.s.post(self.base + path, json=body, timeout=15, allow_redirects=False)
+        if r.status_code == 401 and not r.headers.get("WWW-Authenticate"):
+            # Parol to'g'ri, lekin qurilma bu so'rovga ruxsat bermadi (ba'zi proshivkalarda shaxslar ro'yxati yopiq)
+            raise RuntimeError("qurilma bu ma'lumotni bermadi [%s]" % self.why(r))
         if r.status_code == 401:
-            raise RuntimeError("kirish rad etildi (401) [%s]. Brauzerda kirish ishlasa — qurilma vaqtincha qulflangan bo'lishi mumkin, "
+            raise LoginError("kirish rad etildi (401) [%s]. Brauzerda kirish ishlasa — qurilma vaqtincha qulflangan bo'lishi mumkin, "
                                "30 daqiqa kuting" % self.why(r))
         if r.status_code == 403:
             raise RuntimeError("ruxsat yo'q (403): foydalanuvchida huquq yetarli emas yoki ISAPI o'chirilgan")
@@ -112,7 +120,23 @@ class Device:
                 return out
 
     def users(self):
-        """Turniketga kiritilgan barcha shaxslar: [(employeeNo, ism)]."""
+        """Turniketga kiritilgan barcha shaxslar: [(employeeNo, ism)].
+        Qurilma ro'yxatni bermasa — so'nggi kunlardagi o'tishlardan (ism-familiya bilan) yig'iladi."""
+        try:
+            return self._users()
+        except LoginError:
+            raise
+        except Exception as e:  # noqa: BLE001
+            log.info("%s: shaxslar ro'yxati yopiq (%s) — so'nggi %d kundagi o'tishlardan olinadi...", self.name, e, USER_DAYS)
+            now = dt.datetime.now(TZ).replace(microsecond=0)
+            people = {}
+            for it in self.events(now - dt.timedelta(days=USER_DAYS), now):
+                emp, name = event_person(it)
+                if emp and name:
+                    people[emp] = name
+            return list(people.items())
+
+    def _users(self):
         out, pos = [], 0
         while True:
             body = {"UserInfoSearchCond": {"searchID": "yuksalish", "searchResultPosition": pos, "maxResults": 30}}
@@ -143,6 +167,11 @@ class Platform:
         return self.rpc("tk_map", {"p_token": self.token, "p_people": people})
 
 
+def event_person(item):
+    """O'tish voqeasidagi shaxs: (employeeNo, ism)."""
+    return str(item.get("employeeNoString") or item.get("employeeNo") or "").strip(), str(item.get("name") or "").strip()
+
+
 def to_event(item, dev_name):
     emp = str(item.get("employeeNoString") or item.get("employeeNo") or "").strip()
     t = item.get("time")
@@ -164,7 +193,7 @@ def run_once(devices, platform, state):
         try:
             items = d.events(start, now + dt.timedelta(minutes=1))
         except Exception as e:  # noqa: BLE001 — bitta turniket ishlamasa, qolganlari davom etadi
-            if "401" in str(e):
+            if isinstance(e, LoginError):
                 d.locked_out = True
                 log.error("%s: login yoki parol noto'g'ri — qurilma qulflanmasligi uchun bu eshikka boshqa urinilmaydi. "
                           "Parolni to'g'rilab (1-SOZLASH.bat), dasturni qayta ishga tushiring.", d.name)
@@ -175,6 +204,21 @@ def run_once(devices, platform, state):
             continue
         if st.pop("err", None):
             log.info("%s: aloqa tiklandi", d.name)
+        # Yangi ko'rilgan shaxslarni ism-familiya bo'yicha o'quvchilar bilan avtomatik bog'lash (davomatdan oldin)
+        known = state.setdefault("_known", {})
+        new = {}
+        for it in items:
+            emp, name = event_person(it)
+            if emp and name and known.get(emp) != name:
+                new[emp] = name
+        if new:
+            try:
+                res = platform.map_ids([{"emp": k, "name": v} for k, v in new.items()])
+                known.update(new)
+                if res.get("boglandi"):
+                    log.info("%s: %s ta yangi o'quvchi turniket bilan bog'landi", d.name, res["boglandi"])
+            except Exception as e:  # noqa: BLE001
+                log.warning("%s: o'quvchilarni bog'lab bo'lmadi: %s", d.name, e)
         batch = []
         for it in items:
             ev = to_event(it, d.name)

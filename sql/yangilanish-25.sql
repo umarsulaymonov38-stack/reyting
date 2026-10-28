@@ -1,4 +1,4 @@
--- Yangilanish 25: 3-guruh (Matematika) — 9- va 10-sinf Matematika Alfa va Betta guruhlari (har biri 18 o'quvchilik).
+-- Yangilanish 25: 3-guruh (Matematika) — 9- va 10-sinf Matematika Alfa, Betta va Gamma guruhlari (har biri 18 o'quvchilik).
 -- Supabase → SQL Editor ga to'liq nusxalab, "Run" bosing. Qayta ishga tushirish xavfsiz (bor guruh qayta yaratilmaydi).
 
 do $$
@@ -7,7 +7,7 @@ begin
   select column_default is not null or is_identity = 'YES' into cid_auto from information_schema.columns
    where table_schema = 'public' and table_name = 'classes' and column_name = 'id';
   foreach g in array array[9, 10] loop
-    foreach lv in array array['Alfa', 'Betta'] loop
+    foreach lv in array array['Alfa', 'Betta', 'Gamma'] loop
       nm := g || '-sinf Matematika ' || lv;
       select id into cid from public.classes
        where (lower(name) = lower(nm) or (grade = g and lower(grp) = lower(lv) and subject = 'Matematika'))

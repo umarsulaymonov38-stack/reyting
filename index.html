@@ -668,7 +668,7 @@ async function pushCard(){const h=(t,b)=>`<div class="card"><b>${ic('msg')}Bildi
  if(Notification.permission=='denied')return h(`<p class="mut">Bildirishnomalar telefon sozlamalarida taqiqlangan. Telefon sozlamalari → ilovalar → brauzer (yoki Yuksalish) → Bildirishnomalar → ruxsat bering, so'ng sahifani yangilang.</p>`);
  return `<div class="card payw" style="border-color:var(--ac)"><b style="color:var(--ac-d)">${ic('msg')}Bepul xabarnoma</b><p>Farzandingiz maktabga <b>kelganda</b> va <b>ketganda</b> telefoningizga darhol xabar kelsinmi?</p><button class="btn" id="pushOn">🔔 Bildirishnomalarni yoqish</button></div>`}
 async function pushOn(btn){btn.disabled=true;try{let{data:k}=await sb.rpc('push_public_key');
-  if(!k){await fetch(PUSH_FN,{method:'POST'}).catch(()=>{});({data:k}=await sb.rpc('push_public_key'))}
+  if(!k){const{data:u}=await sb.rpc('push_fn_url');await fetch(u||PUSH_FN,{method:'POST'}).catch(()=>{});({data:k}=await sb.rpc('push_public_key'))}
   if(!k){flash("Server hali sozlanmagan — maktab ma'muriyatiga xabar bering.");return}
   const perm=await Notification.requestPermission();if(perm!='granted'){flash("Ruxsat berilmadi. Qayta urinib, «Ruxsat berish» ni tanlang.");return}
   const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64k(k)}),j=sub.toJSON();

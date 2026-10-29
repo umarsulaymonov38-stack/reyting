@@ -157,6 +157,7 @@ td.ok{color:var(--ok);font-weight:700}td.lt{color:var(--ac-d);font-weight:700}td
 .exd{display:inline-block;width:1.05em;height:1.05em;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe066,#f2b705 70%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);vertical-align:-.15em}
 b.bdx{color:var(--bad)}b.okx{color:var(--ok)}
 .tch{transition:box-shadow .3s}.tch.hl{box-shadow:0 0 0 3px var(--ac)}
+.pcl{border:1px solid var(--ln);border-radius:14px;padding:10px 12px;margin:8px 0}.pcl[open]{border-color:var(--ac)}.pcl .fbd .tab{margin-bottom:8px}
 .kidc{margin-top:12px}.kidc+.kidc{border-top:1px solid var(--ln);padding-top:12px}
 .payw{border:2px solid var(--bad);background:linear-gradient(160deg,#fff1ec,var(--card))}.payw>b{color:var(--bad)}.payw ul{margin:6px 0;padding-left:20px}.payw li{padding:3px 0}.payw .lt{color:var(--bad);font-weight:700}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .payw,:root:not([data-theme="light"]) .goodw,:root:not([data-theme="light"]) .al{background:var(--card)}}
@@ -490,19 +491,44 @@ async function leaveView(){const t=nowT();if(S.date==t.d&&`${String(t.h).padStar
 const SMS0="Hurmatli ota-ona! {ism} uchun {oy} oyi to'lovini amalga oshirishingizni so'raymiz. Samarqand Yuksalish maktabi.";
 const smsTxt=()=>S.tpl||(()=>{try{return localStorage.getItem('ysh_sms')||SMS0}catch(e){return SMS0}})();
 const ph=p=>String(p||'').replace(/[^\d+]/g,'');
-function payHtml(){const t=nowT(),cm=t.d.slice(0,7),can=S.pm<cm||(S.pm==cm&&+t.d.slice(8)>=5),ios=/iPhone|iPad|iPod/.test(navigator.userAgent),mn=MON[+S.pm.slice(5)-1]+' '+S.pm.slice(0,4);
- const pd=S.pay.filter(x=>x.paid).length;
- if(!S.pay.length)return '<p class="mut">Bu sinfda hali o\'quvchi ismi yozilmagan. «Baholash» bo\'limida ismlarni kiriting.</p>';
- return `<p><b>${esc(cname(S.cls))}:</b> to'lagan <b>${pd}</b>, to'lamagan <b>${S.pay.length-pd}</b>. Butun maktab: <b>${S.pTot.paid}/${S.pTot.all}</b> to'lagan.</p>${can?'':`<p class="mut">⏳ SMS tugmasi har oyning 5-sanasidan boshlab chiqadi.</p>`}<div class="wrap"><table><tr><th>№</th><th class="l">F.I.Sh</th><th>Ota-ona telefoni</th><th>To'lov</th><th>To'langan sana</th><th>SMS</th></tr>${S.pay.map((x,i)=>`<tr><td>${i+1}</td><td class="l">${esc(x.n)}</td><td>${esc(x.phone)||'—'}</td><td><button class="pay ${x.paid?'on':''}" data-id="${x.id}">${x.paid?"✅ To'langan":"❌ To'lanmagan"}</button></td><td>${x.paid?`<input type="date" class="pdt" data-id="${x.id}" value="${x.on}" max="${nowT().d}" title="To'lov qilingan sana (o'zgartirish mumkin)">`:'—'}</td><td>${!x.paid&&can&&ph(x.phone)?`<a class="tab" href="sms:${ph(x.phone)}${ios?'&':'?'}body=${encodeURIComponent(smsTxt().replace('{ism}',x.n).replace('{oy}',mn))}">${ic('msg')}SMS</a>`:'—'}</td></tr>`).join('')}</table></div>`}
-async function payView(){S.pm=S.pm||today.slice(0,7);const m=S.pm+'-01';
- const st=await q(sb.from('students').select('id,slot,full_name,student_private(parent_phone)').eq('class_id',S.cls).order('slot')),named=st.filter(s=>s.full_name.trim());
- const pr=named.length?await q(sb.from('payments').select('student_id,paid,paid_on').eq('month',m).in('student_id',named.map(s=>s.id))):[],pd={};pr.forEach(r=>pd[r.student_id]=r);
- S.pay=named.map(s=>{const p=Array.isArray(s.student_private)?s.student_private[0]:s.student_private;return{id:s.id,n:s.full_name,phone:(p&&p.parent_phone)||'',paid:!!(pd[s.id]&&pd[s.id].paid),on:(pd[s.id]&&pd[s.id].paid_on)||''}});
- const[a,b]=await Promise.all([sb.from('students').select('id',{count:'exact',head:true}).neq('full_name',''),sb.from('payments').select('student_id',{count:'exact',head:true}).eq('month',m).eq('paid',true)]);S.pTot={all:a.count||0,paid:b.count||0};
- const{data:cfg}=await sb.from('sms_settings').select('*').eq('id',1).maybeSingle();S.cfg=cfg||null;if(cfg&&cfg.template)S.tpl=cfg.template;
- const sn=cfg?await sb.from('sms_log').select('id',{count:'exact',head:true}).eq('month',m).eq('status','sent'):{count:0};
- const au=S.cfg?`<div class="card"><b>${ic('msg')}Avtomatik SMS</b><div class="top"><button class="tab ${S.cfg.enabled?'on':''}" id="smsauto">${S.cfg.enabled?"✅ Yoqilgan":"⛔ O'chirilgan"}</button><span class="mut">Har kuni 09:00 da tekshiriladi. Yuborish kunlari: ${S.cfg.days.join(', ')}-sana. To'laganlarga va telefon raqami yo'qlarga SMS ketmaydi.</span></div><p class="mut">Shu oy uchun yuborilgan SMS: <b>${sn.count||0}</b></p></div>`:`<div class="card"><b>${ic('msg')}Avtomatik SMS</b><p class="mut">Hali sozlanmagan. Sozlash qo'llanmasiga qarang (2-sms-sozlash.sql).</p></div>`;
- return au+`<div class="card"><div class="top"><b>Oy:</b><input type="month" id="pm" value="${S.pm}"></div><p class="mut">SMS matni (qo'lda ham, avtomatik ham shu matn ketadi). {ism} va {oy} o'rniga o'quvchi ismi va oy yoziladi:</p><textarea class="fld" id="smst" rows="3">${esc(smsTxt())}</textarea><div id="payBox">${payHtml()}</div></div>`}
+// To'lov: barcha asosiy sinflar bir sahifada (sinflar kesimida) — to'lovni belgilash va to'lamaganlarga SMS
+const paySt=s=>({navbat:'⏳ navbatda',yuborilmoqda:'⏳ yuborilmoqda',yuborildi:'✅ SMS ketdi',xato:'⚠️ SMS xato'})[s]||'';
+function payHtml(){const P=S.pay,t=nowT(),cur=S.pm==t.d.slice(0,7),late=cur&&+t.d.slice(8)>PAY_DUE,by={};P.forEach(x=>(by[x.c]=by[x.c]||[]).push(x));
+ const cls=CL.filter(c=>by[c.id]).sort((a,b)=>(grpOf(a)-grpOf(b))||clsCmp(a,b)),pd=P.filter(x=>x.paid).length,un=P.filter(x=>!x.paid&&x.ph).length;
+ if(!P.length)return '<p class="mut">Hali o\'quvchilar kiritilmagan.</p>';
+ return `<div class="kpi"><div><b>${P.length}</b>o'quvchi</div><div><b>${pd}</b>✅ to'lagan</div><div><b>${P.length-pd}</b>❌ to'lamagan</div></div>
+ ${late?`<div class="top"><button class="btn" id="smsAll"${un?'':' disabled'}>${ic('msg')}Barcha to'lamaganlarga SMS (${un})</button><span class="mut">Faqat ota-ona telefoni bor va to'lamaganlarga ketadi; bitta o'quvchiga kuniga bir marta.</span></div>`:`<p class="mut">${cur?`To'lov SMS tugmalari ${PAY_DUE}-sanadan keyin chiqadi.`:"To'lov SMS'i faqat joriy oy uchun yuboriladi."}</p>`}
+ <p class="mut">Sinf nomini bosing — o'quvchilar ro'yxati ochiladi. «To'lanmagan» tugmasini bosish bilan to'lov belgilanadi.</p>
+ ${cls.map(c=>{const L=by[c.id],p=L.filter(x=>x.paid).length,u=L.length-p;
+  return `<details class="pcl fold" data-pc="${c.id}"${(S.payOpen||{})[c.id]?' open':''}><summary><b>${esc(clsLbl(c))}</b><span class="rl" style="margin-left:auto">${p} / ${L.length}</span>${u?`<span class="bdg r">❌ ${u}</span>`:'<span class="bdg">✅ hammasi</span>'}<span class="chev"></span></summary><div class="fbd">
+  ${late&&L.some(x=>!x.paid&&x.ph)?`<button class="tab smsCls" data-pc="${c.id}">${ic('msg')}Shu sinfning to'lamaganlariga SMS</button>`:''}
+  <div class="wrap"><table><tr><th>№</th><th class="l">F.I.Sh</th><th>Ota-ona telefoni</th><th>To'lov</th><th>To'langan sana</th><th>SMS</th></tr>
+  ${L.map((x,i)=>`<tr><td>${i+1}</td><td class="l">${esc(x.n)}</td><td>${esc(x.phone)||'—'}</td><td><button class="pay ${x.paid?'on':''}" data-id="${x.id}">${x.paid?"✅ To'langan":"❌ To'lanmagan"}</button></td><td>${x.paid?`<input type="date" class="pdt" data-id="${x.id}" value="${x.on}" max="${t.d}" title="To'lov qilingan sana (o'zgartirish mumkin)">`:'—'}</td><td style="font-size:12px" title="${esc((x.sms&&x.sms.error)||'')}">${x.sms?paySt(x.sms.status)+' <span class="mut">'+fd2(x.sms.day).slice(0,5)+'</span>':'<span class="mut">—</span>'}</td></tr>`).join('')}</table></div></div></details>`}).join('')}`}
+async function payView(){S.pm=S.pm||today.slice(0,7);const m=S.pm+'-01',reg=CL.filter(c=>[1,2].includes(grpOf(c))).map(c=>c.id);
+ const[st,pr,sq,cf]=await Promise.all([reg.length?all(()=>sb.from('students').select('id,class_id,slot,full_name,student_private(parent_phone)').in('class_id',reg).neq('full_name','').order('class_id').order('slot')):[],
+  all(()=>sb.from('payments').select('student_id,paid,paid_on').eq('month',m).order('student_id')),
+  all(()=>sb.from('sms_queue').select('student_id,status,day,error').eq('kind','tolov').gte('day',m).lte('day',mr(S.pm).b).order('day')).catch(()=>[]),
+  sb.from('sms_config').select('*').eq('id',1).maybeSingle()]);
+ const pd={},sm={};pr.forEach(r=>pd[r.student_id]=r);sq.forEach(r=>sm[r.student_id]=r);
+ S.pay=st.filter(s=>s.full_name.trim()&&reg.includes(s.class_id)).map(s=>{const p=Array.isArray(s.student_private)?s.student_private[0]:s.student_private,t0=(p&&p.parent_phone)||'';
+  return{id:s.id,c:s.class_id,n:s.full_name,phone:t0,ph:!!PE(t0),paid:!!(pd[s.id]&&pd[s.id].paid),on:(pd[s.id]&&pd[s.id].paid_on)||'',sms:sm[s.id]}});
+ S.pTot={all:S.pay.length,paid:S.pay.filter(x=>x.paid).length};S.smsCfg=cf.error?null:cf.data;
+ return smsCard()+`<div class="card"><div class="top"><b>${ic('card')}To'lovlar — sinflar kesimida</b><span style="margin-left:auto"><b>Oy:</b> <input type="month" id="pm" value="${S.pm}"></span></div><div id="payBox">${payHtml()}</div></div>`}
+// SMS xizmati sozlamalari (admin): uch turdagi SMSni yoqish/o'chirish, matnlar, sinov va jurnal
+function smsCard(){const c=S.smsCfg;if(!c)return `<div class="card"><b>${ic('msg')}SMS xizmati</b><p class="mut">Hali sozlanmagan: Supabase'da yangilanish-27-sms.sql ishga tushirilishi va «sms-yubor» funksiyasi o'rnatilishi kerak.</p></div>`;
+ const T=(k,t,d)=>`<div class="top"><button class="tab smsTg ${c[k]?'on':''}" data-k="${k}">${c[k]?'✅ Yoqilgan':"⛔ O'chiq"}</button><b>${t}</b><span class="mut">${d}</span></div>`;
+ return `<details class="card fold"><summary><b>${ic('msg')}SMS xizmati</b><span class="bdg">${['on_keldi','on_ketdi','on_tolov'].filter(k=>c[k]).length} / 3 yoqilgan</span><span class="chev"></span></summary><div class="fbd">
+ ${T('on_keldi','Maktabga keldi',"turniketdan kunning birinchi o'tishida — kuniga 1 marta")}
+ ${T('on_ketdi','Maktabdan chiqdi',`${String(c.ketdi_from).slice(0,5)} dan keyingi birinchi o'tishda — kuniga 1 marta`)}
+ ${T('on_tolov',"To'lov eslatmasi",`${c.tolov_due}-sanagacha to'lanmasa — har ${c.tolov_every} kunda soat 10:00 da`)}
+ <p class="mut" style="margin-top:10px">SMS matnlari. {ism}, {vaqt}, {oy}, {kun} o'zi to'ldiriladi. Matn Eskiz'da tasdiqlangan shablon bilan aynan bir xil bo'lishi kerak:</p>
+ ${[['tpl_keldi','Keldi'],['tpl_ketdi','Chiqdi'],['tpl_tolov',"To'lov"]].map(([k,t])=>`<label class="mut">${t}</label><textarea class="fld smsTpl" data-k="${k}" rows="2" maxlength="300">${esc(c[k])}</textarea>`).join('')}
+ <div class="top"><input class="fld" id="smsTp" type="tel" placeholder="Sinov uchun telefon: +998 90 123 45 67" style="width:auto;max-width:260px"><button class="tab" id="smsTest">${ic('msg')}Sinov SMS</button></div>
+ <div id="smsLog"><button class="tab" id="smsLogB">${ic('chart')}SMS jurnali va statistika</button></div></div></details>`}
+async function smsLog(){const t=nowT().d,[a,b]=await Promise.all([all(()=>sb.from('sms_queue').select('kind,status').eq('day',t).order('id')),q(sb.from('sms_queue').select('kind,phone,text,status,error,created_at,sent_at').order('id',{ascending:false}).limit(40))]);
+ const k={keldi:'Keldi',ketdi:'Chiqdi',tolov:"To'lov",test:'Sinov'},cnt=s=>a.filter(x=>x.status==s).length;
+ return `<p><b>Bugun:</b> jami ${a.length} · ✅ yuborildi ${cnt('yuborildi')} · ⏳ navbatda ${cnt('navbat')+cnt('yuborilmoqda')} · ⚠️ xato ${cnt('xato')} <span class="mut">(${Object.keys(k).map(x=>k[x]+' '+a.filter(y=>y.kind==x).length).join(', ')})</span></p>
+ <div class="wrap"><table><tr><th>Vaqt</th><th>Turi</th><th>Telefon</th><th class="l">Matn</th><th>Holat</th></tr>${b.map(r=>`<tr><td>${fdt(r.created_at)}</td><td>${k[r.kind]||r.kind}</td><td>${esc(r.phone)}</td><td class="l" style="font-size:12px">${esc(r.text)}</td><td title="${esc(r.error||'')}">${paySt(r.status)}${r.error?'<br><span class="mut" style="font-size:11px">'+esc(r.error)+'</span>':''}</td></tr>`).join('')||'<tr><td colspan="5" class="mut">Hali SMS yo\'q</td></tr>'}</table></div>`}
 const RD={hw:{m:10},test:{m:100}},loadSt=()=>q(sb.from('students').select('id,slot,full_name').eq('class_id',S.cls).order('slot'));
 const mr=mm=>{const y=+mm.slice(0,4),m=+mm.slice(5);return{a:mm+'-01',b:mm+'-'+String(new Date(Date.UTC(y,m,0)).getUTCDate()).padStart(2,'0')}};
 const avg=a=>a.length?a.reduce((p,v)=>p+v,0)/a.length:null,fp=v=>v==null?'—':v.toFixed(0)+'%';
@@ -707,8 +733,15 @@ async function tchView(){const mm=S.month.split('-'),a=S.month+'-01',b=S.month+'
 function rs(f,cb,mx){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,(mx||110)/Math.max(im.width,im.height)),v=document.createElement('canvas');v.width=Math.round(im.width*k);v.height=Math.round(im.height*k);const x=v.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,v.width,v.height);x.drawImage(im,0,0,v.width,v.height);cb(v.toDataURL('image/jpeg',.82))};im.src=r.result};r.readAsDataURL(f)}
 const upd=async(tb,v,k,id)=>{const{error}=await sb.from(tb).update(v).eq(k,id);if(error)flash(netMsg(error))};
 async function signOut(){await sb.auth.signOut();ME=null;flash('');loginView()}
-document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[data-t],[data-lt],.att,.ratt,.pay,#imb,.imdel,.gimg,#smsauto,#net,#out,#pk,#gc,#lgb,#tgo,#lgo,#rgo,#mkt,#mna,#mnb,.mdel,.tadd,.trem,.pdel,#rty,#absPdf,#latePdf,#leavePdf,#ratePdf,#bkb,#bku,.bdel,#fbs,.fdel,#fbPdf,#payPdf,.payPdf,.kidgo,#stadd,#infPdf,.satt,.tcd,.tcadd,.tpwb,#bkp');if(!t)return;
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[data-t],[data-lt],.att,.ratt,.pay,#imb,.imdel,.gimg,#smsauto,#net,#out,#pk,#gc,#lgb,#tgo,#lgo,#rgo,#mkt,#mna,#mnb,.mdel,.tadd,.trem,.pdel,#rty,#absPdf,#latePdf,#leavePdf,.smsTg,#smsTest,#smsAll,.smsCls,#smsLogB,#ratePdf,#bkb,#bku,.bdel,#fbs,.fdel,#fbPdf,#payPdf,.payPdf,.kidgo,#stadd,#infPdf,.satt,.tcd,.tcadd,.tpwb,#bkp');if(!t)return;
  const G=t.matches('#tgo,#lgo,#rgo,#mkt,#mna,#gc,#smsauto,#net,.pay,.imdel,.mdel,.tadd,.trem,.pdel,#bku,.bdel,#fbs,.fdel');if(G){if(t.disabled)return;t.disabled=true}try{
+ if(t.classList.contains('smsTg')&&S.smsCfg){const k=t.dataset.k,n=!S.smsCfg[k];if(n&&!confirm("Yoqilsinmi? Shundan keyin SMS'lar avtomatik yuboriladi va har biri uchun Eskiz balansidan pul yechiladi."))return;
+  const{error}=await sb.from('sms_config').update({[k]:n,updated_at:new Date().toISOString()}).eq('id',1);if(error){flash(netMsg(error));return}S.smsCfg[k]=n;t.classList.toggle('on',n);t.textContent=n?'✅ Yoqilgan':"⛔ O'chiq";flash(n?'✅ Yoqildi':"O'chirildi");return}
+ if(t.id=='smsTest'){const v=$('smsTp').value;if(!PE(v)){flash("Telefon raqamni to'g'ri yozing");return}const{error}=await sb.rpc('sms_test',{p_phone:v});flash(error?netMsg(error):"✅ Sinov SMS navbatga qo'yildi — 1 daqiqa ichida yuboriladi. Natijani «SMS jurnali»da ko'ring.");return}
+ if(t.id=='smsAll'||t.classList.contains('smsCls')){const c=t.dataset.pc?+t.dataset.pc:null;if(!confirm(c?"Shu sinfning to'lamagan o'quvchilari ota-onalariga SMS yuborilsinmi?":"Barcha to'lamagan o'quvchilar ota-onalariga SMS yuborilsinmi?"))return;
+  t.disabled=true;const{data,error}=await sb.rpc('sms_tolov_now',{p_class:c});t.disabled=false;if(error){flash(error.code=='PGRST202'?"Avval Supabase'da yangilanish-27-sms.sql ni ishga tushiring":netMsg(error));return}
+  flash(`✅ ${data||0} ta SMS navbatga qo'yildi${data?' — 1–2 daqiqada yuboriladi':" (bugun ularga allaqachon yuborilgan bo'lishi mumkin)"}`);render();return}
+ if(t.id=='smsLogB'){$('smsLog').innerHTML='<div class="ld"><i class="spin"></i>Yuklanmoqda…</div>';$('smsLog').innerHTML=await smsLog().catch(e=>esc(netMsg(e)));return}
  if(t.id=='latePdf'&&S.lateP){const P=S.lateP;printDoc("Kech kelgan o'quvchilar — "+fd(P.d),`<p class="m">Turniketdan ${LATE} dan keyin o'tganlar (1–2-sinflar hisobga olinmaydi)</p>`+P.per.map(x=>`<h2>${esc(x.n)} — ${x.L.length} nafar${x.t?' <span style="font-weight:400;color:#555">('+esc(x.t)+')</span>':''}</h2><table><tr><th style="width:32px">№</th><th>F.I.Sh</th><th style="width:110px">Kelgan vaqti</th><th style="width:110px">Kechikish</th></tr>${x.L.map((r,i)=>`<tr><td class="n">${i+1}</td><td>${esc(r.n)}</td><td>${r.t}</td><td>${mins(r.t,LATE)} daqiqa</td></tr>`).join('')}</table>`).join('')+`<p><b>Jami: ${P.per.reduce((a,x)=>a+x.L.length,0)} nafar</b></p>`);return}
  if(t.id=='leavePdf'&&S.leaveP){const P=S.leaveP;printDoc("Maktabdan ketish davomati — "+fd(P.d),`<p class="m">Ketgan vaqt — turniketdan ${TK_LEAVE} dan keyingi oxirgi o'tish</p>`+P.per.map(x=>`<h2>${esc(x.n)} — ketgan ${x.L.filter(r=>r.l).length} / ${x.L.length}${x.t?' <span style="font-weight:400;color:#555">('+esc(x.t)+')</span>':''}</h2><table><tr><th style="width:32px">№</th><th>F.I.Sh</th><th style="width:90px">Kelgan</th><th style="width:130px">Ketgan</th></tr>${x.L.map((r,i)=>`<tr><td class="n">${i+1}</td><td>${esc(r.n)}</td><td>${r.a}</td><td>${r.l||'qayd etilmagan'}</td></tr>`).join('')}</table>`).join(''));return}
  if(t.id=='absPdf'&&S.absP){const P=S.absP;printDoc("Maktabga kelmagan o'quvchilar — "+fd(P.d),P.per.map(x=>`<h2>${esc(x.n)} — ${x.r.length} nafar${x.t?' <span style="font-weight:400;color:#555">('+esc(x.t)+')</span>':''}</h2><table><tr><th style="width:32px">№</th><th>F.I.Sh</th><th style="width:90px">Holati</th><th style="width:170px">Ota-ona telefoni</th></tr>${x.r.map((r,i)=>`<tr><td class="n">${i+1}</td><td>${esc(r.n)}</td><td>${r.e?'Sababli':'Sababsiz'}</td><td>${esc(r.p)||'—'}</td></tr>`).join('')}</table>`).join('')+`<p><b>Jami: ${P.per.reduce((a,x)=>a+x.r.length,0)} nafar</b></p>`);return}
@@ -804,6 +837,7 @@ document.addEventListener('change',async e=>{const t=e.target;
 document.addEventListener('input',e=>{const t=e.target,d=t.dataset;
  if(t.classList.contains('ssc')){const k=SSK.find(x=>x[0]==d.k),n=+t.value;if(t.value!==''&&n>k[2])t.value=k[2];if(t.value!==''&&n<(d.k=='grade'?1:0))t.value=d.k=='grade'?1:0;
   const sid=d.s,val=t.value===''?null:+t.value;(S.ss[sid]=S.ss[sid]||{})[d.k]=val;dbn('ss'+sid+d.k,()=>ssSave(sid,{[d.k]:val}),350);return}
+ if(t.classList.contains('smsTpl')&&S.smsCfg){const k=d.k,v=t.value;S.smsCfg[k]=v;dbn('st'+k,async()=>{const{error}=await sb.from('sms_config').update({[k]:v}).eq('id',1);if(error)flash(netMsg(error));else flash("✅ SMS matni saqlandi")},800);return}
  if(t.classList.contains('tnm')){const u=d.u,v=t.value.trim();if(!v)return;dbn('tnm'+u,async()=>{let{error}=await sb.rpc('set_teacher_name',{p_id:u,p_name:v});
   if(error&&error.code=='PGRST202')({error}=await sb.from('profiles').update({full_name:v}).eq('id',u));if(error)flash(netMsg(error));else{const c=t.closest('.tch');if(c)c.dataset.n=v.toLowerCase();flash("✅ Ism saqlandi")}},700);return}
  if(t.classList.contains('tcs')){dbn('tcs'+d.u+d.c,async()=>{const{error}=await sb.from('teacher_classes').update({subject:t.value.trim()||null}).eq('user_id',d.u).eq('class_id',d.c);if(error)flash(/subject/.test(error.message)?"Avval Supabase'da yangilanish-16.sql ni ishga tushiring":netMsg(error))},500);return}
@@ -827,6 +861,8 @@ function tick(){const t=nowT();$('clk').innerHTML=`<b>${t.hms}</b><span>${t.wd},
  const cd=$('cd');if(cd){const r=36000-(t.h*3600+t.m*60+t.s);if(r<=0){cd.removeAttribute('id');render()}else cd.textContent=[r/3600|0,(r%3600)/60|0,r%60].map(v=>String(v).padStart(2,'0')).join(':')}}
 addEventListener('unhandledrejection',e=>flash(netMsg(e.reason)));
 addEventListener('offline',()=>flash("⚠️ Internet uzildi. Ulanmaguncha kiritilgan ma'lumotlar saqlanmaydi."));addEventListener('online',()=>flash("✅ Internet qayta ulandi"));
+// To'lov bo'limida qaysi sinf ro'yxati ochiq turgani (qayta chizilganda ham ochiq qoladi)
+document.addEventListener('toggle',e=>{const d=e.target;if(d.classList&&d.classList.contains('pcl'))(S.payOpen=S.payOpen||{})[d.dataset.pc]=d.open},true);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)flush()});
 addEventListener('beforeunload',e=>{flush();if(PEND){e.preventDefault();e.returnValue=''}});
 // Veb-ilova (PWA): o'rnatish tugmasi va yangilanishlarni avtomatik olish

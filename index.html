@@ -158,6 +158,7 @@ td.ok{color:var(--ok);font-weight:700}td.lt{color:var(--ac-d);font-weight:700}td
 b.bdx{color:var(--bad)}b.okx{color:var(--ok)}
 .tch{transition:box-shadow .3s}.tch.hl{box-shadow:0 0 0 3px var(--ac)}
 .pcl{border:1px solid var(--ln);border-radius:14px;padding:10px 12px;margin:8px 0}.pcl[open]{border-color:var(--ac)}.pcl .fbd .tab{margin-bottom:8px}
+#pgate{position:fixed;inset:0;z-index:9999;background:rgba(13,19,34,.78);display:flex;align-items:center;justify-content:center;padding:16px}#pgate .pgc{background:var(--card);color:var(--ink);border-radius:20px;max-width:440px;width:100%;padding:24px 22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}#pgate h2{margin:6px 0 10px}#pgate p{line-height:1.55}
 .kidc{margin-top:12px}.kidc+.kidc{border-top:1px solid var(--ln);padding-top:12px}
 .payw{border:2px solid var(--bad);background:linear-gradient(160deg,#fff1ec,var(--card))}.payw>b{color:var(--bad)}.payw ul{margin:6px 0;padding-left:20px}.payw li{padding:3px 0}.payw .lt{color:var(--bad);font-weight:700}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .payw,:root:not([data-theme="light"]) .goodw,:root:not([data-theme="light"]) .al{background:var(--card)}}
@@ -232,7 +233,7 @@ const empty=(t,d,x)=>`<div class="card empty"><span class="cl ph">${ic('school')
 const retryView=e=>{$('view').innerHTML=empty("Server bilan ulanib bo'lmadi.",esc(netMsg(e)),'<button class="btn" id="rty">Qayta urinish</button>')};
 const th=()=>CR.map(x=>`<th title="${x.k}"><span class="ic">${ic(x.i)}</span>${x.k}</th>`).join('');
 const cname=id=>(CL.find(c=>c.id==id)||{}).name||'';
-function loginView(){$('out').style.display='none';document.body.classList.remove('in');$('chips').innerHTML='';$('side').innerHTML='';document.body.classList.remove('hs-side');const L=S.lt||0;
+function loginView(){{const g=document.getElementById('pgate');if(g)g.remove()}$('out').style.display='none';document.body.classList.remove('in');$('chips').innerHTML='';$('side').innerHTML='';document.body.classList.remove('hs-side');const L=S.lt||0;
  $('view').innerHTML=`<div class="hero"><div class="hart photo"><img class="hph" src="img/oquvchi.jpg" alt="Yuksalish maktabi o'quvchisi" width="853" height="1280"><div class="hov"><div class="bubble"><b>Assalomu alaykum!</b><br>Yuksalish maktabining reyting tizimiga xush kelibsiz.</div><ul class="feat"><li>${ic('chart')}Kunlik ball va reyting</li><li>${ic('cal')}Davomat nazorati</li><li>${ic('card')}To'lovlar holati</li><li>${ic('food')}Kunlik taomnoma</li></ul></div></div><div class="card login"><h2>Tizimga kirish</h2><div class="tabs2"><button class="tab ${L==0?'on':''}" data-lt="0">${ic('key')}Kirish</button><button class="tab ${L==1?'on':''}" data-lt="1">${ic('users')}Ota-ona: ro'yxatdan o'tish</button></div>`+(L==0?
  `<p class="mut">Telefon raqamingiz va parolingizni kiriting (ota-ona ham, o'qituvchi ham).</p><input class="fld" id="lph" type="tel" placeholder="Telefon raqam: +998 90 123 45 67" autocomplete="username"><input class="fld" id="lpw" type="password" placeholder="Parol" autocomplete="current-password"><label class="mut"><input type="checkbox" id="sp"> Parolni ko'rsatish</label><br><button class="btn" id="lgo">Kirish</button>`:
  L==1?`<p class="mut">Faqat birinchi marta. Telefon raqamingiz maktabda o'quvchi ma'lumotiga yozilgan bo'lishi kerak. Parolni o'zingiz o'ylab topasiz.</p><input class="fld" id="rn" placeholder="Ism familiyangiz"><input class="fld" id="rph" type="tel" placeholder="Telefon: +998 90 123 45 67"><input class="fld" id="rpw" type="password" placeholder="Parol (kamida 6 belgi)" autocomplete="new-password"><label class="mut"><input type="checkbox" id="sp"> Parolni ko'rsatish</label><br><button class="btn" id="rgo">Ro'yxatdan o'tish</button>`:
@@ -413,7 +414,7 @@ function chips(){
  const on=el.querySelector('.chip.on');if(on)on.scrollIntoView({block:'nearest',inline:'nearest'})}
 async function render(){
  flush();const tk=++S.rt;if(!ME)return;
- if(ME.role=='parent'){$('view').innerHTML='<div class="ld"><i class="spin"></i>Yuklanmoqda…</div>';const h=await parentView().catch(()=>'<div class="card">Ma\'lumotni o\'qib bo\'lmadi.</div>'),hb=BOOKS?await parentBooks().catch(()=>''):'',hf=await fbParent().catch(()=>''),pi=await parentAll().catch(()=>null)||await payInfo().catch(()=>({b:'',t:''}));const hp=await pushCard().catch(()=>'');if(tk==S.rt)$('view').innerHTML=hp+pi.b+h+pi.t+hb+hf;return}
+ if(ME.role=='parent'){$('view').innerHTML='<div class="ld"><i class="spin"></i>Yuklanmoqda…</div>';const h=await parentView().catch(()=>'<div class="card">Ma\'lumotni o\'qib bo\'lmadi.</div>'),hb=BOOKS?await parentBooks().catch(()=>''):'',hf=await fbParent().catch(()=>''),pi=await parentAll().catch(()=>null)||await payInfo().catch(()=>({b:'',t:''}));const hp=await pushCard().catch(()=>'');if(tk==S.rt){$('view').innerHTML=hp+pi.b+h+pi.t+hb+hf;pushGate().catch(()=>{})}return}
  const A=ME.role=='admin',c0=CL.find(x=>x.id==S.cls)||{},rp=c0.kind=='rep';setMode(c0);const T=(i,t)=>ic(i)+t,tabs=rp?[T('edit','Kunlik jadval'),T('trophy',"O'quvchilar reytingi"),T('target','Guruhlar reytingi'),T('user',"O'qituvchi")]:[T('edit','Baholash'),T('trophy',"O'quvchilar reytingi"),T('school','Sinflar reytingi')].concat(A?[T('userx','Kelmaganlar'),T('clock','Kech kelganlar'),T('logout','Ketish davomati'),T('card',"To'lov"),T('sliders','Sozlamalar'),T('food','Taomnoma'),T('msg','Fikr-mulohazalar')]:[]);
  const V=rp?[repDaily,repRank,repGroups,repTeacher]:[bahoView,rateView,clsView].concat(A?[absView,lateView,leaveView,payView,setView,menuView,fbView]:[]);
  if(!rp&&[1,2].includes(grpOf(c0))){tabs.splice(2,0,T('chart','Oylik infografika'));V.splice(2,0,infoView)}
@@ -667,13 +668,28 @@ async function pushCard(){const h=(t,b)=>`<div class="card"><b>${ic('msg')}Bildi
  if(on)return h(`<p>✅ <b>Yoqilgan.</b> Farzandingiz maktabga kelganda va ketganda shu telefonga xabar keladi.</p>`,`<div class="top"><button class="tab" id="pushTest">${ic('msg')}Sinov xabar</button><button class="tab" id="pushOff">O'chirish</button></div>`);
  if(Notification.permission=='denied')return h(`<p class="mut">Bildirishnomalar telefon sozlamalarida taqiqlangan. Telefon sozlamalari → ilovalar → brauzer (yoki Yuksalish) → Bildirishnomalar → ruxsat bering, so'ng sahifani yangilang.</p>`);
  return `<div class="card payw" style="border-color:var(--ac)"><b style="color:var(--ac-d)">${ic('msg')}Bepul xabarnoma</b><p>Farzandingiz maktabga <b>kelganda</b> va <b>ketganda</b> telefoningizga darhol xabar kelsinmi?</p><button class="btn" id="pushOn">🔔 Bildirishnomalarni yoqish</button></div>`}
-async function pushOn(btn){btn.disabled=true;try{let{data:k}=await sb.rpc('push_public_key');
-  if(!k){const{data:u}=await sb.rpc('push_fn_url');await fetch(u||PUSH_FN,{method:'POST'}).catch(()=>{});({data:k}=await sb.rpc('push_public_key'))}
+// Ruxsat oldin berilgan bo'lsa — tugmasiz, jim qayta obuna bo'ladi (obuna eskirgan yoki ma'lumot tozalangan bo'lsa ham)
+async function pushSave(sub){const j=sub.toJSON();const{error}=await sb.from('push_subs').upsert({endpoint:j.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth,user_id:ME.id,ua:navigator.userAgent.slice(0,200)},{onConflict:'endpoint'});return!error}
+async function pushKey(){let{data:k}=await sb.rpc('push_public_key');if(!k){const{data:u}=await sb.rpc('push_fn_url');await fetch(u||PUSH_FN,{method:'POST'}).catch(()=>{});({data:k}=await sb.rpc('push_public_key'))}return k}
+async function pushAuto(){if(!pushOK()||Notification.permission!='granted')return;try{const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();
+ if(!sub){const k=await pushKey();if(!k)return;sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64k(k)})}
+ const last=(()=>{try{return localStorage.getItem('ysh_pushsv')}catch(e){return''}})(),tag=ME.id+'|'+sub.endpoint;
+ if(last!=tag&&await pushSave(sub))try{localStorage.setItem('ysh_pushsv',tag)}catch(e){}}catch(e){}}
+// Ota-ona bildirishnomani yoqmaguncha — butun ekranni egallaydigan oyna (brauzer qoidasiga ko'ra ruxsatni faqat ota-ona bera oladi)
+async function pushGate(){const old=$('pgate');if(old)old.remove();if(ME.role!='parent')return;
+ const ios=isIOS()&&!standalone(),ok=pushOK(),perm=ok?Notification.permission:'';if(ok&&perm=='granted'){const had=!!(await pushSub().catch(()=>null));await pushAuto();if(!had&&$('pushOn')&&await pushSub().catch(()=>null))render();return}
+ try{if(sessionStorage.getItem('ysh_pgate')&&(ios||!ok||perm=='denied'))return}catch(e){}
+ const body=ios?`<p>Farzandingiz maktabga kelganda va ketganda xabar olish uchun ilovani <b>bosh ekranga o'rnating</b>:</p><p>Safari'da <b>«Ulashish» (yoki «•••») → «На экран «Домой»» → «Добавить»</b>. So'ng ilovani bosh ekrandagi <b>Yuksalish</b> belgisidan oching.</p><button class="tab" id="pgOk">Tushunarli</button>`
+  :!ok?`<p>Bu brauzer bildirishnomani qo'llamaydi. Ilovani <b>Chrome</b> (Android) yoki <b>Safari</b> (iPhone) orqali o'rnatib oching.</p><button class="tab" id="pgOk">Tushunarli</button>`
+  :perm=='denied'?`<p>Bildirishnomalar <b>taqiqlangan</b>. Yoqish uchun: telefon <b>Sozlamalar → Ilovalar → Chrome (yoki Yuksalish) → Bildirishnomalar → Ruxsat berish</b>, so'ng ilovani qayta oching.</p><button class="tab" id="pgOk">Tushunarli</button>`
+  :`<p>Farzandingiz maktabga <b>kelganda</b> va <b>ketganda</b> telefoningizga <b>bepul xabar</b> keladi. Davom etish uchun bildirishnomalarni yoqing.</p><button class="btn" id="pushOn" style="font-size:18px;padding:14px 22px">🔔 Bildirishnomalarni yoqish</button><p class="mut" style="margin-top:10px">Keyingi oynada <b>«Ruxsat berish» (Allow)</b> ni tanlang.</p>`;
+ document.body.insertAdjacentHTML('beforeend',`<div id="pgate"><div class="pgc"><div style="font-size:44px">🔔</div><h2>Bildirishnomalar</h2>${body}</div></div>`)}
+async function pushOn(btn){btn.disabled=true;try{const k=await pushKey();
   if(!k){flash("Server hali sozlanmagan — maktab ma'muriyatiga xabar bering.");return}
-  const perm=await Notification.requestPermission();if(perm!='granted'){flash("Ruxsat berilmadi. Qayta urinib, «Ruxsat berish» ni tanlang.");return}
+  const perm=await Notification.requestPermission();if(perm!='granted'){flash("Ruxsat berilmadi. Qayta urinib, «Ruxsat berish» ni tanlang.");pushGate();return}
   const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64k(k)}),j=sub.toJSON();
   const{error}=await sb.from('push_subs').upsert({endpoint:j.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth,user_id:ME.id,ua:navigator.userAgent.slice(0,200)},{onConflict:'endpoint'});
-  if(error){flash(netMsg(error));return}flash("✅ Bildirishnomalar yoqildi");await sb.rpc('push_test').then(()=>{},()=>{});render()}
+  if(error){flash(netMsg(error));return}try{localStorage.setItem('ysh_pushsv',ME.id+'|'+j.endpoint)}catch(e){}const g=$('pgate');if(g)g.remove();flash("✅ Bildirishnomalar yoqildi");await sb.rpc('push_test').then(()=>{},()=>{});render()}
  catch(e){flash("Yoqib bo'lmadi: "+(e.message||e))}finally{btn.disabled=false}}
 // Ota-ona uchun: farzandning oylar bo'yicha ballari (har oy alohida, o'tgan oylar saqlanadi)
 async function kidMonths(){const{sy,out}=syMonths(),cur=nowT().d.slice(0,7),{data,error}=await sb.rpc('my_month_totals',{p_from:sy+'-09-01'});if(error||!data||!data.length)return '';
@@ -781,7 +797,7 @@ async function tchView(){const mm=S.month.split('-'),a=S.month+'-01',b=S.month+'
 function rs(f,cb,mx){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,(mx||110)/Math.max(im.width,im.height)),v=document.createElement('canvas');v.width=Math.round(im.width*k);v.height=Math.round(im.height*k);const x=v.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,v.width,v.height);x.drawImage(im,0,0,v.width,v.height);cb(v.toDataURL('image/jpeg',.82))};im.src=r.result};r.readAsDataURL(f)}
 const upd=async(tb,v,k,id)=>{const{error}=await sb.from(tb).update(v).eq(k,id);if(error)flash(netMsg(error))};
 async function signOut(){await sb.auth.signOut();ME=null;flash('');loginView()}
-document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[data-t],[data-lt],.att,.ratt,.pay,#imb,.imdel,.gimg,#smsauto,#net,#out,#pk,#gc,#lgb,#tgo,#lgo,#rgo,#mkt,#mna,#mnb,.mdel,.tadd,.trem,.pdel,#rty,#absPdf,#latePdf,#leavePdf,.smsTg,#smsTest,#smsAll,.smsCls,#smsLogB,#ppw,#pushOn,#pushOff,#pushTest,#ratePdf,#bkb,#bku,.bdel,#fbs,.fdel,#fbPdf,#payPdf,.payPdf,.kidgo,#stadd,#infPdf,.satt,.tcd,.tcadd,.tpwb,#bkp');if(!t)return;
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[data-t],[data-lt],.att,.ratt,.pay,#imb,.imdel,.gimg,#smsauto,#net,#out,#pk,#gc,#lgb,#tgo,#lgo,#rgo,#mkt,#mna,#mnb,.mdel,.tadd,.trem,.pdel,#rty,#absPdf,#latePdf,#leavePdf,.smsTg,#smsTest,#smsAll,.smsCls,#smsLogB,#ppw,#pushOn,#pushOff,#pushTest,#pgOk,#ratePdf,#bkb,#bku,.bdel,#fbs,.fdel,#fbPdf,#payPdf,.payPdf,.kidgo,#stadd,#infPdf,.satt,.tcd,.tcadd,.tpwb,#bkp');if(!t)return;
  const G=t.matches('#tgo,#lgo,#rgo,#mkt,#mna,#gc,#smsauto,#net,.pay,.imdel,.mdel,.tadd,.trem,.pdel,#bku,.bdel,#fbs,.fdel');if(G){if(t.disabled)return;t.disabled=true}try{
  if(t.classList.contains('smsTg')&&S.smsCfg){const k=t.dataset.k,n=!S.smsCfg[k];if(n&&!confirm("Yoqilsinmi? Shundan keyin SMS'lar avtomatik yuboriladi va har biri uchun Eskiz balansidan pul yechiladi."))return;
   const{error}=await sb.from('sms_config').update({[k]:n,updated_at:new Date().toISOString()}).eq('id',1);if(error){flash(netMsg(error));return}S.smsCfg[k]=n;t.classList.toggle('on',n);t.textContent=n?'✅ Yoqilgan':"⛔ O'chiq";flash(n?'✅ Yoqildi':"O'chirildi");return}
@@ -791,6 +807,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[
   flash(`✅ ${data||0} ta SMS navbatga qo'yildi${data?' — 1–2 daqiqada yuboriladi':" (bugun ularga allaqachon yuborilgan bo'lishi mumkin)"}`);render();return}
  if(t.id=='ppw'){await parentPw(t);return}
  if(t.id=='pushOn'){await pushOn(t);return}
+ if(t.id=='pgOk'){try{sessionStorage.setItem('ysh_pgate','1')}catch(e){}const g=$('pgate');if(g)g.remove();return}
  if(t.id=='pushTest'){const{error}=await sb.rpc('push_test');flash(error?netMsg(error):"✅ Sinov xabar yuborildi — 1 daqiqa ichida keladi");return}
  if(t.id=='pushOff'){const sub=await pushSub().catch(()=>null);if(sub){await sb.from('push_subs').delete().eq('endpoint',sub.endpoint);await sub.unsubscribe().catch(()=>{})}flash("Bildirishnomalar o'chirildi");render();return}
  if(t.id=='smsLogB'){$('smsLog').innerHTML='<div class="ld"><i class="spin"></i>Yuklanmoqda…</div>';$('smsLog').innerHTML=await smsLog().catch(e=>esc(netMsg(e)));return}

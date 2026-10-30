@@ -174,6 +174,11 @@ b.bdx{color:var(--bad)}b.okx{color:var(--ok)}
 .psh{display:flex;align-items:center;gap:12px;margin-bottom:12px}.psh b{font-size:20px}.psh .pti{width:40px;height:40px}
 @media (max-width:520px){.ptiles{grid-template-columns:1fr 1fr;gap:10px}.ptile{padding:14px;min-height:118px}.phero{padding:16px}.pav{width:54px;height:54px;font-size:20px}}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pal.r{background:var(--card)}}
+.ckq{border:2px solid #f3c49b;background:linear-gradient(160deg,#fff6ec,var(--card))}.ckq .pti,.ckd .pti{width:42px;height:42px}
+.ckr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--ln)}.ckr>span:first-child{flex:1;line-height:1.4}
+.ckb{display:flex;gap:6px;flex:none}.ckb .tab{min-width:56px;justify-content:center}.ckx.on{background:var(--ok);color:#fff}.ckx.on.no{background:var(--bad)}
+.ckq .btn{margin-top:10px}.cktip{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:var(--zb);line-height:1.45}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ckq{background:var(--card)}}
 .kidc{margin-top:12px}.kidc+.kidc{border-top:1px solid var(--ln);padding-top:12px}
 .payw{border:2px solid var(--bad);background:linear-gradient(160deg,#fff1ec,var(--card))}.payw>b{color:var(--bad)}.payw ul{margin:6px 0;padding-left:20px}.payw li{padding:3px 0}.payw .lt{color:var(--bad);font-weight:700}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .payw,:root:not([data-theme="light"]) .goodw,:root:not([data-theme="light"]) .al{background:var(--card)}}
@@ -395,14 +400,17 @@ async function fbParent(){const{data,error}=await sb.from('feedback').select('id
  <select class="fld" id="fbk">${FBC.map(x=>`<option>${x}</option>`).join('')}</select><textarea class="fld" id="fbt" rows="4" maxlength="2000" placeholder="Fikringizni yozing…"></textarea>
  <label class="ck"><input type="checkbox" id="fba">Ismim ko'rsatilmasin</label><br><button class="btn" id="fbs">${ic('msg')}Yuborish</button>
  ${data.length?`<p style="margin:16px 0 0"><b>Siz yuborgan xabarlar</b></p>${data.map(f=>`<div class="fb"><div class="fbh"><span class="rl">${esc(f.category)}</span><span class="mut">${fdt(f.created_at)}</span></div><div class="fbb">${esc(f.body)}</div></div>`).join('')}`:''}</div>`}
-async function fbView(){const r=mr(S.month);let d;
+async function ckStats(){const{data,error}=await sb.rpc('checkin_stats',{p_days:14});if(error||!data||!data.length)return '';
+ return `<div class="card"><b>${ic('heart')}Ota-onalar kunlik savolnomasi (oxirgi 14 kun)</b><p class="mut">Har kuni nechta ota-ona javob bergani va har bir savolga «Ha» deganlar foizi. Kim qanday javob bergani ko'rsatilmaydi.</p>
+ <div class="wrap"><table><tr><th>Sana</th><th>Javob bergan</th><th>Suhbatlashgan</th><th>Kunini so'ragan</th><th>Qiziqishlari</th><th>Orzulari</th></tr>${data.map(x=>`<tr><td>${fd2(String(x.day))}</td><td class="tot">${x.javob}</td><td>${x.talk}%</td><td>${x.kun}%</td><td>${x.qiziqish}%</td><td>${x.orzu}%</td></tr>`).join('')}</table></div></div>`}
+async function fbView(){const r=mr(S.month);let d;const ckh=await ckStats().catch(()=>'');
  try{d=await all(()=>sb.from('feedback').select('*').gte('created_at',r.a+'T00:00:00+05:00').lte('created_at',r.b+'T23:59:59+05:00').order('created_at',{ascending:false}))}
  catch(e){flash('');return `<div class="card"><b>${ic('msg')}Fikr-mulohazalar</b><p class="mut">Bo'limni ochib bo'lmadi: admin Supabase'da <b>sql/yangilanish-3.sql</b> faylini ishga tushirishi kerak.</p><p class="mut">Sabab: ${esc((e&&(e.message||e.code))||e)}</p></div>`}
  const by=new Map();d.forEach(f=>{const k=f.class_id||0;if(!by.has(k))by.set(k,[]);by.get(k).push(f)});
  const G=[...by.keys()].map(k=>({k,c:CL.find(x=>x.id==k)})).sort((a,b)=>!a.c?1:!b.c?-1:(grpOf(a.c)-grpOf(b.c))||clsCmp(a.c,b.c)),nm=x=>x.c?clsLbl(x.c):"Sinf ko'rsatilmagan";
  S.fbP={m:S.month,g:G.map(x=>({n:nm(x),r:by.get(x.k)}))};const cat={};d.forEach(f=>cat[f.category]=(cat[f.category]||0)+1);
  const who=f=>(f.parent_name?esc(f.parent_name):"Ism ko'rsatilmagan")+(f.phone?' · '+esc(f.phone):'')+(f.student_name?" · O'quvchi: "+esc(f.student_name):'');
- return `<div class="card"><div class="top"><b>Oy:</b><input type="month" id="mo" value="${S.month}">${d.length?`<button class="btn" id="fbPdf">${ic('printer')}PDF / Chop etish</button>`:''}</div>
+ return ckh+`<div class="card"><div class="top"><b>Oy:</b><input type="month" id="mo" value="${S.month}">${d.length?`<button class="btn" id="fbPdf">${ic('printer')}PDF / Chop etish</button>`:''}</div>
  <div class="kpi"><div><b>${d.length}</b>jami fikr</div><div><b>${G.length}</b>sinfdan</div>${Object.entries(cat).sort((a,b)=>b[1]-a[1]).slice(0,2).map(([k,v])=>`<div><b>${v}</b>${esc(k)}</div>`).join('')}</div>
  <p class="mut">${d.length?"PDF olish uchun ochilgan oynada «PDF sifatida saqlash» (Save as PDF) ni tanlang.":"Bu oyda fikr-mulohaza yo'q."}</p></div>`+
  G.map(x=>`<div class="card"><div class="top"><b class="cn2">${esc(nm(x))}</b><span class="code" style="margin-left:auto">${by.get(x.k).length}</span></div>${by.get(x.k).map(f=>`<div class="fb"><div class="fbh"><span class="rl">${esc(f.category)}</span><span class="mut">${fdt(f.created_at)}</span><button class="tab fdel" data-id="${f.id}" title="O'chirish">${ic('trash')}</button></div><div class="fbb">${esc(f.body)}</div><div class="mut">${who(f)}</div></div>`).join('')}</div>`).join('')}
@@ -430,10 +438,10 @@ function chips(){
 async function render(){
  flush();const tk=++S.rt;if(!ME)return;
  if(ME.role=='parent'){$('view').innerHTML='<div class="ld"><i class="spin"></i>Yuklanmoqda…</div>';
-  const[X,P,hf,hp,hb]=await Promise.all([parentData().catch(()=>null),parentAll().catch(()=>null),fbParent().catch(()=>''),pushCard().catch(()=>''),BOOKS?parentBooks().catch(()=>''):'']);
+  const[X,P,hf,hp,hb,ck]=await Promise.all([parentData().catch(()=>null),parentAll().catch(()=>null),fbParent().catch(()=>''),pushCard().catch(()=>''),BOOKS?parentBooks().catch(()=>''):'',S.pv?'':ckCard().catch(()=>'')]);
   let html;if(!X&&!P)html='<div class="card">Ma\'lumotni o\'qib bo\'lmadi. Sahifani yangilang.</div>';
   else if(S.pv)html=pSection(S.pv,X,P,hp,hf,hb);
-  else{const pi=P||await payInfo().catch(()=>({b:'',t:''}));html=X?pHome(X,P,hp)+(P?'':pi.b+pi.t):pi.b+pi.t+hf}
+  else{const pi=P||await payInfo().catch(()=>({b:'',t:''}));html=X?pHome(X,P,hp,ck)+(P?'':pi.b+pi.t):pi.b+pi.t+hf}
   if(tk==S.rt){$('view').innerHTML=html;pushGate().catch(()=>{})}return}
  const A=ME.role=='admin',c0=CL.find(x=>x.id==S.cls)||{},rp=c0.kind=='rep';setMode(c0);const T=(i,t)=>ic(i)+t,tabs=rp?[T('edit','Kunlik jadval'),T('trophy',"O'quvchilar reytingi"),T('target','Guruhlar reytingi'),T('user',"O'qituvchi")]:[T('edit','Baholash'),T('trophy',"O'quvchilar reytingi"),T('school','Sinflar reytingi')].concat(A?[T('userx','Kelmaganlar'),T('clock','Kech kelganlar'),T('logout','Ketish davomati'),T('card',"To'lov"),T('sliders','Sozlamalar'),T('food','Taomnoma'),T('msg','Fikr-mulohazalar')]:[]);
  const V=rp?[repDaily,repRank,repGroups,repTeacher]:[bahoView,rateView,clsView].concat(A?[absView,lateView,leaveView,payView,setView,menuView,fbView]:[]);
@@ -668,11 +676,27 @@ async function parentData(){const mm=S.month.split('-'),a=S.month+'-01',b=S.mont
 // Ko'rsatkichlar bo'yicha yaxshi va past baholar soni (bosh sahifadagi belgilar uchun)
 function critCount(c,rows,sub){let g=0,b=0;const add=(v,m)=>{const x=gb(+v,m);if(x>0)g++;if(x<0)b++};
  critDefs(c).forEach(([k,t,m])=>rows.forEach(r=>{if(r[k]!=null)add(r[k],m)}));(sub||[]).forEach(r=>[['grade',5],['hw',5],['activity',5]].forEach(([k,m])=>{if(r[k]!=null)add(r[k],m)}));return{g,b}}
+// Kunlik savolnoma: ota-ona har kuni farzandi bilan muloqot qilganini belgilaydi (bugungi maslahat va ketma-ket kunlar bilan)
+const CKQ=[['q_talk',"Bugun farzandingiz bilan kamida 15 daqiqa suhbatlashdingizmi?"],['q_day',"Kuni va darslari qanday o'tganini so'radingizmi?"],
+ ['q_interest',"Uning qiziqishlari (sevimli mashg'uloti, do'stlari) haqida gaplashdingizmi?"],['q_dream',"Kelajakdagi orzulari va maqsadlari haqida qiziqdingizmi?"]];
+const CKT=["«Bugun nimani yangi o'rganding?» deb so'rang — javobini oxirigacha tinglang.","Kechki ovqatni birga, telefonlarsiz o'tkazing.",
+ "«Katta bo'lsang kim bo'lmoqchisan? Nega?» — orzusini qo'llab-quvvatlang.","Bugun uni nimadir uchun albatta maqtang.",
+ "«Eng yaqin do'sting kim? U bilan nima qilishni yoqtirasan?» deb so'rang.","Birga 15 daqiqa kitob o'qing yoki o'qiganini aytib bersin.",
+ "«Bugun seni nima xursand qildi, nima xafa qildi?» deb so'rang.","Uning sevimli mashg'uloti bilan birga shug'ullaning.",
+ "Kelajakdagi kasblar haqida birga video ko'ring yoki gaplashing.","Uy vazifasini birga ko'rib chiqing — tanqid emas, yordam bering.",
+ "«Senga qanday yordam bera olaman?» deb so'rang.","Dam olish kunini birga rejalashtiring — fikrini so'rang."];
+async function ckCard(){const t=nowT().d,{data,error}=await sb.from('parent_checkin').select('day,q_talk,q_day,q_interest,q_dream').order('day',{ascending:false}).limit(40);if(error)return '';
+ const today=data.find(x=>x.day==t),tip=CKT[Math.floor(Date.UTC(+t.slice(0,4),+t.slice(5,7)-1,+t.slice(8,10))/864e5)%CKT.length];
+ let st=0;for(let i=0;i<40;i++){const d=new Date(Date.UTC(+t.slice(0,4),+t.slice(5,7)-1,+t.slice(8,10)-i)).toISOString().slice(0,10),r=data.find(x=>x.day==d);if(r&&r.q_talk)st++;else if(i>0||r)break}
+ if(today){const y=CKQ.filter(([k])=>today[k]).length;return `<div class="card ckd"><div class="top"><span class="pti" style="--c:#2f9e44">${ic('heart')}</span><div><b>Bugungi suhbat belgilandi — ${y} / 4</b><br><span class="mut">${st?`🔥 Ketma-ket <b>${st}</b> kun farzandingiz bilan suhbatlashdingiz`:"Ertaga albatta farzandingiz bilan suhbatlashing"}</span></div></div><p class="cktip">💡 <b>Bugungi maslahat:</b> ${tip}</p></div>`}
+ S.ck=S.ck||{};return `<div class="card ckq"><div class="top"><span class="pti" style="--c:#e8590c">${ic('heart')}</span><div><b>Kunlik savol: farzandingiz bilan muloqot</b><br><span class="mut">Bugungi kun haqida 4 ta qisqa savol — 10 soniya</span></div></div>
+ ${CKQ.map(([k,q])=>`<div class="ckr"><span>${q}</span><span class="ckb"><button class="tab ckx ${S.ck[k]===true?'on':''}" data-k="${k}" data-v="1">Ha</button><button class="tab ckx ${S.ck[k]===false?'on no':''}" data-k="${k}" data-v="0">Yo'q</button></span></div>`).join('')}
+ <button class="btn" id="ckSend">${ic('check')}Javobni yuborish</button><p class="cktip">💡 <b>Bugungi maslahat:</b> ${tip}</p></div>`}
 // Bosh sahifa (my.gov.uz uslubida): farzand kartochkasi, muhim xabarlar va xizmatlar
 const PSEC={bugun:['clock','#2f9e44',"Bugungi davomat"],baho:['clip','#1c7ed6',"Kunlik vazifalar va baholar"],krit:['chart','#7048e8',"Ko'rsatkichlar"],
  fan:['layers','#0c8599',"Fan baholari"],tanga:['award','#d4a017',"Tangalar"],oylar:['cal','#e8590c',"Oylik natijalar"],tolov:['card','#c2410c',"To'lovlar"],
  farzand:['users','#495057',"Farzandlarim"],menu:['food','#2b8a3e',"Taomnoma"],fikr:['msg','#1971c2',"Fikr-mulohaza"],bildirish:['bell','#f76707',"Bildirishnomalar"],kitob:['books','#5c7cfa',"Darsliklar"]};
-function pHome(X,P,hp){const me=X.me,ini=String(me.full_name||'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase(),
+function pHome(X,P,hp,ck){const me=X.me,ini=String(me.full_name||'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase(),
   g=P&&P.G?P.G.find(x=>x.en.some(e=>e.id==ME.student_id)):null,st=g?g.en.map(e=>({e,a:enAtt(e)})).filter(x=>x.a):[],
   pushOn=/Yoqilgan\./.test(hp),bad=(X.cnt||{}).b||0,good=(X.cnt||{}).g||0,nl=P?P.nl||0:0;
  const kidSel=X.kids.length>1?`<select class="fld" id="kid" style="width:auto;max-width:100%">${X.kids.map(k=>`<option value="${k.id}" ${k.id==ME.student_id?'selected':''}>${esc(k.full_name)} — ${esc(cname(k.class_id))}</option>`).join('')}</select>`:'';
@@ -684,7 +708,7 @@ function pHome(X,P,hp){const me=X.me,ini=String(me.full_name||'').trim().split(/
  const T=[['bugun',st.length?st[0].a.t:''],['baho',X.s.baho],['krit',bad?`⚠️ ${bad} ta past baho`:good?`👍 ${good} ta yaxshi baho`:''],['fan',X.s.fan],
   X.tanga!=null?['tanga',X.s.tanga]:null,X.oylar!=null?['oylar','Har oy alohida']:null,P?['tolov',nl?`❌ ${nl} oy to'lanmagan`:"✅ Qarzdorlik yo'q"]:null,
   P&&P.G?['farzand',`${P.G.length} nafar`]:null,X.menu?['menu',X.s.menu]:null,['fikr','Taklif va murojaat'],['bildirish',pushOn?'✅ Yoqilgan':"⛔ O'chiq"],BOOKS?['kitob','']:null].filter(Boolean);
- return hero+(al?`<div class="pals">${al}</div>`:'')+`<div class="psec">Xizmatlar</div><div class="ptiles">${T.map(([k,sub])=>{const[i,c,t]=PSEC[k];
+ return hero+(al?`<div class="pals">${al}</div>`:'')+(ck||'')+`<div class="psec">Xizmatlar</div><div class="ptiles">${T.map(([k,sub])=>{const[i,c,t]=PSEC[k];
   return`<button class="ptile" data-pv="${k}" style="--c:${c}"><span class="pti">${ic(i)}</span><b>${t}</b>${sub?`<small>${esc(sub)}</small>`:''}</button>`}).join('')}</div>`}
 function pSection(k,X,P,hp,hf,hb){const[i,c,t]=PSEC[k]||['school','#16213d',''],op=h=>String(h||'').replace(/<details class="card fold/g,'<details open class="card fold'),
   none='<div class="card"><p class="mut">Hozircha ma\'lumot yo\'q.</p></div>',head=X?X.head:'';
@@ -848,7 +872,7 @@ async function tchView(){const mm=S.month.split('-'),a=S.month+'-01',b=S.month+'
 function rs(f,cb,mx){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,(mx||110)/Math.max(im.width,im.height)),v=document.createElement('canvas');v.width=Math.round(im.width*k);v.height=Math.round(im.height*k);const x=v.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,v.width,v.height);x.drawImage(im,0,0,v.width,v.height);cb(v.toDataURL('image/jpeg',.82))};im.src=r.result};r.readAsDataURL(f)}
 const upd=async(tb,v,k,id)=>{const{error}=await sb.from(tb).update(v).eq(k,id);if(error)flash(netMsg(error))};
 async function signOut(){await sb.auth.signOut();ME=null;flash('');loginView()}
-document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[data-t],[data-lt],.att,.ratt,.pay,#imb,.imdel,.gimg,#smsauto,#net,#out,#pk,#gc,#lgb,#tgo,#lgo,#rgo,#mkt,#mna,#mnb,.mdel,.tadd,.trem,.pdel,#rty,#absPdf,#latePdf,#leavePdf,.smsTg,#smsTest,#smsAll,.smsCls,#smsLogB,#ppw,#pushOn,#pushOff,#pushTest,#pgOk,[data-pv],.pback,#ratePdf,#bkb,#bku,.bdel,#fbs,.fdel,#fbPdf,#payPdf,.payPdf,.kidgo,#stadd,#infPdf,.satt,.tcd,.tcadd,.tpwb,#bkp');if(!t)return;
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[data-t],[data-lt],.att,.ratt,.pay,#imb,.imdel,.gimg,#smsauto,#net,#out,#pk,#gc,#lgb,#tgo,#lgo,#rgo,#mkt,#mna,#mnb,.mdel,.tadd,.trem,.pdel,#rty,#absPdf,#latePdf,#leavePdf,.smsTg,#smsTest,#smsAll,.smsCls,#smsLogB,#ppw,#pushOn,#pushOff,#pushTest,#pgOk,[data-pv],.pback,.ckx,#ckSend,#ratePdf,#bkb,#bku,.bdel,#fbs,.fdel,#fbPdf,#payPdf,.payPdf,.kidgo,#stadd,#infPdf,.satt,.tcd,.tcadd,.tpwb,#bkp');if(!t)return;
  const G=t.matches('#tgo,#lgo,#rgo,#mkt,#mna,#gc,#smsauto,#net,.pay,.imdel,.mdel,.tadd,.trem,.pdel,#bku,.bdel,#fbs,.fdel');if(G){if(t.disabled)return;t.disabled=true}try{
  if(t.classList.contains('smsTg')&&S.smsCfg){const k=t.dataset.k,n=!S.smsCfg[k];if(n&&!confirm("Yoqilsinmi? Shundan keyin SMS'lar avtomatik yuboriladi va har biri uchun Eskiz balansidan pul yechiladi."))return;
   const{error}=await sb.from('sms_config').update({[k]:n,updated_at:new Date().toISOString()}).eq('id',1);if(error){flash(netMsg(error));return}S.smsCfg[k]=n;t.classList.toggle('on',n);t.textContent=n?'✅ Yoqilgan':"⛔ O'chiq";flash(n?'✅ Yoqildi':"O'chirildi");return}
@@ -859,6 +883,11 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[
  if(t.id=='ppw'){await parentPw(t);return}
  if(t.dataset.pv&&ME&&ME.role=='parent'){S.pv=t.dataset.pv;try{history.pushState({pv:S.pv},'')}catch(e){}scrollTo(0,0);render();return}
  if(t.classList.contains('pback')){if(history.state&&history.state.pv)history.back();else{S.pv=null;render()}return}
+ if(t.classList.contains('ckx')){(S.ck=S.ck||{})[t.dataset.k]=t.dataset.v=='1';t.parentNode.querySelectorAll('.ckx').forEach(b=>b.classList.remove('on','no'));t.classList.add('on');if(t.dataset.v=='0')t.classList.add('no');return}
+ if(t.id=='ckSend'){const a=S.ck||{};if(CKQ.some(([k])=>a[k]==null)){flash("Iltimos, 4 ta savolning hammasiga javob bering");return}
+  t.disabled=true;const{error}=await sb.from('parent_checkin').upsert({user_id:ME.id,day:nowT().d,...a},{onConflict:'user_id,day'});t.disabled=false;
+  if(error){flash(/parent_checkin/.test(error.message)?"Savolnoma hali yoqilmagan (admin yangilanish-33 ni ishga tushirishi kerak)":netMsg(error));return}
+  S.ck={};flash(a.q_talk?"✅ Rahmat! Farzandingiz bilan har kuni suhbatlashing.":"Rahmat! Bugun kechqurun farzandingiz bilan 15 daqiqa suhbatlashib ko'ring.");render();return}
  if(t.id=='pushOn'){await pushOn(t);return}
  if(t.id=='pgOk'){try{sessionStorage.setItem('ysh_pgate','1')}catch(e){}const g=$('pgate');if(g)g.remove();return}
  if(t.id=='pushTest'){const{error}=await sb.rpc('push_test');flash(error?netMsg(error):"✅ Sinov xabar yuborildi — 1 daqiqa ichida keladi");return}

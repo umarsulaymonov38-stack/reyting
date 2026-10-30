@@ -37,9 +37,12 @@ revoke all on function public.parent_ping() from public, anon;
 grant execute on function public.parent_ping() to authenticated;
 
 -- 2. Har bir o'quvchi bo'yicha: telefon bormi, ota-onaning akkaunti bormi, kirganmi, oxirgi faolligi, bildirishnoma
-create or replace function public.parent_links()
+--    gen = akkauntni admin ochgan (parol varaqasi/kod): parent_pw_log da bor, profil nomi "Ota-ona: ..." yoki
+--    bir necha akkaunt bir vaqtda (±2 daqiqa) ochilgan. Bunday akkaunt faqat ota-ona keyin haqiqatan kirsa "ulangan" bo'ladi.
+drop function if exists public.parent_links();
+create function public.parent_links()
 returns table (student_id text, class_id bigint, slot int, full_name text, phone text,
-               akk boolean, kirgan boolean, last_seen timestamptz, push boolean, pw_class text, opens int)
+               akk boolean, kirgan boolean, last_seen timestamptz, push boolean, pw_class text, opens int, gen boolean)
 language plpgsql stable security definer set search_path = public, auth as $$
 begin
   if public.yk_role() is distinct from 'admin' then raise exception 'Faqat admin ko''radi' using errcode = '42501'; end if;
@@ -57,23 +60,29 @@ begin
       from s
       left join auth.users a1 on a1.id = s.claimed_by
       left join auth.users a2 on a1.id is null and s.ph is not null and a2.email = 'p' || s.ph || '@ota.yuksalish.app'
+  ), g as (
+    select u.*,
+           u.uid is not null and (
+             exists (select 1 from public.parent_pw_log pl2 where pl2.phone = u.ph)
+             or exists (select 1 from public.profiles pr where pr.id = u.uid and coalesce(to_jsonb(pr) ->> 'full_name', '') like 'Ota-ona:%')
+             or (select count(*) from auth.users b where b.email like 'p%@ota.yuksalish.app'
+                   and b.created_at between u.ac - interval '2 minutes' and u.ac + interval '2 minutes') >= 3) as gn,
+           (select max(se.updated_at) from auth.sessions se where se.user_id = u.uid and se.updated_at > u.ac + interval '5 minutes') as su
+      from u
   )
   select u.id::text, u.class_id::bigint, u.slot::int, u.full_name::text, u.ph,
          u.uid is not null,
-         -- Kirgan: o'zi ro'yxatdan o'tgan, yoki admin bergan parol bilan keyinroq kirgan, yoki ilovani ochgan
-         u.uid is not null and (
-           ps.user_id is not null
-           or pl.phone is null
-           or u.ls > u.ac + interval '5 minutes'
-           or exists (select 1 from auth.sessions se where se.user_id = u.uid and se.updated_at > u.ac + interval '5 minutes')),
+         -- Kirgan: ilovani ochgan, yoki akkaunt ochilgandan keyin parol bilan kirgan, yoki o'zi ro'yxatdan o'tgan
+         u.uid is not null and (ps.user_id is not null or u.ls > u.ac + interval '5 minutes' or u.su is not null or not u.gn),
          case when u.uid is not null then greatest(
            ps.seen_at,
-           case when u.ls > u.ac + interval '5 minutes' or pl.phone is null then u.ls end,
-           (select max(se.updated_at) from auth.sessions se where se.user_id = u.uid and se.updated_at > u.ac + interval '5 minutes')) end,
+           case when u.ls > u.ac + interval '5 minutes' or not u.gn then u.ls end,
+           u.su) end,
          u.uid is not null and exists (select 1 from public.push_subs p where p.user_id = u.uid),
          pl.class_name::text,
-         coalesce(ps.opens, 0)::int
-    from u
+         coalesce(ps.opens, 0)::int,
+         u.gn
+    from g u
     left join public.parent_seen ps on ps.user_id = u.uid
     left join public.parent_pw_log pl on pl.phone = u.ph
    order by u.class_id, u.slot;

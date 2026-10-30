@@ -304,11 +304,14 @@ async function loadLogos(){const c=logoGet(),need=CL.filter(x=>x.logo===undefine
 async function boot(){try{const{data:{session}}=await sb.auth.getSession();if(!session){loginView();return}await loadMe(session.user.id)}catch(e){retryView(e)}}
 async function loadMe(uid){
  try{ME=await q(sb.from('profiles').select('*').eq('id',uid).single());
+  // Ota-ona akkaunti bor-u, farzandga bog'lanmagan (pending) — telefon bo'yicha o'zi bog'lanadi
+  if(ME.role=='pending'){const em=((await sb.auth.getSession()).data.session||{user:{}}).user.email||'',m=em.match(/^p(\d{9})@ota\./);
+   if(m){const{error}=await sb.rpc('register_parent',{p_name:ME.full_name||'Ota-ona',p_phone:m[1]});if(!error)ME=await q(sb.from('profiles').select('*').eq('id',uid).single());else flash(netMsg(error))}}
   const cq=f=>q(sb.from('classes').select(f).order('id'));CL=ME.role=='parent'?await cq('id,name,kind,grp,grade,subject').catch(()=>cq('*')):await cq('id,name,kind,grp,grade,subject,teacher_name').catch(()=>cq('*'));
   if(ME.role!='parent')await loadLogos()}
  catch(e){if(e&&e.code=='PGRST116')loginView();else retryView(e);return}
  $('out').style.display='';document.body.classList.add('in');
- if(ME.role=='pending'){$('view').innerHTML=empty('Hisobingiz hali faollashtirilmagan.',"Ota-ona bo'lsangiz: chiqib, «Ota-ona: ro'yxatdan o'tish» bo'limida shu telefon va parol bilan qayta urining. Aks holda admin bilan bog'laning.");return}
+ if(ME.role=='pending'){$('view').innerHTML=empty('Hisobingiz hali faollashtirilmagan.',"Ota-ona bo'lsangiz: telefon raqamingiz farzandingiz ma'lumotiga to'g'ri yozilganini sinf rahbaridan so'rang, keyin chiqib qayta kiring. Aks holda admin bilan bog'laning.");return}
  if(ME.role=='teacher'){try{const tr=await q(sb.from('teacher_classes').select('class_id,role,subject').eq('user_id',uid)).catch(()=>q(sb.from('teacher_classes').select('class_id,role').eq('user_id',uid))).catch(()=>q(sb.from('teacher_classes').select('class_id').eq('user_id',uid)));
   ME.roles={};ME.subj={};tr.forEach(x=>{if(x.role)ME.roles[x.class_id]=x.role;if(x.subject)ME.subj[x.class_id]=x.subject});ME.cls=tr.map(x=>x.class_id).sort((a,b)=>a-b)}catch(e){retryView(e);return}if(!ME.cls.length){$('view').innerHTML=empty('Sizga hali sinf biriktirilmagan.',"Admin bilan bog'laning.");return}S.cls=ME.cls.includes(S.cls)?S.cls:ME.cls[0]}S.tab=0;flash('');render();sideView()}
 // Sinf guruhlari: 1 — boshlang'ich (1–4), 2 — yuqori (5–10), 3 — Matematika guruhlari, 4 — Ingliz tili guruhlari (Alfa/Betta/Gamma), 5 — repetitor, 6 — Arab tili va Koreys tili

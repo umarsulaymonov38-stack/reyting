@@ -2,8 +2,44 @@
 -- Kod sinf rahbari va adminga ko'rinadi; ota-ona telefon raqami + shu kod bilan kiradi.
 -- Akkaunt birinchi kirishda o'zi ochiladi; avval boshqa parol qo'yilgan bo'lsa ham, kod bilan kirganda parol kodga tenglashadi.
 -- Supabase → SQL Editor ga to'liq nusxalab, "Run" bosing. Qayta ishga tushirish xavfsiz.
+-- Bu fayl o'zi yetarli: yangilanish-30 va 34 ni alohida ishga tushirish shart emas.
 
 create extension if not exists pgcrypto with schema extensions;
+
+-- 0. Yangilanish-34 dagi jadvallar (u ishlamagan bo'lsa ham shu fayl yetarli)
+-- 0a. Kimga qaysi sinf varaqasida parol berilgani (yangilanish-30 dagi jadval; u ishga tushirilmagan bo'lsa ham shu yerda yaratiladi)
+create table if not exists public.parent_pw_log (
+  phone text primary key,
+  class_id bigint,
+  class_name text,
+  created_at timestamptz not null default now()
+);
+alter table public.parent_pw_log enable row level security;
+grant select, insert, update on public.parent_pw_log to authenticated;
+drop policy if exists parent_pw_log_admin on public.parent_pw_log;
+create policy parent_pw_log_admin on public.parent_pw_log for all to authenticated
+  using (public.yk_role() = 'admin') with check (public.yk_role() = 'admin');
+
+-- 0b. Ota-ona ilovani oxirgi marta qachon ochgani ("hozir onlayn", "bugun kirgan" uchun)
+create table if not exists public.parent_seen (
+  user_id uuid primary key,
+  seen_at timestamptz not null default now(),
+  opens int not null default 1
+);
+alter table public.parent_seen enable row level security;
+revoke all on public.parent_seen from anon, authenticated;
+
+create or replace function public.parent_ping() returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null or public.yk_role() is distinct from 'parent' then return; end if;
+  insert into public.parent_seen (user_id) values (auth.uid())
+  on conflict (user_id) do update
+    set opens = public.parent_seen.opens + case when public.parent_seen.seen_at < now() - interval '30 minutes' then 1 else 0 end,
+        seen_at = now();
+end $$;
+revoke all on function public.parent_ping() from public, anon;
+grant execute on function public.parent_ping() to authenticated;
 
 -- 1. Har bir o'quvchida kod bo'lsin (yo'q yoki qisqa bo'lsa — yangisi)
 do $$ begin

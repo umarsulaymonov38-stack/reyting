@@ -164,6 +164,12 @@ b.bdx{color:var(--bad)}b.okx{color:var(--ok)}
 .phi{min-width:0;flex:1}.pnm{font-size:20px;font-weight:800;line-height:1.2}.pkl{opacity:.8;margin:2px 0 8px}.pst{display:flex;flex-wrap:wrap;gap:6px}
 .pch{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);padding:4px 10px;border-radius:999px;font-size:13px}.pch.g{background:rgba(47,158,68,.35)}.pch.r{background:rgba(224,49,49,.35)}.pch.y{background:rgba(242,183,5,.35)}
 .phero .fld{background:rgba(255,255,255,.95)}
+.phero{position:relative;overflow:hidden}.phero>:not(.lvs){position:relative;z-index:1}
+.lvs{position:absolute;inset:0;pointer-events:none;z-index:0}.lvs i{position:absolute;top:-30px;width:var(--s);height:var(--s);color:var(--c);opacity:.9;animation:lfall var(--d) linear var(--w) infinite}
+.lvs i svg{display:block;width:100%;height:100%;animation:lsway calc(var(--d)/3) ease-in-out var(--w) infinite alternate}
+@keyframes lfall{0%{transform:translate(0,0) rotate(0)}100%{transform:translate(var(--x),220px) rotate(var(--r))}}
+@keyframes lsway{0%{transform:translateX(-12px) rotate(-25deg)}100%{transform:translateX(12px) rotate(25deg)}}
+@media (prefers-reduced-motion:reduce){.lvs{display:none}}
 .pals{display:grid;gap:8px;margin-bottom:14px}.pal{display:flex;align-items:center;gap:10px;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid var(--ln);background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
 .pal svg{flex:none;width:22px;height:22px}.pal.r{border-color:#f3c3b3;background:#fff4ef}.pal.r svg{color:var(--bad)}.pal.g{border-color:#bfe3c8;background:var(--ok2)}.pal.g svg{color:var(--ok)}
 .psec{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin:6px 2px 10px}
@@ -696,11 +702,16 @@ async function ckCard(){const t=nowT().d,{data,error}=await sb.from('parent_chec
 const PSEC={bugun:['clock','#2f9e44',"Bugungi davomat"],baho:['clip','#1c7ed6',"Kunlik vazifalar va baholar"],krit:['chart','#7048e8',"Ko'rsatkichlar"],
  fan:['layers','#0c8599',"Fan baholari"],tanga:['award','#d4a017',"Tangalar"],oylar:['cal','#e8590c',"Oylik natijalar"],tolov:['card','#c2410c',"To'lovlar"],
  farzand:['users','#495057',"Farzandlarim"],menu:['food','#2b8a3e',"Taomnoma"],fikr:['msg','#1971c2',"Fikr-mulohaza"],bildirish:['bell','#f76707',"Bildirishnomalar"],kitob:['books','#5c7cfa',"Darsliklar"]};
+const LFS='<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l1.6 3.6 3-1.4-.8 4 3.7-.6-1.9 3.3 3.4 1.6-3.6 1.4 1.4 3.1-4-1L14 20h-1.2v2h-1.6v-2H10l-.8-4-4 1 1.4-3.1L3 12.5l3.4-1.6-1.9-3.3 3.7.6-.8-4 3 1.4z"/></svg>';
+function leaves(){const m=new Date().getMonth();if(m<8||m>10)return'';const C=['#f2b705','#f59f00','#e8590c','#d9480f','#fcc419','#c2410c'];let h='';
+ for(let i=0;i<16;i++){const l=(i*67+5)%100,s=16+(i*7)%14,d=7+(i*5)%6,w=-((i*1.7)%9),x=((i%2?1:-1)*(20+(i*13)%50)),r=(i%2?1:-1)*(180+(i*37)%240);
+  h+=`<i style="left:${l}%;--s:${s}px;--d:${d}s;--w:${w.toFixed(1)}s;--x:${x}px;--r:${r}deg;--c:${C[i%C.length]}">${LFS}</i>`}
+ return`<div class="lvs" aria-hidden="true">${h}</div>`}
 function pHome(X,P,hp,ck){const me=X.me,ini=String(me.full_name||'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase(),
   g=P&&P.G?P.G.find(x=>x.en.some(e=>e.id==ME.student_id)):null,st=g?g.en.map(e=>({e,a:enAtt(e)})).filter(x=>x.a):[],
   pushOn=/Yoqilgan\./.test(hp),bad=(X.cnt||{}).b||0,good=(X.cnt||{}).g||0,nl=P?P.nl||0:0;
  const kidSel=X.kids.length>1?`<select class="fld" id="kid" style="width:auto;max-width:100%">${X.kids.map(k=>`<option value="${k.id}" ${k.id==ME.student_id?'selected':''}>${esc(k.full_name)} — ${esc(cname(k.class_id))}</option>`).join('')}</select>`:'';
- const hero=`<div class="phero"><div class="pav">${esc(ini)}</div><div class="phi"><div class="pnm">${esc(me.full_name)}</div><div class="pkl">${esc(clsLbl(X.c))}${X.c.kind=='rep'?' · Repetitor':''}</div>
+ const hero=`<div class="phero">${leaves()}<div class="pav">${esc(ini)}</div><div class="phi"><div class="pnm">${esc(me.full_name)}</div><div class="pkl">${esc(clsLbl(X.c))}${X.c.kind=='rep'?' · Repetitor':''}</div>
   <div class="pst">${st.length?st.map(x=>`<span class="pch ${x.a.k||''}">${x.a.i} ${x.e.main?'':esc(x.e.cls)+': '}${x.a.t}</span>`).join(''):'<span class="pch">Bugun hali belgilanmagan</span>'}</div>${kidSel?`<div style="margin-top:8px">${kidSel}</div>`:''}</div></div>`;
  const al=[bad?`<button class="pal r" data-pv="krit">${ic('shield')}<span><b>${bad} ta past natija</b> — ko'rish</span></button>`:'',
   nl?`<button class="pal r" data-pv="tolov">${ic('card')}<span><b>${nl} oy to'lov kechikmoqda</b> — batafsil</span></button>`:'',

@@ -1,6 +1,6 @@
 // Yuksalish veb-ilovasi: har doim avval internetdan ENG YANGI versiya olinadi,
 // internet bo'lmasa — oxirgi saqlangan nusxa ochiladi. Ma'lumotlar (Supabase) keshlanmaydi.
-const CACHE = 'yuksalish-v3';
+const CACHE = 'yuksalish-v4';
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'img/oquvchi.jpg'];
 
 self.addEventListener('install', e => {
@@ -41,6 +41,8 @@ self.addEventListener('push', e => {
   try { d = e.data ? e.data.json() : {}; } catch (_) { d = { body: e.data ? e.data.text() : '' }; }
   e.waitUntil(self.registration.showNotification(d.title || 'Samarqand Yuksalish', {
     body: d.body || '', tag: d.tag || undefined, icon: 'icons/icon-192.png', badge: 'icons/icon-192.png',
+    // ovoz va tebranish bilan (ovoz telefonning bildirishnoma sozlamasidagi tovush bo'ladi)
+    silent: false, renotify: !!d.tag, vibrate: [300, 120, 300, 120, 300],
     lang: 'uz', data: { url: './' }
   }));
 });

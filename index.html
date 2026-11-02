@@ -29,6 +29,7 @@ header #inst{background:var(--ac);color:#fff;border:0}header #out{background:rgb
 main{max-width:1080px;margin:0 auto;padding:16px 12px 28px}
 /* Xabar paneli */
 #msg:empty{display:none}
+.bb{display:block;margin:4px auto 0;max-width:150px;font:inherit;font-size:12px;padding:4px 6px;border:1px solid var(--ln);border-radius:8px;background:var(--card);color:var(--ink)}.bb.need{border-color:var(--bad);box-shadow:0 0 0 2px rgba(194,65,12,.2)}
 #msg{margin:0 0 12px;padding:10px 14px;border-radius:12px;background:var(--ac2);color:var(--ink);border-left:4px solid var(--ac);font-size:14px}
 /* Sinf tanlash */
 .chips{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px}
@@ -158,6 +159,7 @@ td.ok{color:var(--ok);font-weight:700}td.lt{color:var(--ac-d);font-weight:700}td
 b.bdx{color:var(--bad)}b.okx{color:var(--ok)}
 .tch{transition:box-shadow .3s}.tch.hl{box-shadow:0 0 0 3px var(--ac)}
 .pcl{border:1px solid var(--ln);border-radius:14px;padding:10px 12px;margin:8px 0}.pcl[open]{border-color:var(--ac)}.pcl .fbd .tab{margin-bottom:8px}
+#pwg{position:fixed;inset:0;z-index:10000;background:rgba(13,19,34,.85);display:flex;align-items:center;justify-content:center;padding:16px}#pwg .pgc{background:var(--card);color:var(--ink);border-radius:20px;max-width:440px;width:100%;padding:24px 22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}#pwg h2{margin:6px 0 10px}#pwg .fld{text-align:left}
 #pgate{position:fixed;inset:0;z-index:9999;background:rgba(13,19,34,.78);display:flex;align-items:center;justify-content:center;padding:16px}#pgate .pgc{background:var(--card);color:var(--ink);border-radius:20px;max-width:440px;width:100%;padding:24px 22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}#pgate h2{margin:6px 0 10px}#pgate p{line-height:1.55}
 .phero{display:flex;gap:16px;align-items:center;padding:20px;border-radius:var(--r);background:linear-gradient(135deg,var(--nv),var(--nv2));color:#fff;box-shadow:var(--sh);margin-bottom:14px}
 .pav{flex:none;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#f0a35a,#d9822b);display:grid;place-items:center;font-weight:800;font-size:24px;color:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.15)}
@@ -260,10 +262,14 @@ const MON=['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentab
 function nowT(){const p={};new Intl.DateTimeFormat('en-GB',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(new Date()).forEach(x=>p[x.type]=x.value);
  return{d:`${p.year}-${p.month}-${p.day}`,h:+p.hour,m:+p.minute,s:+p.second,hms:`${p.hour}:${p.minute}:${p.second}`,wd:DN[new Date(Date.UTC(+p.year,+p.month-1,+p.day)).getUTCDay()],lbl:`${+p.day}-${MON[+p.month-1]} ${p.year}`}}
 const today=nowT().d;
-let CR=[{c:'att',k:'Davomat',i:'cal',m:1},{c:'book',k:"Kitob o'qish",i:'book',m:10},{c:'sport',k:'Sport',i:'run',m:10},{c:'behavior',k:'Kunlik odoblar',i:'users',m:10},{c:'kindness',k:'Ota-onaga yaxshilik',i:'heart',m:10},{c:'activity',k:'Fanlardagi faollik',i:'cap',m:10}];
+let CR=[{c:'att',k:'Davomat',i:'cal',m:1},{c:'book',k:"Kitob o'qish",i:'book',m:10},{c:'sport',k:'Sport',i:'run',m:10},{c:'behavior',k:'Kunlik odoblar',i:'users',m:10},{c:'kindness',k:'Ota-onaga yaxshilik',i:'heart',m:10}];
 let MAXD=51;const AT={'':'—','1':'✅','0':'❌'},MD=['🥇','🥈','🥉'];
-const CR51=CR.slice(),CRG=[{c:'att',k:'Davomat',i:'cal',m:1},{c:'hw',k:'Uyga vazifa',i:'clip',m:5},{c:'activity',k:'Sinfdagi faollik',i:'zap',m:5},{c:'behavior',k:'Tartib-intizom',i:'shield',m:5}];
-// 1-sinflarda «Kitob o'qish» yo'q: qolgan 4 mezon (0–10) yig'indisi ×1.25 — kunlik maksimal 51 bo'lib qoladi
+// 3-, 4-, 6-guruh: 5 ballik baholar (1–5); tartib-intizom 5 dan past bo'lsa — sababi (band) tanlanadi
+const CR51=CR.slice(),CRG=[{c:'att',k:'Davomat',i:'cal',m:1},{c:'hw',k:'Uyga vazifa',i:'clip',m:5,mn:1},{c:'activity',k:'Sinfdagi faollik',i:'zap',m:5,mn:1},{c:'behavior',k:'Tartib-intizom',i:'shield',m:5,mn:1}];
+const BB=[[1,"Tartib qoidaga amal qilmaslik"],[2,"Atrofdagilar va ustozlarni hurmat qilmaslik"],[3,"O'z joyini toza saqlamaslik"]];
+const bbSel=(id,r)=>`<select class="bb${r.behavior!=null&&+r.behavior<5&&!r.beh_band?' need':''}" data-bi="${id}" title="Tartib-intizom bo'yicha qaysi band buzildi"><option value="">Sabab: yo'q</option>${BB.map(([k,t])=>`<option value="${k}" ${r.beh_band==k?'selected':''}>${k}-band: ${t}</option>`).join('')}</select>`,
+ bbMark=id=>{const r=S.sc[id]||{},el=document.querySelector(`.bb[data-bi="${id}"]`);if(el)el.classList.toggle('need',r.behavior!=null&&+r.behavior<5&&!r.beh_band)};
+// 1–2-guruh: davomat (1) + 4 mezon (0–10) yig'indisi ×1.25 = kuniga 51, oyiga 1020; 1-sinfda «Kitob o'qish» ham yo'q — 3 mezon ×5/3
 const CR1=CR51.filter(x=>x.c!='book'),isG1=c=>!!c&&c.kind!='rep'&&!c.grp&&!isLang(c)&&gradeOf(c)==1,crOf=c=>isG1(c)?CR1:CR51;
 function setMode(c){const g=c&&c.grp&&c.kind!='rep';CR=g?CRG:crOf(c);MAXD=g?16:51}
 const PE=v=>{const d=String(v||'').replace(/\D/g,'').slice(-9);return d.length==9?d:''},EM=(r,p)=>r+p+'@ota.yuksalish.app';
@@ -289,9 +295,9 @@ const dbn=(k,fn,ms=400)=>{if(tm[k])clearTimeout(tm[k].t);const go=()=>{delete tm
 const flush=()=>Object.values(tm).forEach(x=>{clearTimeout(x.t);x.go()});
 const empty=(t,d,x)=>`<div class="card empty"><span class="cl ph">${ic('school')}</span><div><b>${t}</b><p class="mut">${d}</p>${x||''}</div></div>`;
 const retryView=e=>{$('view').innerHTML=empty("Server bilan ulanib bo'lmadi.",esc(netMsg(e)),'<button class="btn" id="rty">Qayta urinish</button>')};
-const th=()=>CR.map(x=>`<th title="${x.k}"><span class="ic">${ic(x.i)}</span>${x.k}</th>`).join('');
+const th=()=>CR.map(x=>`<th title="${x.k}"><span class="ic">${ic(x.i)}</span>${x.k}${x.mn?'<br><small class="mut">1–5</small>':''}</th>`).join('');
 const cname=id=>(CL.find(c=>c.id==id)||{}).name||'';
-function loginView(){{const g=document.getElementById('pgate');if(g)g.remove()}$('out').style.display='none';document.body.classList.remove('in');$('chips').innerHTML='';$('side').innerHTML='';document.body.classList.remove('hs-side');const L=S.lt==2?2:0;
+function loginView(){{const g=document.getElementById('pgate');if(g)g.remove();const w=document.getElementById('pwg');if(w)w.remove()}$('out').style.display='none';document.body.classList.remove('in');$('chips').innerHTML='';$('side').innerHTML='';document.body.classList.remove('hs-side');const L=S.lt==2?2:0;
  $('view').innerHTML=`<div class="hero"><div class="hart photo"><img class="hph" src="img/oquvchi.jpg" alt="Yuksalish maktabi o'quvchisi" width="853" height="1280"><div class="hov"><div class="bubble"><b>Assalomu alaykum!</b><br>Yuksalish maktabining reyting tizimiga xush kelibsiz.</div><ul class="feat"><li>${ic('chart')}Kunlik ball va reyting</li><li>${ic('cal')}Davomat nazorati</li><li>${ic('card')}To'lovlar holati</li><li>${ic('food')}Kunlik taomnoma</li></ul></div></div><div class="card login"><h2>Tizimga kirish</h2>`+(L==0?
  `<p class="mut">Telefon raqamingiz va parolingizni kiriting (ota-ona ham, o'qituvchi ham). <b>Ota-onalar:</b> parolni sinf rahbari beradi — ro'yxatdan o'tish shart emas.</p><input class="fld" id="lph" type="tel" placeholder="Telefon raqam: +998 90 123 45 67" autocomplete="username"><input class="fld" id="lpw" type="password" placeholder="Parol" autocomplete="current-password"><label class="mut"><input type="checkbox" id="sp"> Parolni ko'rsatish</label><br><button class="btn" id="lgo">Kirish</button>`:
  L==1?`<p class="mut">Faqat birinchi marta. Telefon raqamingiz maktabda o'quvchi ma'lumotiga yozilgan bo'lishi kerak. Parolni o'zingiz o'ylab topasiz.</p><input class="fld" id="rn" placeholder="Ism familiyangiz"><input class="fld" id="rph" type="tel" placeholder="Telefon: +998 90 123 45 67"><input class="fld" id="rpw" type="password" placeholder="Parol (kamida 6 belgi)" autocomplete="new-password"><label class="mut"><input type="checkbox" id="sp"> Parolni ko'rsatish</label><br><button class="btn" id="rgo">Ro'yxatdan o'tish</button>`:
@@ -302,8 +308,14 @@ async function loadLogos(){const c=logoGet(),need=CL.filter(x=>x.logo===undefine
  if(need.length){const{data}=await sb.from('classes').select('id,logo').in('id',need);(data||[]).forEach(x=>c[x.id]=x.logo||'')}
  CL.forEach(x=>{if(x.logo===undefined)x.logo=c[x.id]||null;else c[x.id]=x.logo||''});logoPut(c)}
 async function boot(){try{const{data:{session}}=await sb.auth.getSession();if(!session){loginView();return}await loadMe(session.user.id)}catch(e){retryView(e)}}
+// Qurilma belgisi: o'qituvchi ishlagan qurilmadan ota-ona sifatida kirish va fikr yozish taqiqlanadi (yangilanish-37)
+const DEV=(()=>{try{let d=localStorage.getItem('ysh_dev');if(!d){d=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(36).slice(2)).replace(/-/g,'');localStorage.setItem('ysh_dev',d)}return d}catch(e){return ''}})(),
+ isStaffDev=()=>{try{return localStorage.getItem('ysh_staff')=='1'}catch(e){return false}};
 async function loadMe(uid){
  try{ME=await q(sb.from('profiles').select('*').eq('id',uid).single());
+  if(ME.role=='teacher'){try{localStorage.setItem('ysh_staff','1')}catch(e){}sb.rpc('staff_device',{p_dev:DEV}).then(()=>{},()=>{})}
+  if(ME.role=='parent'||ME.role=='pending'){const ok=!isStaffDev()&&await sb.rpc('parent_dev_ok',{p_dev:DEV}).then(r=>r.error?true:r.data!==false,()=>true);
+   if(!ok){await sb.auth.signOut().catch(()=>{});ME=null;loginView();flash("⛔ Bu qurilmada o'qituvchi akkaunti ishlatilgan — ota-ona sifatida kirib bo'lmaydi. Ota-ona o'z telefonidan kirsin.");return}}
   // Ota-ona akkaunti bor-u, farzandga bog'lanmagan (pending) — telefon bo'yicha o'zi bog'lanadi
   if(ME.role=='pending'){const em=((await sb.auth.getSession()).data.session||{user:{}}).user.email||'',m=em.match(/^p(\d{9})@ota\./);
    if(m){const{error}=await sb.rpc('register_parent',{p_name:ME.full_name||'Ota-ona',p_phone:m[1]});if(!error)ME=await q(sb.from('profiles').select('*').eq('id',uid).single());else flash(netMsg(error))}}
@@ -383,7 +395,9 @@ const payTable=(rows,i,title,sel='')=>`<div class="card"><div class="top"><b>${i
 // Barcha farzandlar bir oynada: har bir farzandning sinfi, fan guruhlari va repetitorlari, bugungi davomat,
 // so'nggi 3 kundagi past/yuqori baholar, to'lov eslatmasi va farzand tanlab ko'riladigan to'lovlar tarixi
 const nkey=s=>String(s||'').toLowerCase().replace(/[^\p{L}\p{N} ]/gu,'').split(/\s+/).filter(Boolean).sort().join(' ');
-function sumBy(r,cr){r=r||{};const a=+r.att==1?1:0,o=cr.reduce((q,x)=>q+(x.c=='att'?0:(+r[x.c]||0)),0);return a+(cr===CR1?Math.round(o*1.25):o)}
+function sumBy(r,cr){r=r||{};const a=+r.att==1?1:0,o=cr.reduce((q,x)=>q+(x.c=='att'?0:(+r[x.c]||0)),0);return a+(cr===CR51||cr===CR1?Math.round(o*50/(10*(cr.length-1))):o)}
+// 3-, 4-, 6-guruh: kunlik o'rtacha baho (5 ballik)
+const gAvg=r=>{const v=['hw','activity','behavior'].map(k=>(r||{})[k]).filter(x=>x!=null&&x!=='');return v.length?(Math.round(v.reduce((q,x)=>q+ +x,0)/v.length*10)/10).toFixed(1):'—'},tot=r=>CR===CRG?gAvg(r):sum(r);
 const enTyp=e=>e.main?'Sinf':e.rep?'Repetitor':isLang(e.c)?"Til to'garagi":'Fan guruhi';
 function enAtt(e){const r=e.today;if(!r||r.att==null)return e.main?{i:'⏳',t:'hali belgilanmagan',k:''}:null;
  if(r.att==1)return{i:'✅',t:e.main?'maktabga keldi'+(r.arrived_at?' — '+fdt(r.arrived_at).slice(-5):''):'darsda qatnashdi',k:'g'};
@@ -483,7 +497,7 @@ async function render(){
   let html;if(!X&&!P)html='<div class="card">Ma\'lumotni o\'qib bo\'lmadi. Sahifani yangilang.</div>';
   else if(S.pv)html=pSection(S.pv,X,P,hp,hf,hb);
   else{const pi=P||await payInfo().catch(()=>({b:'',t:''}));html=X?pHome(X,P,hp,ck)+(P?'':pi.b+pi.t):pi.b+pi.t+hf}
-  if(tk==S.rt){$('view').innerHTML=html;pushGate().catch(()=>{})}pPing();return}
+  if(tk==S.rt){$('view').innerHTML=html;pwGate().then(sh=>{if(!sh)pushGate().catch(()=>{})},()=>pushGate().catch(()=>{}))}pPing();return}
  if(ME.role=='admin'&&S.as!='cls'){const sd=$('side');if(S.as){if(sd.innerHTML){sd.innerHTML='';document.body.classList.remove('hs-side')}}else if(!sd.innerHTML)sideView();
   const ch=$('chips');ch.className='';ch.innerHTML='';const k=S.as,f=k&&aView(k);$('view').innerHTML=(k?aCrumb(k):'')+'<div class="ld"><i class="spin"></i>Yuklanmoqda…</div>';let h='';
   try{h=k?(f?await f():''):await admHome()}catch(e){h='<div class="card">Ma\'lumotni o\'qib bo\'lmadi. Sahifani yangilang.</div>'}
@@ -515,7 +529,7 @@ const phTd=(m,id)=>m?`<td><input class="nm" type="tel" inputmode="tel" style="mi
 const stAdd=()=>!canPh({id:S.cls})?'<p class="mut" style="margin:10px 0 0">O\'quvchi ism-familiyasini sinf rahbari kiritadi.</p>':`<div class="top" style="margin-top:10px"><button class="tab" id="stadd">${ic('users')}+ O'quvchi qo'shish</button><span class="mut">Ism-familiyani bo'sh katakka yozing — o'zi saqlanadi. Joy yetmasa, shu tugma bilan qo'shing.</span></div>`;
 const dtBar=extra=>`<div class="top"><b>Sana:</b><input type="date" id="dt" value="${S.date}">${extra||''}</div>`;
 async function bahoView(){await loadCls();const php=await phLoad(S.st);
- return `<div class="card">${dtBar('<span class="mut">Davomat: bosib tanlang — ✅ keldi (1 ball), ❌ kelmadi, <i class=exd></i> sababli (kasal yoki uzrli sabab). Qolganlari 0–'+CR[1].m+' ball.'+(CR===CR1?" 1-sinf: to'rt mezon yig'indisi ×1.25 (kuniga ko'pi bilan 51).":'')+'</span>')}<div class="wrap"><table><tr><th>№</th><th class="l">F.I.Sh</th>${php?`<th>${ic('phone')}Ota-ona telefoni</th>`:''}${th()}<th>Jami<br>/${MAXD}</th></tr>${S.st.map((s,i)=>{const r=S.sc[s.id]||{};return`<tr><td>${i+1}</td><td class="l"><input class="nm" data-n="${s.id}" value="${esc(s.full_name)}" placeholder="Ism familiya"${canPh({id:S.cls})?'':' readonly title="Ismni sinf rahbari kiritadi"'}></td>${phTd(php,s.id)}${CR.map(x=>x.c=='att'?`<td><button class="att" data-i="${s.id}">${attIc(r)}</button>${r.arrived_at?`<div class="arr ${fdt(r.arrived_at).slice(-5)>LATE?'late':''}" title="Turniketdan o'tgan vaqti">${fdt(r.arrived_at).slice(-5)}</div>`:''}</td>`:`<td><input class="sc" type="number" min="0" max="${x.m}" inputmode="numeric" data-i="${s.id}" data-k="${x.c}" value="${r[x.c]??''}"></td>`).join('')}<td class="tot" id="t${s.id}">${sum(r)}</td></tr>`}).join('')}</table></div>${stAdd()}</div>`}
+ return `<div class="card">${dtBar('<span class="mut">Davomat: bosib tanlang — ✅ keldi (1 ball), ❌ kelmadi, <i class=exd></i> sababli (kasal yoki uzrli sabab). Qolganlari '+(CR===CRG?"1–5 (5 ballik). Tartib-intizom 5 dan past bo'lsa, sababini (bandni) tanlang.":'0–'+CR[1].m+" ball. Mezonlar yig'indisi "+(CR===CR1?'×5/3':'×1.25')+" — kuniga ko'pi bilan 51, oyiga 1020 ball.")+'</span>')}<div class="wrap"><table><tr><th>№</th><th class="l">F.I.Sh</th>${php?`<th>${ic('phone')}Ota-ona telefoni</th>`:''}${th()}<th>${CR===CRG?"O'rtacha<br>baho":'Jami<br>/'+MAXD}</th></tr>${S.st.map((s,i)=>{const r=S.sc[s.id]||{};return`<tr><td>${i+1}</td><td class="l"><input class="nm" data-n="${s.id}" value="${esc(s.full_name)}" placeholder="Ism familiya"${canPh({id:S.cls})?'':' readonly title="Ismni sinf rahbari kiritadi"'}></td>${phTd(php,s.id)}${CR.map(x=>x.c=='att'?`<td><button class="att" data-i="${s.id}">${attIc(r)}</button>${r.arrived_at?`<div class="arr ${fdt(r.arrived_at).slice(-5)>LATE?'late':''}" title="Turniketdan o'tgan vaqti">${fdt(r.arrived_at).slice(-5)}</div>`:''}</td>`:`<td><input class="sc" type="number" min="${x.mn||0}" max="${x.m}" inputmode="numeric" data-i="${s.id}" data-k="${x.c}" value="${r[x.c]??''}">${CR===CRG&&x.c=='behavior'?bbSel(s.id,r):''}</td>`).join('')}<td class="tot" id="t${s.id}">${tot(r)}</td></tr>`}).join('')}</table></div>${stAdd()}</div>`}
 async function rateView(){await loadCls();const rows=S.st.filter(s=>s.full_name.trim()).map(s=>({n:s.full_name,t:sum(S.sc[s.id])})).sort((a,b)=>b.t-a.t);
  return `<div class="card">${dtBar()}${rows.length?`<div class="wrap"><table><tr><th>O'rin</th><th class="l">F.I.Sh</th><th>Ball</th><th>Foiz</th><th></th></tr>${rows.map((r,j)=>`<tr><td>${MD[j]||j+1}</td><td class="l">${esc(r.n)}</td><td class="tot">${r.t}/${MAXD}</td><td>${Math.round(r.t/MAXD*100)}%</td><td><div class="bar"><i style="width:${Math.min(100,r.t/MAXD*100)}%"></i></div></td></tr>`).join('')}</table></div>`:'<p class="mut">Avval «Baholash» bo\'limida ismlarni yozing.</p>'}</div>`}
 // Sinflar reytingi uch toifada: har bir sinf o'z maksimaliga nisbatan foizda solishtiriladi
@@ -663,7 +677,7 @@ const bkCard=()=>{let l='';try{l=localStorage.getItem('ysh_bk')||''}catch(e){}re
 // Ota-ona telefon raqami + shu kod bilan kiradi; akkaunt birinchi kirishda o'zi ochiladi (yangilanish-36).
 const fmtPh=p=>'+998 '+p.slice(0,2)+' '+p.slice(2,5)+' '+p.slice(5,7)+' '+p.slice(7);
 const SITE=()=>location.origin+location.pathname.replace(/index\.html$/,'');
-const ppwMsg=x=>`Assalomu alaykum! Samarqand Yuksalish maktabi.\nFarzandingiz ${x.n} (${x.cl}) natijalari, davomati va baholarini kuzatish uchun platformaga kiring:\nSayt: ${SITE()}\nLogin: ${fmtPh(x.ph)}\nParol: ${x.pw}\n«Kirish» bo'limida telefon raqam va parolni yozing.`;
+const ppwMsg=x=>`Assalomu alaykum! Samarqand Yuksalish maktabi.\nFarzandingiz ${x.n} (${x.cl}) natijalari, davomati va baholarini kuzatish uchun platformaga kiring:\nSayt: ${SITE()}\nLogin: ${fmtPh(x.ph)}\nParol: ${x.pw}\n«Kirish» bo'limida telefon raqam va parolni yozing. Birinchi kirishda o'zingizning yangi parolingizni o'rnatasiz — keyin faqat o'sha parol bilan kirasiz.`;
 // Bir telefonda bir nechta farzand bo'lsa — bitta xabar (birinchi farzandning kodi, ikkalasi ham ishlaydi)
 const pwList=R=>{const by={};R.forEach(r=>{const ph=PE(r.ph),pw=String(r.pw||'').trim().toUpperCase();if(!ph||pw.length<6)return;if(by[ph]){by[ph].n+=', '+r.n;return}by[ph]={n:r.n,ph,pw,cl:r.cl}});return Object.values(by)};
 const ppwCard=c=>[1,2].includes(grpOf(c))&&canPh(c)?`<div class="card"><b>${ic('key')}Ota-onalar uchun parollar</b><p class="mut">Har bir o'quvchining <b>o'zgarmas paroli</b> bor (jadvaldagi «Parol» ustuni). Ota-ona telefon raqami va shu parol bilan kiradi — oldindan ro'yxatdan o'tish shart emas. Tugmani bossangiz, hammasiga tayyor xabar (SMS / WhatsApp / Telegram) va PDF varaqalar chiqadi.</p><button class="btn" id="ppw">${ic('send')}Parollarni ota-onalarga yuborish</button></div>`:'';
@@ -712,7 +726,7 @@ function otaBox(R){const M=CL.filter(c=>[1,2].includes(grpOf(c))),g=S.otaG||0,cs
  const bar=x=>`<div class="mbar"><i style="width:${pc(x.ul,x.n)}%;background:#2f9e44"></i><i style="width:${pc(x.ph-x.ul,x.n)}%;background:#f08c00"></i></div>`;
  const rows=cs.map(c=>{const r=R.filter(x=>x.class_id==c.id),a=plAgg(r),op=S.otaOpen==c.id,need=r.filter(x=>x.phone&&!x.kirgan).length;
   return`<tr class="orow${op?' on':''}" data-oc="${c.id}"><td class="l"><b>${esc(clsLbl(c))}</b><div class="mut">${esc(c.teacher_name||'')}</div></td><td>${a.n}</td><td>${a.ph}<div class="mut">${pc(a.ph,a.n)}%</div></td><td><b style="color:#2f9e44">${a.ul}</b></td><td style="min-width:130px">${bar(a)}<div class="mut">${pc(a.ul,a.n)}% ulangan</div></td><td>${a.bug}</td><td>${a.push}</td><td>${need?`<button class="tab ppc" data-pc="${c.id}">${ic('send')}Parollarni yuborish (${need})</button>`:a.n?'<span class="okc">✓ hammasi</span>':''}</td></tr>`+
-  (op?`<tr class="odet"><td colspan="8"><div class="osl">${r.map(x=>{const[k,t]=plStat(x);return`<div class="osi ${k}"><i></i><div><b>${x.slot}. ${esc(x.full_name)}</b><span class="mut">${x.phone?fmtPh(x.phone):'—'} · ${esc(t)}${x.push?' · 🔔':''}</span></div>${x.phone&&!x.kirgan?`<button class="tab ppc" data-pc="${c.id}" data-ps="${x.student_id}">${ic('key')}Parol${x.code?' '+esc(x.code):''}</button>`:''}</div>`}).join('')||'<p class="mut">O\'quvchi yo\'q</p>'}</div></td></tr>`:'')}).join('');
+  (op?`<tr class="odet"><td colspan="8"><div class="osl">${r.map(x=>{const[k,t]=plStat(x);return`<div class="osi ${k}"><i></i><div><b>${x.slot}. ${esc(x.full_name)}</b><span class="mut">${x.phone?fmtPh(x.phone):'—'} · ${esc(t)}${x.push?' · 🔔':''}</span></div>${x.phone&&!x.kirgan?`<button class="tab ppc" data-pc="${c.id}" data-ps="${x.student_id}">${ic('key')}Parol${x.code?' '+esc(x.code):''}</button>`:''}${x.phone&&x.akk?`<button class="tab pul" data-ph="${x.phone}" data-nm="${esc(x.full_name)}" title="Parolini unutgan ota-ona: paroli yana o'quvchi kodiga qaytadi">${ic('key')}Tiklash</button>`:''}</div>`}).join('')||'<p class="mut">O\'quvchi yo\'q</p>'}</div></td></tr>`:'')}).join('');
  return`<div class="top"><div class="tabs">${[[0,"Hammasi (1–2-guruh)"],[1,"Boshlang'ich (1–4)"],[2,"Yuqori (5–10)"]].map(([k,t])=>`<button class="tab otg ${k==g?'on':''}" data-og="${k}">${t}</button>`).join('')}</div><span class="live"><i></i>Jonli · ${nowT().hms} da yangilandi</span></div>
  <div class="astats s7">${kp('users','#1c7ed6',A.n,"O'quvchi")}${kp('phone','#0c8599',A.ph,'Telefon yozilgan',pc(A.ph,A.n)+'%')}${kp('link','#2f9e44',A.ul,'Platformaga ulangan',pc(A.ul,A.n)+'% · '+A.ota+' ota-ona')}${kp('zap','#e03131',A.on,'Hozir onlayn','oxirgi 5 daqiqa')}${kp('clock','#7048e8',A.bug,'Bugun kirgan')}${kp('bell','#5f3dc4',A.push,'Bildirishnoma yoqilgan',pc(A.push,A.n)+'%')}</div>
  <div class="card"><b>${ic('chart')}Ulanish holati</b><div class="mbar big">${seg.map(([v,c])=>`<i style="width:${pc(v,A.n)}%;background:${c}"></i>`).join('')}</div><div class="lgd">${seg.map(([v,c,t])=>`<span><i style="background:${c}"></i>${t}: <b>${v}</b> (${pc(v,A.n)}%)</span>`).join('')}</div>
@@ -723,7 +737,9 @@ async function otaView(){let R;try{R=await plLoad()}catch(e){return`<div class="
  return`<div id="otaBox">${otaBox(R)}</div>`}
 async function otaRefresh(){const b=$('otaBox');if(!b)return;S.plc=null;try{const R=await plLoad();if($('otaBox')&&S.as=='ota')$('otaBox').innerHTML=otaBox(R)}catch(e){}}
 setInterval(()=>{if(ME&&ME.role=='admin'&&S.as=='ota'&&!document.hidden&&!S.ppw)otaRefresh()},20000);
-document.addEventListener('click',async e=>{const t=e.target.closest('.ppc,.otg,.orow');if(!t||!ME||ME.role!='admin')return;
+document.addEventListener('click',async e=>{const t=e.target.closest('.ppc,.otg,.orow,.pul');if(!t||!ME||ME.role!='admin')return;
+ if(t.classList.contains('pul')){e.stopPropagation();if(!confirm(`${t.dataset.nm}: ota-ona parolini unutganmi? Paroli yana o'quvchi kodiga qaytadi va ota-ona kirgach yangi parol o'rnatadi.`))return;
+  const{error}=await sb.rpc('admin_parent_unlock',{p_phone:t.dataset.ph});flash(error?(error.code=='PGRST202'?"Avval Supabase'da yangilanish-37 ni ishga tushiring":netMsg(error)):"✅ Tiklandi — ota-ona telefon raqami va o'quvchi kodi bilan kirib, yangi parol o'rnatadi");return}
  if(t.classList.contains('ppc')){e.stopPropagation();await ppwClass(+t.dataset.pc,t,t.dataset.ps);return}
  if(t.classList.contains('otg')){S.otaG=+t.dataset.og;if(S.plc)$('otaBox').innerHTML=otaBox(S.plc.d);return}
  if(t.classList.contains('orow')){S.otaOpen=S.otaOpen==+t.dataset.oc?null:+t.dataset.oc;if(S.plc)$('otaBox').innerHTML=otaBox(S.plc.d)}});
@@ -769,9 +785,9 @@ async function parentData(){const mm=S.month.split('-'),a=S.month+'-01',b=S.mont
  const sub=await sb.rpc('parent_subjects',{p_from:a,p_to:b}).then(r=>(r.data||[]).filter(x=>x.student_id==ME.student_id)).catch(()=>[]),g=!!c.grp;
  X.baho=`<div class="card"><div class="kpi"><div><b>${r?r.total:0}</b>jami ball</div><div><b>${r?r.class_rank+'/'+r.class_size:'—'}</b>${ic('school')}sinfda o'rin</div><div><b>${r?r.school_rank+'/'+r.school_size:'—'}</b>${ic('trophy')}${kind=='p'?"1–7-sinflar orasida":"reytingda"} o'rin</div></div></div>`+
   (kind=='p'?`<div class="card"><b>${ic('clip')}Kunlik vazifalar</b><div class="wrap"><table><tr><th>Sana</th>${th()}<th>Jami</th></tr>${rows.length?rows.map(x=>`<tr><td>${dd(x)}</td>${CR.map(k=>`<td>${k.c=='att'?attIc(x):(x[k.c]??'—')}</td>`).join('')}<td class="tot">${sum(x)}</td></tr>`).join(''):none}</table></div></div>`
-  :`<div class="card"><b>${ic('cal')}Davomat${g?' va baholar':''}</b><div class="wrap"><table><tr><th>Sana</th><th>Davomat</th>${g?'<th>Uyga vazifa</th><th>Sinfdagi faollik</th><th>Tartib-intizom</th>':''}</tr>${rows.length?rows.map(x=>`<tr><td>${dd(x)}</td><td>${attIc(x)}</td>${g?`<td>${x.hw??'—'}</td><td>${x.activity??'—'}</td><td>${x.behavior??'—'}</td>`:''}</tr>`).join(''):none}</table></div></div>`);
+  :`<div class="card"><b>${ic('cal')}Davomat${g?' va baholar':''}</b><div class="wrap"><table><tr><th>Sana</th><th>Davomat</th>${g?"<th>Uyga vazifa</th><th>Sinfdagi faollik</th><th>Tartib-intizom</th><th class=\"l\">Tartib bo'yicha izoh</th><th>O'rtacha</th>":''}</tr>${rows.length?rows.map(x=>`<tr><td>${dd(x)}</td><td>${attIc(x)}</td>${g?`<td>${x.hw??'—'}</td><td>${x.activity??'—'}</td><td>${x.behavior??'—'}</td><td class="l">${x.beh_band?`<span style="color:var(--bad)">${x.beh_band}-band: ${esc((BB.find(b=>b[0]==x.beh_band)||[])[1]||'')}</span>`:'—'}</td><td class="tot">${gAvg(x)}</td>`:''}</tr>`).join(''):none}</table></div></div>`+(g?bbStat(rows):''));
  X.s.baho=r?`${r.total} ball · sinfda ${r.class_rank}-o'rin`:'';
- X.krit=critCard(c,rows,sub);X.cnt=critCount(c,rows,sub);X.fan=await subjCard(a,b).catch(()=>'');
+ X.krit=(g?bbStat(rows):'')+critCard(c,rows,sub);X.cnt=critCount(c,rows,sub);if(g)X.cnt.b+=rows.filter(x=>x.beh_band&&+x.behavior>2).length;X.fan=await subjCard(a,b).catch(()=>'');
  const gr=sub.filter(x=>x.grade!=null);X.s.fan=gr.length?`O'rtacha baho: ${Math.round(gr.reduce((q,x)=>q+ +x.grade,0)/gr.length*10)/10}`:'';
  if(!g){X.tanga=await coinCard(rows,a,b).catch(()=>'');X.oylar=await kidMonths().catch(()=>'');
   const t=rows.reduce((q,x)=>q+sumBy(x,crOf(c)),0),cs=coinState(t,1);X.s.tanga=cs.won?`${cs.won[0]} tanga yutildi`:cs.nx?`${cs.nx[0]}gacha ${cs.prog}%`:''}
@@ -779,6 +795,12 @@ async function parentData(){const mm=S.month.split('-'),a=S.month+'-01',b=S.mont
   X.menu=`<div class="card"><b>${ic('food')}Kunlik taomlanish (retsept)</b>${Object.keys(days).length?Object.keys(days).map(d=>`<p><b>${d.slice(8)}.${d.slice(5,7)}</b></p>${days[d].map(m=>`<div class="top">${m.photo?`<img class="cl" style="height:64px;width:64px;object-fit:cover;border-radius:10px" src="${m.photo}">`:''}<div><b>${esc(m.meal)}</b><br><span style="white-space:pre-line">${esc(m.name)}</span></div></div>`).join('')}`).join(''):'<p class="mut">Taomnoma hali kiritilmagan.</p>'}</div>`;
   X.s.menu=menu.length?`Bugundan ${Object.keys(days).length} kunlik`:''}
  return X}
+// 3-, 4-, 6-guruh: oy davomida tartib-intizom bandlari bo'yicha statistika (ota-ona uchun)
+function bbStat(rows){const b=rows.filter(x=>x.behavior!=null);if(!b.length)return '';const ok=b.filter(x=>+x.behavior>=5).length,n=b.length;
+ const c=BB.map(([k,t])=>[k,t,rows.filter(x=>x.beh_band==k).length]),bad=c.reduce((q,x)=>q+x[2],0);
+ return `<div class="card"><b>${ic('shield')}Tartib-intizom statistikasi — ${MON[+S.month.slice(5)-1]}</b><p class="mut">Baholangan <b>${n}</b> kundan <b>${ok}</b> kunida tartib-intizom a'lo (5). O'rtacha baho: <b>${(Math.round(b.reduce((q,x)=>q+ +x.behavior,0)/n*10)/10).toFixed(1)}</b>.</p>
+ <div class="wrap"><table style="min-width:0"><tr><th class="l">Band</th><th>Necha marta</th><th>Ulushi</th></tr>${c.map(([k,t,v])=>`<tr><td class="l">${k}-band: ${esc(t)}</td><td class="tot" style="${v?'color:var(--bad)':''}">${v}</td><td>${n?Math.round(v/n*100):0}%</td></tr>`).join('')}</table></div>
+ ${bad?`<p style="margin:10px 0 0">⚠️ Eng ko'p uchragani: <b>${esc(c.slice().sort((a,b)=>b[2]-a[2])[0][1])}</b>. Farzandingiz bilan shu haqda suhbatlashing.</p>`:"<p style=\"margin:10px 0 0;color:var(--ok)\">✅ Shu oyda tartib-intizom bo'yicha qoidabuzarlik qayd etilmagan.</p>"}</div>`}
 // Ko'rsatkichlar bo'yicha yaxshi va past baholar soni (bosh sahifadagi belgilar uchun)
 function critCount(c,rows,sub){let g=0,b=0;const add=(v,m)=>{const x=gb(+v,m);if(x>0)g++;if(x<0)b++};
  critDefs(c).forEach(([k,t,m])=>rows.forEach(r=>{if(r[k]!=null)add(r[k],m)}));(sub||[]).forEach(r=>[['grade',5],['hw',5],['activity',5]].forEach(([k,m])=>{if(r[k]!=null)add(r[k],m)}));return{g,b}}
@@ -861,6 +883,20 @@ async function pushAuto(){if(!pushOK()||Notification.permission!='granted')retur
  if(!sub){const k=await pushKey();if(!k)return;sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64k(k)})}
  const last=(()=>{try{return localStorage.getItem('ysh_pushsv')}catch(e){return''}})(),tag=ME.id+'|'+sub.endpoint;
  if(last!=tag&&await pushSave(sub))try{localStorage.setItem('ysh_pushsv',tag)}catch(e){}}catch(e){}}
+// Xavfsizlik: ota-ona kod (sinf rahbari bergan) bilan kirgan bo'lsa — o'z parolini o'rnatmaguncha shu oyna turadi.
+// Shundan keyin kod bilan kirib bo'lmaydi, ya'ni kodni bilgan boshqa odam ota-ona nomidan kira olmaydi.
+async function pwGate(){const old=$('pwg');if(old)old.remove();if(!ME||ME.role!='parent')return false;
+ const{data,error}=await sb.rpc('parent_pw_status');if(error||data)return false;
+ document.body.insertAdjacentHTML('beforeend',`<div id="pwg" class="pgw"><div class="pgc"><div style="font-size:44px">🔒</div><h2>O'z parolingizni o'rnating</h2><p>Siz sinf rahbari bergan kod bilan kirdingiz. Akkauntingizni faqat siz ishlatishingiz uchun <b>yangi parol</b> o'ylab toping. Shundan keyin eski kod bilan hech kim kira olmaydi.</p>
+ <input class="fld" id="npw1" type="password" placeholder="Yangi parol (kamida 6 belgi)" autocomplete="new-password"><input class="fld" id="npw2" type="password" placeholder="Yangi parolni qayta yozing" autocomplete="new-password">
+ <label class="mut"><input type="checkbox" id="npws"> Parolni ko'rsatish</label><br><button class="btn" id="npwGo" style="margin-top:8px">Parolni saqlash</button><p class="mut" style="margin-top:10px">Parolni eslab qoling yoki yozib qo'ying. Unutsangiz, maktab ma'muriyati tiklaydi.</p></div></div>`);return true}
+document.addEventListener('click',async e=>{const t=e.target.closest('#npwGo,#npws');if(!t||!ME)return;
+ if(t.id=='npws'){['npw1','npw2'].forEach(i=>$(i).type=t.checked?'text':'password');return}
+ const a=$('npw1').value,b=$('npw2').value;if(a.length<6){flash("Parol kamida 6 belgidan iborat bo'lsin");return}if(a!==b){flash("Ikki parol bir xil emas");return}
+ t.disabled=true;try{const{error}=await sb.auth.updateUser({password:a});if(error){flash(/different|same/i.test(error.message)?"Yangi parol eski koddan farq qilsin":netMsg(error));return}
+  const{data:m,error:e2}=await sb.rpc('parent_pw_mark',{p_dev:DEV});if(e2){flash(netMsg(e2));return}
+  if(m=='kod'){flash("Yangi parol sinf rahbari bergan kod bilan bir xil bo'lmasin — boshqa parol o'ylab toping");return}
+  const g=$('pwg');if(g)g.remove();flash("✅ Parolingiz saqlandi. Endi faqat shu parol bilan kirasiz.");pushGate().catch(()=>{})}finally{t.disabled=false}});
 // Ota-ona bildirishnomani yoqmaguncha — butun ekranni egallaydigan oyna (brauzer qoidasiga ko'ra ruxsatni faqat ota-ona bera oladi)
 async function pushGate(){const old=$('pgate');if(old)old.remove();if(ME.role!='parent')return;
  const ios=isIOS()&&!standalone(),ok=pushOK(),perm=ok?Notification.permission:'';if(ok&&perm=='granted'){const had=!!(await pushSub().catch(()=>null));await pushAuto();if(!had&&$('pushOn')&&await pushSub().catch(()=>null))render();return}
@@ -1009,7 +1045,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[
  if(t.id=='absPdf'&&S.absP){const P=S.absP;printDoc("Maktabga kelmagan o'quvchilar — "+fd(P.d),P.per.map(x=>`<h2>${esc(x.n)} — ${x.r.length} nafar${x.t?' <span style="font-weight:400;color:#555">('+esc(x.t)+')</span>':''}</h2><table><tr><th style="width:32px">№</th><th>F.I.Sh</th><th style="width:90px">Holati</th><th style="width:170px">Ota-ona telefoni</th></tr>${x.r.map((r,i)=>`<tr><td class="n">${i+1}</td><td>${esc(r.n)}</td><td>${r.e?'Sababli':'Sababsiz'}</td><td>${esc(r.p)||'—'}</td></tr>`).join('')}</table>`).join('')+`<p><b>Jami: ${P.per.reduce((a,x)=>a+x.r.length,0)} nafar</b></p>`);return}
  if(t.id=='ratePdf'&&S.rate){const[y,m]=S.rate.m.split('-');printDoc("O'qituvchilar reytingi — "+MON[+m-1]+' '+y,`<table><tr><th>O'rin</th><th>O'qituvchi</th><th>Sinflar</th><th>Sinf-kunlar</th><th>O'z vaqtida</th><th>Kechikkan</th><th>Bajarilmagan</th><th>Bajarilish</th><th>Ball</th></tr>${S.rate.d.map((x,j)=>`<tr><td class="n">${j+1}</td><td>${esc(x.full_name)}</td><td>${esc(x.classes||'')}</td><td class="n">${x.class_days}</td><td class="n">${x.on_time}</td><td class="n">${x.late}</td><td class="n">${x.missed}</td><td class="n">${x.class_days?Math.round(x.on_time/x.class_days*100)+'%':'—'}</td><td class="n"><b>${x.score}</b></td></tr>`).join('')}</table><p class="m">Baholar har kuni soat 21:00 gacha to'liq qo'yilishi kerak. Ball: 100 − 2 × kechikkan − 5 × bajarilmagan sinf-kunlar.</p>`);return}
  if(t.id=='fbs'){const b=$('fbt').value.trim();if(b.length<3){flash('Fikringizni yozing');return}const c=S.kc||{},an=$('fba').checked;
-  const{error}=await sb.from('feedback').insert({student_id:ME.student_id||null,student_name:S.kn||null,class_id:c.id||null,parent_name:an?null:(ME.full_name||null),phone:an?null:(ME.phone||null),category:$('fbk').value,body:b});
+  const{error}=await sb.from('feedback').insert({dev:DEV||null,student_id:ME.student_id||null,student_name:S.kn||null,class_id:c.id||null,parent_name:an?null:(ME.full_name||null),phone:an?null:(ME.phone||null),category:$('fbk').value,body:b});
   if(error){flash(/row-level|policy/i.test(error.message)?"Bugun yuborish chegarasiga yetdingiz (kuniga 5 ta). Ertaga yana yozishingiz mumkin.":netMsg(error));return}flash('✅ Rahmat! Fikringiz maktab ma\'muriyatiga yuborildi.');render();return}
  if(t.classList.contains('fdel')){if(!confirm("Fikr o'chirilsinmi?"))return;const{error}=await sb.from('feedback').delete().eq('id',t.dataset.id);if(error){flash(netMsg(error));return}render();return}
  if(t.id=='fbPdf'&&S.fbP){const[y,m]=S.fbP.m.split('-');printDoc("Ota-onalar fikr-mulohazalari — "+MON[+m-1]+' '+y,S.fbP.g.map(x=>`<h2>${esc(x.n)} — ${x.r.length} ta</h2><table><tr><th style="width:28px">№</th><th style="width:105px">Sana</th><th style="width:95px">Turi</th><th>Fikr-mulohaza</th><th style="width:150px">Ota-ona / o'quvchi</th></tr>${x.r.map((f,i)=>`<tr><td class="n">${i+1}</td><td>${fdt(f.created_at)}</td><td>${esc(f.category)}</td><td style="white-space:pre-wrap">${esc(f.body)}</td><td>${f.parent_name?esc(f.parent_name):"Ism ko'rsatilmagan"}${f.phone?'<br>'+esc(f.phone):''}${f.student_name?'<br>'+esc(f.student_name):''}</td></tr>`).join('')}</table>`).join('')+`<p><b>Jami: ${S.fbP.g.reduce((a,x)=>a+x.r.length,0)} ta</b></p>`);return}
@@ -1052,7 +1088,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[
   if(error){flash(netMsg(error));return}x.paid=n;x.on=n?nowT().d:'';S.pTot.paid+=n?1:-1;$('payBox').innerHTML=payHtml()}
  else if(t.classList.contains('ratt')){const sid=t.dataset.rid,r=S.rd[sid]||(S.rd[sid]={}),v=attNext(r);Object.assign(r,v);t.innerHTML=attIc(r);
   await attSave('rep_daily',sid,S.date,v)}
- else if(t.classList.contains('att')){const id=t.dataset.i,r=S.sc[id]||(S.sc[id]={student_id:id,day:S.date}),v=attNext(r);Object.assign(r,v);t.innerHTML=attIc(r);$('t'+id).textContent=sum(r);await attSave('daily_scores',id,S.date,v)}
+ else if(t.classList.contains('att')){const id=t.dataset.i,r=S.sc[id]||(S.sc[id]={student_id:id,day:S.date}),v=attNext(r);Object.assign(r,v);t.innerHTML=attIc(r);$('t'+id).textContent=tot(r);await attSave('daily_scores',id,S.date,v)}
  else if(t.id=='tgo'){const email=$('em').value.trim(),password=$('pw').value;if(!email||!password){flash("Email va parolni kiriting");return}
   const{data,error}=await sb.auth.signInWithPassword({email,password});if(error){flash(errTxt(error));return}await loadMe(data.user.id)}
  else if(t.id=='lgo'){const raw=$('lph').value.trim(),password=$('lpw').value;
@@ -1061,7 +1097,10 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[
   let k1='o';try{k1=localStorage.getItem('ysh_pf'+p)||'o'}catch(e){}const k2=k1=='o'?'p':'o';
   let r=await sb.auth.signInWithPassword({email:EM(k1,p),password}),k=k1;if(r.error&&!authBad(r.error)){r=await sb.auth.signInWithPassword({email:EM(k2,p),password});k=k2}
   // Ota-ona: sinf rahbari bergan o'zgarmas parol (o'quvchi kodi) — akkaunt bo'lmasa o'zi ochiladi
-  if(r.error&&!authBad(r.error)&&password.trim().length>=6){const c=password.trim().toUpperCase(),{data:cr,error:ce}=await sb.rpc('parent_code_login',{p_phone:p,p_code:c});
+  if(r.error&&!authBad(r.error)&&password.trim().length>=6){const c=password.trim().toUpperCase();let{data:cr,error:ce}=await sb.rpc('parent_code_login',{p_phone:p,p_code:c,p_dev:DEV});
+   if(ce&&(ce.code=='PGRST202'||/p_dev/.test(ce.message||'')))({data:cr,error:ce}=await sb.rpc('parent_code_login',{p_phone:p,p_code:c}));
+   if(!ce&&cr&&cr.st=='staff'){flash("⛔ Bu qurilmada o'qituvchi akkaunti ishlatilgan — ota-ona sifatida kirib bo'lmaydi. Ota-ona o'z telefonidan kirsin.");return}
+   if(!ce&&cr&&cr.st=='own'){flash("Siz o'z parolingizni o'rnatgansiz — o'sha parol bilan kiring. Unutgan bo'lsangiz, maktab ma'muriyatiga (admin) murojaat qiling.");return}
    if(!ce&&cr&&cr.st=='lock'){flash("Juda ko'p noto'g'ri urinish. 1 soatdan so'ng qayta urinib ko'ring yoki parolni sinf rahbaridan so'rang");return}
    if(!ce&&cr&&cr.st=='ok'){r=await sb.auth.signInWithPassword({email:EM('p',p),password:c});k='p'}
    else if(!ce&&cr&&cr.st=='new'){const u=await sb.auth.signUp({email:EM('p',p),password:c});
@@ -1090,6 +1129,8 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[
   const{error}=await sb.from('menu').insert({day:$('mnd').value,meal:$('mnm').value,name:nm,photo:S.mph||null});S.mph=null;if(error)flash(netMsg(error));else render()}
  else if(t.classList.contains('mdel')){const{error}=await sb.from('menu').delete().eq('id',t.dataset.id);if(error)flash(netMsg(error));else render()}}finally{if(G)t.disabled=false}});
 document.addEventListener('change',async e=>{const t=e.target;
+ if(t.classList.contains('bb')){const id=t.dataset.bi,v=t.value?+t.value:null,r=S.sc[id]||(S.sc[id]={});r.beh_band=v;bbMark(id);
+  const{error}=await sb.from('daily_scores').upsert({student_id:id,day:S.date,beh_band:v},{onConflict:'student_id,day'});if(error)flash(/beh_band/.test(error.message)?"Avval Supabase'da yangilanish-37 ni ishga tushiring":netMsg(error));return}
  if(t.classList.contains('tcr')&&t.dataset.c){const ok=await tRole(t.dataset.u,+t.dataset.c,t.value);if(ok){await tBack(t.dataset.u);flash("✅ Vazifa saqlandi")}else t.value=t.value=='rahbar'?'fan':'rahbar';return}
  if(t.classList.contains('trole')){const{error}=await sb.from('teacher_classes').upsert({user_id:t.dataset.u,class_id:S.cls,role:t.value},{onConflict:'user_id,class_id'});flash(error?netMsg(error):"✅ Vazifa saqlandi");return}
  if(t.classList.contains('pdt')&&t.value){const x=S.pay.find(r=>r.id==t.dataset.id);const{error}=await sb.from('payments').upsert({student_id:x.id,month:S.pm+'-01',paid:true,paid_on:t.value},{onConflict:'student_id,month'});if(error){flash(netMsg(error));return}x.on=t.value;flash("✅ To'lov sanasi saqlandi");return}
@@ -1119,7 +1160,7 @@ document.addEventListener('input',e=>{const t=e.target,d=t.dataset;
  if(d.n){dbn('n'+d.n,async()=>{const{error}=await sb.rpc('set_student_name',{p_id:String(d.n),p_name:t.value});if(error)error.code=='PGRST202'?upd('students',{full_name:t.value},'id',d.n):flash(netMsg(error))});return}
  if(d.p){dbn('p'+d.p,()=>setPh(d.p,t.value.trim()));return}
  if(d.x){dbn('x'+d.x,()=>upd('students',{ext_id:t.value.trim()||null},'id',d.x));return}
- if(d.i&&d.k){const day=S.date;let v=t.value,m=CR.find(x=>x.c==d.k).m;if(v!==''){v=Math.max(0,Math.min(m,Math.round(+v)));if(String(v)!==t.value)t.value=v}const val=v===''?null:+v,r=S.sc[d.i]||(S.sc[d.i]={});r[d.k]=val;$('t'+d.i).textContent=sum(r);
+ if(d.i&&d.k){const day=S.date,x0=CR.find(x=>x.c==d.k);let v=t.value,m=x0.m;if(v!==''){v=Math.max(x0.mn||0,Math.min(m,Math.round(+v)));if(String(v)!==t.value)t.value=v}const val=v===''?null:+v,r=S.sc[d.i]||(S.sc[d.i]={});r[d.k]=val;$('t'+d.i).textContent=tot(r);if(d.k=='behavior')bbMark(d.i);
   dbn('s'+d.i+d.k,async()=>{const{error}=await sb.from('daily_scores').upsert({student_id:d.i,day,[d.k]:val},{onConflict:'student_id,day'});if(error)flash(netMsg(error))},350)}});
 document.addEventListener('toggle',e=>{const d=e.target;if(d.dataset&&d.dataset.g)S.open[d.dataset.g]=d.open},true);
 let lastD=today;

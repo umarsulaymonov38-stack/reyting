@@ -364,6 +364,8 @@ const FBC=['Umumiy',"Ta'lim sifati","O'qituvchilar",'Ovqatlanish','Xavfsizlik va
 const fdt=t=>new Date(t).toLocaleString('en-GB',{timeZone:TZ,day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).replace(/\//g,'.');
 // To'lovlar: o'quv yili sentabrdan; har oy to'lovi shu oyning PAY_DUE-sanasigacha. Iyun–avgust hisoblanmaydi.
 const PAY_DUE=5,PAY_MONTHS=[9,10,11,12,1,2,3,4,5];
+// Ota-onaga eslatilmaydigan oylar (2026-yil sentyabr va oktyabr): to'lanmagan bo'lsa ham ro'yxatda va ogohlantirishda chiqmaydi
+const PAY_SKIP=['2026-09','2026-10'];
 async function payInfo(){const c=S.kc||{};if(!c.id||c.kind=='rep'||!ME.student_id)return {b:'',t:''};
  const t=nowT(),y=+t.d.slice(0,4),mo=+t.d.slice(5,7),sy=mo>=9?y:y-1,from=sy+'-09-01';
  const[{data:pays,error},{data:fd}]=await Promise.all([sb.from('payments').select('month,paid,paid_on').eq('student_id',ME.student_id).gte('month',from).order('month'),
@@ -373,7 +375,7 @@ async function payInfo(){const c=S.kc||{};if(!c.id||c.kind=='rep'||!ME.student_i
  // o'quvchi o'qishni boshlagan oy: birinchi baho yoki to'lov oyidan (o'quv yili o'rtasida kelganlar uchun)
  const firsts=[(fd&&fd[0]&&fd[0].day.slice(0,7)),...(pays||[]).filter(p=>p.paid).map(p=>p.month.slice(0,7))].filter(Boolean).sort();
  const start=firsts[0]||t.d.slice(0,7);
- const months=[];for(let k=0;k<12;k++){const mm=((8+k)%12)+1,yy=mm>=9?sy:sy+1,key=yy+'-'+String(mm).padStart(2,'0');if(!PAY_MONTHS.includes(mm)||key>t.d.slice(0,7))continue;if(key>=start||pm[key])months.push(key)}
+ const months=[];for(let k=0;k<12;k++){const mm=((8+k)%12)+1,yy=mm>=9?sy:sy+1,key=yy+'-'+String(mm).padStart(2,'0');if(!PAY_MONTHS.includes(mm)||key>t.d.slice(0,7))continue;if(PAY_SKIP.includes(key)&&!(pm[key]&&pm[key].paid))continue;if(key>=start||pm[key])months.push(key)}
  const lbl=k=>MON[+k.slice(5)-1]+' '+k.slice(0,4),day=s=>Date.UTC(+s.slice(0,4),+s.slice(5,7)-1,+s.slice(8,10)),today=day(t.d);
  const late=months.filter(k=>!(pm[k]&&pm[k].paid)).map(k=>({k,d:Math.floor((today-day(k+'-'+String(PAY_DUE).padStart(2,'0')))/864e5)})).filter(x=>x.d>=0);
  const kid=esc(S.kn||'');
@@ -387,7 +389,7 @@ const fd2=d=>d.slice(8,10)+'.'+d.slice(5,7)+'.'+d.slice(0,4);
 // O'quv yili oylari, to'lanmagan oylar va kechikish kunlari (bitta farzand uchun)
 function payCalc(pays,firstDay,sy){const t=nowT(),pm={};(pays||[]).forEach(p=>pm[String(p.month).slice(0,7)]=p);
  const firsts=[firstDay&&String(firstDay).slice(0,7),...(pays||[]).filter(p=>p.paid).map(p=>String(p.month).slice(0,7))].filter(Boolean).sort(),start=firsts[0]||t.d.slice(0,7);
- const months=[];for(let k=0;k<12;k++){const mm=((8+k)%12)+1,yy=mm>=9?sy:sy+1,key=yy+'-'+String(mm).padStart(2,'0');if(!PAY_MONTHS.includes(mm)||key>t.d.slice(0,7))continue;if(key>=start||pm[key])months.push(key)}
+ const months=[];for(let k=0;k<12;k++){const mm=((8+k)%12)+1,yy=mm>=9?sy:sy+1,key=yy+'-'+String(mm).padStart(2,'0');if(!PAY_MONTHS.includes(mm)||key>t.d.slice(0,7))continue;if(PAY_SKIP.includes(key)&&!(pm[key]&&pm[key].paid))continue;if(key>=start||pm[key])months.push(key)}
  const day=s=>Date.UTC(+s.slice(0,4),+s.slice(5,7)-1,+s.slice(8,10)),today=day(t.d),lbl=k=>MON[+k.slice(5)-1]+' '+k.slice(0,4);
  return {rows:months.map(k=>({m:lbl(k),paid:!!(pm[k]&&pm[k].paid),on:(pm[k]&&pm[k].paid_on)||''})),
   late:months.filter(k=>!(pm[k]&&pm[k].paid)).map(k=>({m:lbl(k),d:Math.floor((today-day(k+'-'+String(PAY_DUE).padStart(2,'0')))/864e5)})).filter(x=>x.d>=0)}}

@@ -29,7 +29,7 @@ header #inst{background:var(--ac);color:#fff;border:0}header #out{background:rgb
 main{max-width:1080px;margin:0 auto;padding:16px 12px 28px}
 /* Xabar paneli */
 #msg:empty{display:none}
-.chip.noT{border-color:#e03131;background:#fff0f0;color:#c92a2a}.chip.noT.on{background:#e03131;color:#fff;border-color:#e03131}.noTl{display:block;font-style:normal;color:#e03131;font-size:11px;text-transform:none;letter-spacing:0;margin-top:2px}
+.chip.noT{border-color:#e03131;background:#fff0f0;color:#c92a2a}.chip.noT.on{background:#e03131;color:#fff;border-color:#e03131}.noTl.okT{color:#2f9e44}.noTl{display:block;font-style:normal;color:#e03131;font-size:11px;text-transform:none;letter-spacing:0;margin-top:2px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chip.noT:not(.on){background:#3a1a1a;color:#ff8787}}
 .bb{display:block;margin:4px auto 0;max-width:150px;font:inherit;font-size:12px;padding:4px 6px;border:1px solid var(--ln);border-radius:8px;background:var(--card);color:var(--ink)}.bb.need{border-color:var(--bad);box-shadow:0 0 0 2px rgba(194,65,12,.2)}
 #msg{margin:0 0 12px;padding:10px 14px;border-radius:12px;background:var(--ac2);color:var(--ink);border-left:4px solid var(--ac);font-size:14px}
@@ -498,7 +498,7 @@ function chips(){
  // 4-guruh (Ingliz tili): o'qituvchi biriktirilmagan guruh qizil bilan belgilanadi (adminda)
  const noT=c=>A&&S.tcSet&&grpOf(c)==4&&!S.tcSet.has(c.id);
  const rb=c=>ME.roles&&ME.roles[c.id]=='rahbar'?' ★':'',btn=c=>`<button class="chip ${c.id==S.cls?'on':''}${noT(c)?' noT':''}" data-c="${c.id}" ${noT(c)?'title="O\'qituvchi biriktirilmagan"':rb(c)?'title="Sinf rahbari"':''}>${noT(c)?'⚠️ ':''}${esc(clsLbl(c))+rb(c)}</button>`;
- el.innerHTML=GR.map(([g,t,i])=>{const a=L.filter(c=>grpOf(c)==g).sort(clsCmp),n=a.filter(noT).length;return a.length?`<div class="cg"><span class="hl">${ic(i)}${t}${n?`<em class="noTl">${n} ta guruhga o'qituvchi biriktirilmagan</em>`:''}</span><div class="cgr">${a.map(btn).join('')}</div></div>`:''}).join('');
+ el.innerHTML=GR.map(([g,t,i])=>{const a=L.filter(c=>grpOf(c)==g).sort(clsCmp),n=a.filter(noT).length;return a.length?`<div class="cg"><span class="hl">${ic(i)}${t}${n?`<em class="noTl">${n} ta guruhga o'qituvchi biriktirilmagan</em>`:g==4&&A&&S.tcSet?`<em class="noTl okT">✓ hammasiga o'qituvchi biriktirilgan</em>`:''}</span><div class="cgr">${a.map(btn).join('')}</div></div>`:''}).join('');
  const on=el.querySelector('.chip.on');if(on)on.scrollIntoView({block:'nearest',inline:'nearest'})}
 async function render(){
  flush();const tk=++S.rt;if(!ME)return;

@@ -29,6 +29,10 @@ header #inst{background:var(--ac);color:#fff;border:0}header #out{background:rgb
 main{max-width:1080px;margin:0 auto;padding:16px 12px 28px}
 /* Xabar paneli */
 #msg:empty{display:none}
+.pvv{display:inline-block;min-width:42px;padding:9px 6px;border-radius:10px;background:var(--zb);color:var(--mut);font-weight:700;border:1px dashed var(--ln)}
+.ptk .ptr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--ln)}.ptk .ptr:first-of-type{border-top:0}
+.ptk select{font:inherit;font-size:16px;padding:6px 10px;border-radius:10px;border:1px solid var(--ln);background:var(--card);color:var(--ink);min-width:84px}.ptk select.ok{border-color:var(--ok);background:var(--ok2)}
+.ptk h4{margin:10px 0 2px;font-size:15px}
 .chip.noT{border-color:#e03131;background:#fff0f0;color:#c92a2a}.chip.noT.on{background:#e03131;color:#fff;border-color:#e03131}.noTl.okT{color:#2f9e44}.noTl{display:block;font-style:normal;color:#e03131;font-size:11px;text-transform:none;letter-spacing:0;margin-top:2px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chip.noT:not(.on){background:#3a1a1a;color:#ff8787}}
 .bb{display:block;margin:4px auto 0;max-width:150px;font:inherit;font-size:12px;padding:4px 6px;border:1px solid var(--ln);border-radius:8px;background:var(--card);color:var(--ink)}.bb.need{border-color:var(--bad);box-shadow:0 0 0 2px rgba(194,65,12,.2)}
@@ -266,10 +270,12 @@ const MON=['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentab
 function nowT(){const p={};new Intl.DateTimeFormat('en-GB',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(new Date()).forEach(x=>p[x.type]=x.value);
  return{d:`${p.year}-${p.month}-${p.day}`,h:+p.hour,m:+p.minute,s:+p.second,hms:`${p.hour}:${p.minute}:${p.second}`,wd:DN[new Date(Date.UTC(+p.year,+p.month-1,+p.day)).getUTCDay()],lbl:`${+p.day}-${MON[+p.month-1]} ${p.year}`}}
 const today=nowT().d;
-let CR=[{c:'att',k:'Davomat',i:'cal',m:1},{c:'book',k:"Kitob o'qish",i:'book',m:10},{c:'sport',k:'Sport',i:'run',m:10},{c:'behavior',k:'Kunlik odoblar',i:'users',m:10},{c:'kindness',k:'Ota-onaga yaxshilik',i:'heart',m:10}];
+let CR=[{c:'att',k:'Davomat',i:'cal',m:1},{c:'book',k:"Kitob o'qish",i:'book',m:10},{c:'sport',k:'Sport',i:'run',m:10},{c:'behavior',k:'Maktabdagi odoblar',i:'users',m:10},{c:'kindness',k:'Ota-onaga yaxshilik',i:'heart',m:10}];
 let MAXD=51;const AT={'':'—','1':'✅','0':'❌'},MD=['🥇','🥈','🥉'];
 // 3-, 4-, 6-guruh: 5 ballik baholar (1–5); tartib-intizom 5 dan past bo'lsa — sababi (band) tanlanadi
 const CR51=CR.slice(),CRG=[{c:'att',k:'Davomat',i:'cal',m:1},{c:'hw',k:'Uyga vazifa',i:'clip',m:5,mn:1},{c:'activity',k:'Sinfdagi faollik',i:'zap',m:5,mn:1},{c:'behavior',k:'Tartib-intizom',i:'shield',m:5,mn:1}];
+// 1–2-guruh: kitob o'qish, sport va ota-onaga yaxshilikni ota-ona belgilaydi (yangilanish-46)
+const PARF=['book','sport','kindness'];
 const BB=[[1,"Tartib qoidaga amal qilmaslik"],[2,"Atrofdagilar va ustozlarni hurmat qilmaslik"],[3,"O'z joyini toza saqlamaslik"]];
 const bbSel=(id,r)=>`<select class="bb${r.behavior!=null&&+r.behavior<5&&!r.beh_band?' need':''}" data-bi="${id}" title="Tartib-intizom bo'yicha qaysi band buzildi"><option value="">Sabab: yo'q</option>${BB.map(([k,t])=>`<option value="${k}" ${r.beh_band==k?'selected':''}>${k}-band: ${t}</option>`).join('')}</select>`,
  bbMark=id=>{const r=S.sc[id]||{},el=document.querySelector(`.bb[data-bi="${id}"]`);if(el)el.classList.toggle('need',r.behavior!=null&&+r.behavior<5&&!r.beh_band)};
@@ -299,7 +305,7 @@ const dbn=(k,fn,ms=400)=>{if(tm[k])clearTimeout(tm[k].t);const go=()=>{delete tm
 const flush=()=>Object.values(tm).forEach(x=>{clearTimeout(x.t);x.go()});
 const empty=(t,d,x)=>`<div class="card empty"><span class="cl ph">${ic('school')}</span><div><b>${t}</b><p class="mut">${d}</p>${x||''}</div></div>`;
 const retryView=e=>{$('view').innerHTML=empty("Server bilan ulanib bo'lmadi.",esc(netMsg(e)),'<button class="btn" id="rty">Qayta urinish</button>')};
-const th=()=>CR.map(x=>`<th title="${x.k}"><span class="ic">${ic(x.i)}</span>${x.k}${x.mn?'<br><small class="mut">1–5</small>':''}</th>`).join('');
+const th=()=>CR.map(x=>`<th title="${x.k}"><span class="ic">${ic(x.i)}</span>${x.k}${x.mn?'<br><small class="mut">1–5</small>':''}${CR!==CRG&&PARF.includes(x.c)?'<br><small class="mut">ota-ona</small>':''}</th>`).join('');
 const cname=id=>(CL.find(c=>c.id==id)||{}).name||'';
 function loginView(){{const g=document.getElementById('pgate');if(g)g.remove();const w=document.getElementById('pwg');if(w)w.remove()}$('out').style.display='none';document.body.classList.remove('in');$('chips').innerHTML='';$('side').innerHTML='';document.body.classList.remove('hs-side');const L=S.lt==2?2:0;
  $('view').innerHTML=`<div class="hero"><div class="hart photo"><img class="hph" src="img/oquvchi.jpg" alt="Yuksalish maktabi o'quvchisi" width="853" height="1280"><div class="hov"><div class="bubble"><b>Assalomu alaykum!</b><br>Yuksalish maktabining reyting tizimiga xush kelibsiz.</div><ul class="feat"><li>${ic('chart')}Kunlik ball va reyting</li><li>${ic('cal')}Davomat nazorati</li><li>${ic('card')}To'lovlar holati</li><li>${ic('food')}Kunlik taomnoma</li></ul></div></div><div class="card login"><h2>Tizimga kirish</h2>`+(L==0?
@@ -503,7 +509,7 @@ function chips(){
 async function render(){
  flush();const tk=++S.rt;if(!ME)return;
  if(ME.role=='parent'){$('view').innerHTML='<div class="ld"><i class="spin"></i>Yuklanmoqda…</div>';
-  const[X,P,hf,hp,hb,ck]=await Promise.all([parentData().catch(()=>null),parentAll().catch(()=>null),fbParent().catch(()=>''),pushCard().catch(()=>''),BOOKS?parentBooks().catch(()=>''):'',S.pv?'':ckCard().catch(()=>'')]);
+  const[X,P,hf,hp,hb,ck,pt]=await Promise.all([parentData().catch(()=>null),parentAll().catch(()=>null),fbParent().catch(()=>''),pushCard().catch(()=>''),BOOKS?parentBooks().catch(()=>''):'',S.pv?'':ckCard().catch(()=>''),S.pv?'':ptCard().catch(()=>'')]);if(X)X.pt=pt;
   let html;if(!X&&!P)html='<div class="card">Ma\'lumotni o\'qib bo\'lmadi. Sahifani yangilang.</div>';
   else if(S.pv)html=pSection(S.pv,X,P,hp,hf,hb);
   else{const pi=P||await payInfo().catch(()=>({b:'',t:''}));html=X?pHome(X,P,hp,ck)+(P?'':pi.b+pi.t):pi.b+pi.t+hf}
@@ -540,7 +546,7 @@ const phTd=(m,id)=>m?`<td><input class="nm" type="tel" inputmode="tel" style="mi
 const stAdd=()=>!canPh({id:S.cls})?'<p class="mut" style="margin:10px 0 0">O\'quvchi ism-familiyasini sinf rahbari kiritadi.</p>':`<div class="top" style="margin-top:10px"><button class="tab" id="stadd">${ic('users')}+ O'quvchi qo'shish</button><span class="mut">Ism-familiyani bo'sh katakka yozing — o'zi saqlanadi. Joy yetmasa, shu tugma bilan qo'shing.</span></div>`;
 const dtBar=extra=>`<div class="top"><b>Sana:</b><input type="date" id="dt" value="${S.date}">${extra||''}</div>`;
 async function bahoView(){await loadCls();const php=await phLoad(S.st);
- return `<div class="card">${dtBar('<span class="mut">Davomat: bosib tanlang — ✅ keldi (1 ball), ❌ kelmadi, <i class=exd></i> sababli (kasal yoki uzrli sabab). Qolganlari '+(CR===CRG?"1–5 (5 ballik). Tartib-intizom 5 dan past bo'lsa, sababini (bandni) tanlang.":'0–'+CR[1].m+" ball. Mezonlar yig'indisi "+(CR===CR1?'×5/3':'×1.25')+" — kuniga ko'pi bilan 51, oyiga 1020 ball.")+'</span>')}<div class="wrap"><table><tr><th>№</th><th class="l">F.I.Sh</th>${php?`<th>${ic('phone')}Ota-ona telefoni</th>`:''}${th()}<th>${CR===CRG?"O'rtacha<br>baho":'Jami<br>/'+MAXD}</th></tr>${S.st.map((s,i)=>{const r=S.sc[s.id]||{};return`<tr><td>${i+1}</td><td class="l"><input class="nm" data-n="${s.id}" value="${esc(s.full_name)}" placeholder="Ism familiya"${canPh({id:S.cls})?'':' readonly title="Ismni sinf rahbari kiritadi"'}></td>${phTd(php,s.id)}${CR.map(x=>x.c=='att'?`<td><button class="att" data-i="${s.id}">${attIc(r)}</button>${r.arrived_at?`<div class="arr ${fdt(r.arrived_at).slice(-5)>LATE?'late':''}" title="Turniketdan o'tgan vaqti">${fdt(r.arrived_at).slice(-5)}</div>`:''}</td>`:`<td><input class="sc" type="number" min="${x.mn||0}" max="${x.m}" inputmode="numeric" data-i="${s.id}" data-k="${x.c}" value="${r[x.c]??''}">${CR===CRG&&x.c=='behavior'?bbSel(s.id,r):''}</td>`).join('')}<td class="tot" id="t${s.id}">${tot(r)}</td></tr>`}).join('')}</table></div>${stAdd()}</div>`}
+ return `<div class="card">${dtBar('<span class="mut">Davomat: bosib tanlang — ✅ keldi (1 ball), ❌ kelmadi, <i class=exd></i> sababli (kasal yoki uzrli sabab). Qolganlari '+(CR===CRG?"1–5 (5 ballik). Tartib-intizom 5 dan past bo'lsa, sababini (bandni) tanlang.":'0–'+CR[1].m+" ball. «Kitob o'qish», «Sport» va «Ota-onaga yaxshilik»ni ota-ona o'z profilida belgilaydi, siz — davomat va «Maktabdagi odoblar». Mezonlar yig'indisi "+(CR===CR1?'×5/3':'×1.25')+" — kuniga ko'pi bilan 51, oyiga 1020 ball.")+'</span>')}<div class="wrap"><table><tr><th>№</th><th class="l">F.I.Sh</th>${php?`<th>${ic('phone')}Ota-ona telefoni</th>`:''}${th()}<th>${CR===CRG?"O'rtacha<br>baho":'Jami<br>/'+MAXD}</th></tr>${S.st.map((s,i)=>{const r=S.sc[s.id]||{};return`<tr><td>${i+1}</td><td class="l"><input class="nm" data-n="${s.id}" value="${esc(s.full_name)}" placeholder="Ism familiya"${canPh({id:S.cls})?'':' readonly title="Ismni sinf rahbari kiritadi"'}></td>${phTd(php,s.id)}${CR.map(x=>x.c=='att'?`<td><button class="att" data-i="${s.id}">${attIc(r)}</button>${r.arrived_at?`<div class="arr ${fdt(r.arrived_at).slice(-5)>LATE?'late':''}" title="Turniketdan o'tgan vaqti">${fdt(r.arrived_at).slice(-5)}</div>`:''}</td>`:CR!==CRG&&PARF.includes(x.c)?`<td><span class="pvv" title="Buni ota-ona belgilaydi">${r[x.c]??'—'}</span></td>`:`<td><input class="sc" type="number" min="${x.mn||0}" max="${x.m}" inputmode="numeric" data-i="${s.id}" data-k="${x.c}" value="${r[x.c]??''}">${CR===CRG&&x.c=='behavior'?bbSel(s.id,r):''}</td>`).join('')}<td class="tot" id="t${s.id}">${tot(r)}</td></tr>`}).join('')}</table></div>${stAdd()}</div>`}
 async function rateView(){await loadCls();const rows=S.st.filter(s=>s.full_name.trim()).map(s=>({n:s.full_name,t:sum(S.sc[s.id])})).sort((a,b)=>b.t-a.t);
  return `<div class="card">${dtBar()}${rows.length?`<div class="wrap"><table><tr><th>O'rin</th><th class="l">F.I.Sh</th><th>Ball</th><th>Foiz</th><th></th></tr>${rows.map((r,j)=>`<tr><td>${MD[j]||j+1}</td><td class="l">${esc(r.n)}</td><td class="tot">${r.t}/${MAXD}</td><td>${Math.round(r.t/MAXD*100)}%</td><td><div class="bar"><i style="width:${Math.min(100,r.t/MAXD*100)}%"></i></div></td></tr>`).join('')}</table></div>`:'<p class="mut">Avval «Baholash» bo\'limida ismlarni yozing.</p>'}</div>`}
 // Sinflar reytingi uch toifada: har bir sinf o'z maksimaliga nisbatan foizda solishtiriladi
@@ -845,6 +851,17 @@ function leaves(){const m=new Date().getMonth();if(m<8||m>10)return'';const C=['
  for(let i=0;i<16;i++){const l=(i*67+5)%100,s=16+(i*7)%14,d=7+(i*5)%6,w=-((i*1.7)%9),x=((i%2?1:-1)*(20+(i*13)%50)),r=(i%2?1:-1)*(180+(i*37)%240);
   h+=`<i style="left:${l}%;--s:${s}px;--d:${d}s;--w:${w.toFixed(1)}s;--x:${x}px;--r:${r}deg;--c:${C[i%C.length]}">${LFS}</i>`}
  return`<div class="lvs" aria-hidden="true">${h}</div>`}
+// Ota-ona har kuni farzandining kitob o'qishi, sporti va ota-onaga yaxshiligini baholaydi (0–10)
+async function ptCard(){const[{data,error},{data:kd}]=await Promise.all([sb.rpc('parent_today'),sb.rpc('my_kids')]);if(error||!data||!data.length)return '';
+ const K=kd||[],nm=id=>(K.find(x=>x.id==id)||{}).full_name||'',cl=id=>CL.find(c=>c.id==(K.find(x=>x.id==id)||{}).class_id)||{};
+ const F=[['book',"Kitob o'qish",'book'],['sport','Sport','run'],['kindness','Ota-onaga yaxshilik','heart']];
+ const sel=(sid,k,v)=>`<select class="pts${v!=null?' ok':''}" data-s="${sid}" data-k="${k}"><option value="">—</option>${Array.from({length:11},(_,i)=>`<option value="${i}" ${v===i?'selected':''}>${i}</option>`).join('')}</select>`;
+ const blocks=data.map(r=>{const c=cl(r.student_id),f=F.filter(([k])=>!(k=='book'&&isG1(c))),left=f.filter(([k])=>r[k]==null).length;
+  return`${data.length>1?`<h4>${esc(nm(r.student_id))}</h4>`:''}${f.map(([k,t,i])=>`<div class="ptr"><span>${ic(i)} ${t}</span>${sel(r.student_id,k,r[k])}</div>`).join('')}${left?'':'<p class="mut" style="margin:6px 0 0;color:var(--ok)">✅ Bugungi baholar qo\'yildi</p>'}`}).join('');
+ return`<div class="card ptk"><div class="top"><span class="pti" style="--c:#1c7ed6">${ic('clip')}</span><div><b>Bugun farzandingizni baholang</b><br><span class="mut">Uyda kuzatganingiz bo'yicha 0–10 ball. Bu ballar oylik reytingga qo'shiladi — xolis baholang.</span></div></div>${blocks}</div>`}
+document.addEventListener('change',async e=>{const t=e.target;if(!t.classList||!t.classList.contains('pts')||!ME||ME.role!='parent')return;
+ const v=t.value===''?null:+t.value;t.disabled=true;const{error}=await sb.rpc('parent_set_score',{p_sid:t.dataset.s,p_field:t.dataset.k,p_val:v});t.disabled=false;
+ if(error){flash(error.code=='PGRST202'?"Bu imkoniyat hali yoqilmagan (admin yangilanish-46 ni ishga tushirishi kerak)":netMsg(error));return}t.classList.toggle('ok',v!=null);flash('✅ Saqlandi')});
 function pHome(X,P,hp,ck){const me=X.me,ini=String(me.full_name||'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase(),
   g=P&&P.G?P.G.find(x=>x.en.some(e=>e.id==ME.student_id)):null,st=g?g.en.map(e=>({e,a:enAtt(e)})).filter(x=>x.a):[],
   pushOn=/Yoqilgan\./.test(hp),bad=(X.cnt||{}).b||0,good=(X.cnt||{}).g||0,nl=P?P.nl||0:0;
@@ -857,7 +874,7 @@ function pHome(X,P,hp,ck){const me=X.me,ini=String(me.full_name||'').trim().spli
  const T=[['bugun',st.length?st[0].a.t:''],['baho',X.s.baho],['krit',bad?`⚠️ ${bad} ta past baho`:good?`👍 ${good} ta yaxshi baho`:''],['fan',X.s.fan],
   X.tanga!=null?['tanga',X.s.tanga]:null,X.oylar!=null?['oylar','Har oy alohida']:null,P?['tolov',nl?`❌ ${nl} oy to'lanmagan`:"✅ Qarzdorlik yo'q"]:null,
   P&&P.G?['farzand',`${P.G.length} nafar`]:null,X.menu?['menu',X.s.menu]:null,['fikr','Taklif va murojaat'],['bildirish',pushOn?'✅ Yoqilgan':"⛔ O'chiq"],BOOKS?['kitob','']:null].filter(Boolean);
- return hero+(al?`<div class="pals">${al}</div>`:'')+(ck||'')+`<div class="psec">Xizmatlar</div><div class="ptiles">${T.map(([k,sub])=>{const[i,c,t]=PSEC[k];
+ return hero+(al?`<div class="pals">${al}</div>`:'')+(X.pt||'')+(ck||'')+`<div class="psec">Xizmatlar</div><div class="ptiles">${T.map(([k,sub])=>{const[i,c,t]=PSEC[k];
   return`<button class="ptile" data-pv="${k}" style="--c:${c}"><span class="pti">${ic(i)}</span><b>${t}</b>${sub?`<small>${esc(sub)}</small>`:''}</button>`}).join('')}</div>`}
 function pSection(k,X,P,hp,hf,hb){const[i,c,t]=PSEC[k]||['school','#16213d',''],op=h=>String(h||'').replace(/<details class="card fold/g,'<details open class="card fold'),
   none='<div class="card"><p class="mut">Hozircha ma\'lumot yo\'q.</p></div>',head=X?X.head:'';

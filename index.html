@@ -225,7 +225,7 @@ b.bdx{color:var(--bad)}b.okx{color:var(--ok)}
 .ckq{border:2px solid #f3c49b;background:linear-gradient(160deg,#fff6ec,var(--card))}.ckq .pti,.ckd .pti{width:42px;height:42px}
 .ckr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--ln)}.ckr>span:first-child{flex:1;line-height:1.4}
 .ckb{display:flex;gap:6px;flex:none}.ckb .tab{min-width:56px;justify-content:center}.ckx.on{background:var(--ok);color:#fff}.ckx.on.no{background:var(--bad)}
-.ckq .btn{margin-top:10px}.cktip{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:var(--zb);line-height:1.45}
+.ckq .btn{margin-top:0}.ckone{font-size:18px;font-weight:700;line-height:1.4;margin:12px 0}.ckb2{display:flex;flex-wrap:wrap;gap:10px}.ckb2 .btn,.ckb2 .tab{display:inline-flex;align-items:center;gap:6px;padding:12px 20px}.ckb2 svg{width:18px;height:18px}.cktip{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:var(--zb);line-height:1.45}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ckq{background:var(--card)}}
 .kidc{margin-top:12px}.kidc+.kidc{border-top:1px solid var(--ln);padding-top:12px}
 .payw{border:2px solid var(--bad);background:linear-gradient(160deg,#fff1ec,var(--card))}.payw>b{color:var(--bad)}.payw ul{margin:6px 0;padding-left:20px}.payw li{padding:3px 0}.payw .lt{color:var(--bad);font-weight:700}
@@ -269,6 +269,7 @@ th{background:#eef4ff}
 .ahero{overflow:visible}.ahero:after{display:none}
 @media (min-width:1100px){body.rail header{margin-left:-96px;padding-left:96px}}
 .pav{background:linear-gradient(135deg,#fcd34d,#f59f00);color:#7c2d12}
+.phero{flex-wrap:wrap}.phero .wth{margin-left:auto;padding:6px 12px}@media (max-width:600px){.phero .wth{flex-basis:100%;margin-left:0;order:3}}.phero .wth svg{width:30px;height:30px}.phero .wth b{font-size:17px}
 .ptile{border:0;color:#fff;background:linear-gradient(150deg,color-mix(in srgb,var(--c) 62%,#fff),var(--c));box-shadow:0 8px 20px color-mix(in srgb,var(--c) 30%,transparent)}
 .ptile:hover{transform:translateY(-3px);box-shadow:0 12px 26px color-mix(in srgb,var(--c) 38%,transparent)}
 .ptile b{color:#fff}.ptile small{color:rgba(255,255,255,.9)}
@@ -533,8 +534,8 @@ async function fbParent(){const{data,error}=await sb.from('feedback').select('id
  <label class="ck"><input type="checkbox" id="fba">Ismim ko'rsatilmasin</label><br><button class="btn" id="fbs">${ic('msg')}Yuborish</button>
  ${data.length?`<p style="margin:16px 0 0"><b>Siz yuborgan xabarlar</b></p>${data.map(f=>`<div class="fb"><div class="fbh"><span class="rl">${esc(f.category)}</span><span class="mut">${fdt(f.created_at)}</span></div><div class="fbb">${esc(f.body)}</div></div>`).join('')}`:''}</div>`}
 async function ckStats(){const{data,error}=await sb.rpc('checkin_stats',{p_days:14});if(error||!data||!data.length)return '';
- return `<div class="card"><b>${ic('heart')}Ota-onalar kunlik savolnomasi (oxirgi 14 kun)</b><p class="mut">Har kuni nechta ota-ona javob bergani va har bir savolga «Ha» deganlar foizi. Kim qanday javob bergani ko'rsatilmaydi.</p>
- <div class="wrap"><table><tr><th>Sana</th><th>Javob bergan</th><th>Suhbatlashgan</th><th>Kunini so'ragan</th><th>Qiziqishlari</th><th>Orzulari</th></tr>${data.map(x=>`<tr><td>${fd2(String(x.day))}</td><td class="tot">${x.javob}</td><td>${x.talk}%</td><td>${x.kun}%</td><td>${x.qiziqish}%</td><td>${x.orzu}%</td></tr>`).join('')}</table></div></div>`}
+ return `<div class="card"><b>${ic('heart')}Ota-onalar kunlik savolnomasi (oxirgi 14 kun)</b><p class="mut">Har kuni nechta ota-ona javob bergani va o'sha kungi savolga «Ha» deganlar foizi (har kuni bitta savol, yo'nalishlar navbatma-navbat). Kim qanday javob bergani ko'rsatilmaydi.</p>
+ <div class="wrap"><table><tr><th>Sana</th><th>Javob bergan</th><th>Suhbatlashgan</th><th>Kunini so'ragan</th><th>Qiziqishlari</th><th>Orzulari</th></tr>${data.map(x=>`<tr><td>${fd2(String(x.day))}</td><td class="tot">${x.javob}</td>${[x.talk,x.kun,x.qiziqish,x.orzu].map(v=>`<td>${v==null?'—':v+'%'}</td>`).join('')}</tr>`).join('')}</table></div></div>`}
 async function fbView(){const r=mr(S.month);let d;const ckh=await ckStats().catch(()=>'');
  try{d=await all(()=>sb.from('feedback').select('*').gte('created_at',r.a+'T00:00:00+05:00').lte('created_at',r.b+'T23:59:59+05:00').order('created_at',{ascending:false}))}
  catch(e){flash('');return `<div class="card"><b>${ic('msg')}Fikr-mulohazalar</b><p class="mut">Bo'limni ochib bo'lmadi: admin Supabase'da <b>sql/yangilanish-3.sql</b> faylini ishga tushirishi kerak.</p><p class="mut">Sabab: ${esc((e&&(e.message||e.code))||e)}</p></div>`}
@@ -921,21 +922,25 @@ function bbStat(rows){const b=rows.filter(x=>x.behavior!=null);if(!b.length)retu
 function critCount(c,rows,sub){let g=0,b=0;const add=(v,m)=>{const x=gb(+v,m);if(x>0)g++;if(x<0)b++};
  critDefs(c).forEach(([k,t,m])=>rows.forEach(r=>{if(r[k]!=null)add(r[k],m)}));(sub||[]).forEach(r=>[['grade',5],['hw',5],['activity',5]].forEach(([k,m])=>{if(r[k]!=null)add(r[k],m)}));return{g,b}}
 // Kunlik savolnoma: ota-ona har kuni farzandi bilan muloqot qilganini belgilaydi (bugungi maslahat va ketma-ket kunlar bilan)
-const CKQ=[['q_talk',"Bugun farzandingiz bilan kamida 15 daqiqa suhbatlashdingizmi?"],['q_day',"Kuni va darslari qanday o'tganini so'radingizmi?"],
- ['q_interest',"Uning qiziqishlari (sevimli mashg'uloti, do'stlari) haqida gaplashdingizmi?"],['q_dream',"Kelajakdagi orzulari va maqsadlari haqida qiziqdingizmi?"]];
+// Kunlik savolnoma: har kuni BITTA savol, har kuni boshqasi (20 ta savol, 4 yo'nalish navbatma-navbat)
+const CKB=[['q_talk',"Bugun farzandingiz bilan kamida 15 daqiqa suhbatlashdingizmi?"],['q_day',"Bugun maktabda kuni qanday o'tganini so'radingizmi?"],['q_interest',"Bugun farzandingizning sevimli mashg'uloti haqida gaplashdingizmi?"],['q_dream',"Katta bo'lganda kim bo'lmoqchi ekanini so'radingizmi?"],
+ ['q_talk',"Bugun farzandingiz bilan birga ovqatlanib, suhbat qildingizmi?"],['q_day',"Bugun qaysi darsi eng qiziq bo'lganini so'radingizmi?"],['q_interest',"Eng yaqin do'stlari kimligini va ular bilan nima qilishini so'radingizmi?"],['q_dream',"Bugun uning orzusi haqida gaplashdingizmi?"],
+ ['q_talk',"Bugun farzandingizni biror ishi uchun maqtadingizmi?"],['q_day',"Uy vazifasini birga ko'rib chiqdingizmi?"],['q_interest',"Bugun birga kitob o'qidingizmi yoki u o'qiganini aytib berdimi?"],['q_dream',"Orzusiga erishish uchun nima qilish kerakligini birga muhokama qildingizmi?"],
+ ['q_talk',"Bugun farzandingiz bilan telefonlarsiz vaqt o'tkazdingizmi?"],['q_day',"Bugun uni nima xursand qilgani yoki xafa qilganini bildingizmi?"],['q_interest',"Bugun birga o'yin o'ynadingizmi yoki sport bilan shug'ullandingizmi?"],['q_dream',"Bugun uning kelajakdagi kasbi haqida qiziqdingizmi?"],
+ ['q_talk',"Bugun farzandingizga «Seni yaxshi ko'raman» dedingizmi?"],['q_day',"Bugun o'qituvchilari va sinfdoshlari haqida gaplashdingizmi?"],['q_interest',"Bugun u nimani yangi o'rganmoqchi ekanini so'radingizmi?"],['q_dream',"Bugun u bilan kelajak rejalari haqida suhbatlashdingizmi?"]];
+const CKQ=[['q_talk','Suhbat'],['q_day','Kuni'],['q_interest','Qiziqishlari'],['q_dream','Orzulari']],ckDay=t=>Math.floor(Date.UTC(+t.slice(0,4),+t.slice(5,7)-1,+t.slice(8,10))/864e5),ckToday=t=>CKB[ckDay(t)%CKB.length];
 const CKT=["«Bugun nimani yangi o'rganding?» deb so'rang — javobini oxirigacha tinglang.","Kechki ovqatni birga, telefonlarsiz o'tkazing.",
  "«Katta bo'lsang kim bo'lmoqchisan? Nega?» — orzusini qo'llab-quvvatlang.","Bugun uni nimadir uchun albatta maqtang.",
  "«Eng yaqin do'sting kim? U bilan nima qilishni yoqtirasan?» deb so'rang.","Birga 15 daqiqa kitob o'qing yoki o'qiganini aytib bersin.",
  "«Bugun seni nima xursand qildi, nima xafa qildi?» deb so'rang.","Uning sevimli mashg'uloti bilan birga shug'ullaning.",
  "Kelajakdagi kasblar haqida birga video ko'ring yoki gaplashing.","Uy vazifasini birga ko'rib chiqing — tanqid emas, yordam bering.",
  "«Senga qanday yordam bera olaman?» deb so'rang.","Dam olish kunini birga rejalashtiring — fikrini so'rang."];
-async function ckCard(){const t=nowT().d,{data,error}=await sb.from('parent_checkin').select('day,q_talk,q_day,q_interest,q_dream').order('day',{ascending:false}).limit(40);if(error)return '';
- const today=data.find(x=>x.day==t),tip=CKT[Math.floor(Date.UTC(+t.slice(0,4),+t.slice(5,7)-1,+t.slice(8,10))/864e5)%CKT.length];
- let st=0;for(let i=0;i<40;i++){const d=new Date(Date.UTC(+t.slice(0,4),+t.slice(5,7)-1,+t.slice(8,10)-i)).toISOString().slice(0,10),r=data.find(x=>x.day==d);if(r&&r.q_talk)st++;else if(i>0||r)break}
- if(today){const y=CKQ.filter(([k])=>today[k]).length;return `<div class="card ckd"><div class="top"><span class="pti" style="--c:#2f9e44">${ic('heart')}</span><div><b>Bugungi suhbat belgilandi — ${y} / 4</b><br><span class="mut">${st?`🔥 Ketma-ket <b>${st}</b> kun farzandingiz bilan suhbatlashdingiz`:"Ertaga albatta farzandingiz bilan suhbatlashing"}</span></div></div><p class="cktip">💡 <b>Bugungi maslahat:</b> ${tip}</p></div>`}
- S.ck=S.ck||{};return `<div class="card ckq"><div class="top"><span class="pti" style="--c:#e8590c">${ic('heart')}</span><div><b>Kunlik savol: farzandingiz bilan muloqot</b><br><span class="mut">Bugungi kun haqida 4 ta qisqa savol — 10 soniya</span></div></div>
- ${CKQ.map(([k,q])=>`<div class="ckr"><span>${q}</span><span class="ckb"><button class="tab ckx ${S.ck[k]===true?'on':''}" data-k="${k}" data-v="1">Ha</button><button class="tab ckx ${S.ck[k]===false?'on no':''}" data-k="${k}" data-v="0">Yo'q</button></span></div>`).join('')}
- <button class="btn" id="ckSend">${ic('check')}Javobni yuborish</button><p class="cktip">💡 <b>Bugungi maslahat:</b> ${tip}</p></div>`}
+async function ckCard(){if(typeof ON=='function'&&!ON('suhbat'))return '';const t=nowT().d,{data,error}=await sb.from('parent_checkin').select('day,q_talk,q_day,q_interest,q_dream').order('day',{ascending:false}).limit(60);if(error)return '';
+ const today=data.find(x=>x.day==t),tip=CKT[ckDay(t)%CKT.length],[k,q]=ckToday(t),yes=r=>r&&CKQ.some(([c])=>r[c]===true);
+ let st=0;for(let i=0;i<60;i++){const d=new Date(Date.UTC(+t.slice(0,4),+t.slice(5,7)-1,+t.slice(8,10)-i)).toISOString().slice(0,10),r=data.find(x=>x.day==d);if(yes(r))st++;else if(i>0||r)break}
+ if(today&&today[k]!=null){return `<div class="card ckd"><div class="top"><span class="pti" style="--c:${today[k]?'#2f9e44':'#e8590c'}">${ic('heart')}</span><div><b>${today[k]?'Barakalla! Bugungi savolga «Ha» dedingiz':"Bugun kechqurun albatta vaqt ajrating"}</b><br><span class="mut">${st?`🔥 Ketma-ket <b>${st}</b> kun farzandingiz bilan muloqot qildingiz`:'Ertaga yangi savol bo\'ladi'}</span></div></div><p class="cktip">💡 <b>Bugungi maslahat:</b> ${tip}</p></div>`}
+ return `<div class="card ckq"><div class="top"><span class="pti" style="--c:#e8590c">${ic('heart')}</span><div><b>Bugungi savol</b><br><span class="mut">Farzandingiz bilan muloqot · har kuni yangi savol</span></div></div>
+ <p class="ckone">${q}</p><div class="ckb2"><button class="btn ckx" data-k="${k}" data-v="1">${ic('check')}Ha</button><button class="tab ckx" data-k="${k}" data-v="0">Yo'q, hali emas</button></div><p class="cktip">💡 <b>Bugungi maslahat:</b> ${tip}</p></div>`}
 // Bosh sahifa (my.gov.uz uslubida): farzand kartochkasi, muhim xabarlar va xizmatlar
 const PSEC={bugun:['clock','#2f9e44',"Bugungi davomat"],baho:['clip','#1c7ed6',"Kunlik vazifalar va baholar"],krit:['chart','#7048e8',"Ko'rsatkichlar"],
  fan:['layers','#0c8599',"Fan baholari"],tanga:['award','#d4a017',"Tangalar"],oylar:['cal','#e8590c',"Oylik natijalar"],tolov:['card','#c2410c',"To'lovlar"],
@@ -961,7 +966,7 @@ function pHome(X,P,hp,ck){const me=X.me,ini=String(me.full_name||'').trim().spli
   pushOn=/Yoqilgan\./.test(hp),bad=(X.cnt||{}).b||0,good=(X.cnt||{}).g||0,nl=P?P.nl||0:0;
  const kidSel=X.kids.length>1?`<select class="fld" id="kid" style="width:auto;max-width:100%">${X.kids.map(k=>`<option value="${k.id}" ${k.id==ME.student_id?'selected':''}>${esc(k.full_name)} — ${esc(cname(k.class_id))}</option>`).join('')}</select>`:'';
  const hero=`<div class="phero">${leaves()}<div class="pav">${esc(ini)}</div><div class="phi"><div class="pnm">${esc(me.full_name)}</div><div class="pkl">${esc(clsLbl(X.c))}${X.c.kind=='rep'?' · Repetitor':''}</div>
-  <div class="pst">${st.length?st.map(x=>`<span class="pch ${x.a.k||''}">${x.a.i} ${x.e.main?'':esc(x.e.cls)+': '}${x.a.t}</span>`).join(''):'<span class="pch">Bugun hali belgilanmagan</span>'}</div>${kidSel?`<div style="margin-top:8px">${kidSel}</div>`:''}</div></div>`;
+  <div class="pst">${st.length?st.map(x=>`<span class="pch ${x.a.k||''}">${x.a.i} ${x.e.main?'':esc(x.e.cls)+': '}${x.a.t}</span>`).join(''):'<span class="pch">Bugun hali belgilanmagan</span>'}</div>${kidSel?`<div style="margin-top:8px">${kidSel}</div>`:''}</div><div class="wth" id="wth" aria-live="polite">${wthHtml()}</div></div>`;
  const al=[bad?`<button class="pal r" data-pv="krit">${ic('shield')}<span><b>${bad} ta past natija</b> — ko'rish</span></button>`:'',
   nl?`<button class="pal r" data-pv="tolov">${ic('card')}<span><b>${nl} oy to'lov kechikmoqda</b> — batafsil</span></button>`:'',
   good?`<button class="pal g" data-pv="krit">${ic('star')}<span><b>${good} ta yaxshi natija</b> — tabriklaymiz!</span></button>`:''].join('');
@@ -1157,11 +1162,10 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[
  if(t.id=='ppw'){await parentPw();return}
  if(t.dataset.pv&&ME&&ME.role=='parent'){S.pv=t.dataset.pv;try{history.pushState({pv:S.pv},'')}catch(e){}scrollTo(0,0);render();return}
  if(t.classList.contains('pback')){if(history.state&&history.state.pv)history.back();else{S.pv=null;render()}return}
- if(t.classList.contains('ckx')){(S.ck=S.ck||{})[t.dataset.k]=t.dataset.v=='1';t.parentNode.querySelectorAll('.ckx').forEach(b=>b.classList.remove('on','no'));t.classList.add('on');if(t.dataset.v=='0')t.classList.add('no');return}
- if(t.id=='ckSend'){const a=S.ck||{};if(CKQ.some(([k])=>a[k]==null)){flash("Iltimos, 4 ta savolning hammasiga javob bering");return}
-  t.disabled=true;const{error}=await sb.from('parent_checkin').upsert({user_id:ME.id,day:nowT().d,...a},{onConflict:'user_id,day'});t.disabled=false;
+ if(t.classList.contains('ckx')){const k=t.dataset.k,v=t.dataset.v=='1';t.disabled=true;
+  const{error}=await sb.from('parent_checkin').upsert({user_id:ME.id,day:nowT().d,[k]:v},{onConflict:'user_id,day'});t.disabled=false;
   if(error){flash(/parent_checkin/.test(error.message)?"Savolnoma hali yoqilmagan (admin yangilanish-33 ni ishga tushirishi kerak)":netMsg(error));return}
-  S.ck={};flash(a.q_talk?"✅ Rahmat! Farzandingiz bilan har kuni suhbatlashing.":"Rahmat! Bugun kechqurun farzandingiz bilan 15 daqiqa suhbatlashib ko'ring.");render();return}
+  flash(v?"✅ Rahmat! Farzandingiz bilan har kuni muloqot qiling.":"Rahmat! Bugun kechqurun farzandingiz bilan 15 daqiqa suhbatlashib ko'ring.");render();return}
  if(t.id=='pushOn'){await pushOn(t);return}
  if(t.id=='pgOk'){try{sessionStorage.setItem('ysh_pgate','1')}catch(e){}const g=$('pgate');if(g)g.remove();return}
  if(t.id=='pushTest'){const{error}=await sb.rpc('push_test');flash(error?netMsg(error):"✅ Sinov xabar yuborildi — 1 daqiqa ichida keladi");return}

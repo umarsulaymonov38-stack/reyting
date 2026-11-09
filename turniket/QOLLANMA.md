@@ -44,8 +44,10 @@ Ularning **Turniket ID** sini platformada: sinfni tanlang → **Sozlamalar** →
 ```
 python turniket_bridge.py
 ```
-Kompyuter qayta yoqilganda o'zi ishga tushishi uchun (Windows): **Task Scheduler** → *Create Basic Task* →
-"When the computer starts" → dastur: `python`, argument: `turniket_bridge.py`, "Start in": `turniket` papkasi manzili.
+**Avtomatik ishga tushirish (tavsiya etiladi):** `4-AVTOMATIK-YOQISH.bat` ni bir marta ikki marta bosing.
+Shundan keyin kompyuter yoqilib Windows'ga kirilganda ko'prik o'zi ishga tushadi (pastki panelda kichraytirilgan oyna),
+kompyuter elektr tarmog'ida uxlab qolmaydigan qilinadi. Dastur to'xtab qolsa, 10 soniyada o'zi qayta ishga tushadi.
+O'chirish: `5-AVTOMATIKNI-OCHIRISH.bat`. Windows parol so'rasa, avtomatik ishga tushish faqat kirilgandan keyin bo'ladi.
 
 Ishlash jurnali: `turniket.log`. Platformada admin chap paneldagi **"Turniket: oxirgi o'tish …"** yozuvidan
 ko'prik ishlayotganini ko'radi (kunduzi 2 soatdan ortiq ma'lumot kelmasa, ogohlantirish chiqadi).

@@ -310,6 +310,8 @@ th{background:#eef4ff}
 @media (max-width:520px){.asv button{flex-basis:104px;height:128px}.abig .ai{width:76px;height:76px}.abig .ai svg{width:38px;height:38px}.abig button{padding:16px}}
 @media (max-width:520px){.ptiles{grid-template-columns:repeat(auto-fit,minmax(min(140px,100%),1fr))}.astats{grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr))}}
 .ptile,.ast,.abig button{min-width:0}@media (max-width:520px){.abig button{flex-wrap:wrap}}.ptile b,.ast small,.ast b{overflow-wrap:anywhere}
+/* Telefonda jadvallar: ustunlar kam bo'lsa ekranga sig'adi, ism ustuni butun ekranni egallamaydi */
+@media (max-width:700px){table{min-width:0}td.l:nth-child(2),th.l:nth-child(2){max-width:48vw;min-width:150px}td input[data-p]{min-width:118px!important;font-size:14px}td.l .nm{min-width:0;width:100%;font-size:15px;padding:6px 4px}th,td{padding:6px 5px}}
 .zm{display:flex;align-items:center;gap:2px;padding:3px;border-radius:12px;background:var(--ac2)}
 .zmb{min-width:40px;height:38px;border:0;border-radius:9px;background:transparent;color:var(--ac-d);font:inherit;font-weight:800;font-size:15px;cursor:pointer;padding:0 8px}
 .zmb:hover{background:var(--card)}.zmv{font-size:12px;min-width:48px}

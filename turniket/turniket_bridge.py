@@ -8,6 +8,7 @@ Ishga tushirish:
   python turniket_bridge.py --setup     sozlash: kalit va parolni so'raydi, config.json ni o'zi yaratadi
   python turniket_bridge.py --test      ulanishni tekshirish (turniketlar va platforma)
   python turniket_bridge.py --sync-ids  turniketdagi ro'yxatni o'quvchilar bilan ism bo'yicha bog'lash
+  python turniket_bridge.py --since 2026-11-09  shu sanadan beri o'tishlarni qayta yuborish (bir martalik)
   python turniket_bridge.py             doimiy ishlash (har N soniyada yangi o'tishlarni yuborish)
 """
 import argparse
@@ -236,7 +237,9 @@ def run_once(devices, platform, state):
                 seen.add(key)
         if batch:
             try:
-                n = platform.push(batch)
+                n = 0
+                for i in range(0, len(batch), 300):  # ko'p o'tish bo'lsa — qismlab (platforma vaqt chegarasi)
+                    n += platform.push(batch[i:i + 300]) or 0
                 sent += len(batch)
                 log.info("%s: %d ta o'tish yuborildi, %d ta o'quvchiga davomat qo'yildi", d.name, len(batch), n)
             except Exception as e:  # noqa: BLE001
@@ -279,6 +282,7 @@ def main():
     ap.add_argument("--setup", action="store_true", help="kalit va parolni kiritib, config.json yaratish")
     ap.add_argument("--test", action="store_true", help="ulanishni tekshirish")
     ap.add_argument("--sync-ids", action="store_true", help="turniket ro'yxatini o'quvchilar bilan bog'lash")
+    ap.add_argument("--since", help="shu sanadan (YYYY-MM-DD) beri o'tishlarni qayta yuborish (bir martalik)")
     ap.add_argument("--config", default="config.json")
     a = ap.parse_args()
 
@@ -335,6 +339,20 @@ def main():
             for m in res["boglanmadi"]:
                 f.write(f"{m['emp']};{m['name']};{m['sabab']}\n")
         log.info("Bog'lanmaganlar ro'yxati: %s (ularni platformada Sozlamalar bo'limida qo'lda yozing)", path)
+        return
+
+    if a.since:
+        # Bir martalik: ishlab turgan ko'prikka tegmaydi (holat.json o'zgarmaydi); takror o'tishlarni platforma o'zi tashlab yuboradi
+        try:
+            d0 = dt.datetime.strptime(a.since, "%Y-%m-%d").replace(tzinfo=TZ)
+        except ValueError:
+            sys.exit("Sana YYYY-MM-DD ko'rinishida bo'lsin, masalan 2026-11-09")
+        st = {"_known": load_json("holat.json", {}).get("_known", {})}
+        for d in devices:
+            st[d.name] = {"last": (d0 + dt.timedelta(minutes=2)).isoformat()}
+        log.info("%s dan beri o'tishlar qayta yuborilmoqda...", a.since)
+        n = run_once(devices, platform, st)
+        log.info("Tayyor: jami %d ta o'tish yuborildi (avval kelganlari takrorlanmaydi)", n)
         return
 
     every = int(cfg.get("poll_seconds", 20))

@@ -36,9 +36,15 @@ So'ng o'quvchilarni turniketdagi ID raqamlari bilan bog'lang (ism-familiya bo'yi
 ```
 python turniket_bridge.py --sync-ids
 ```
-Bog'lanmay qolganlar `boglanmaganlar.csv` fayliga yoziladi (ismi topilmagan yoki bir xil ismli o'quvchilar).
-Ularning **Turniket ID** sini platformada: sinfni tanlang → **Sozlamalar** → "Ota-onalar telefonlari" jadvalidagi
-**Turniket ID** ustuniga qo'lda yozing. Yangi o'quvchi qo'shilganda `--sync-ids` ni qayta ishga tushirish kifoya.
+Bog'lanmay qolganlar `boglanmaganlar.csv` fayliga va platformaga yoziladi (ismi topilmagan yoki bir xil ismli o'quvchilar).
+Ularni platformada bog'lang: Bosh sahifa → **Turniket bog'lash** — har bir shaxs uchun o'quvchini tanlab
+**Bog'lash** ni bosing (o'xshash ismlar foiz bilan taklif qilinadi), o'qituvchi va xodimlar uchun — **O'quvchi emas**.
+Shu bo'limda **turniketda yuzi yo'q o'quvchilar** ro'yxati ham bor (PDF qilib turniket xodimiga berish mumkin).
+Bo'lim uchun bir marta Supabase'da `sql/yangilanish-53-turniket-boglash.sql` ni ishga tushiring.
+Yangi o'quvchi qo'shilganda `--sync-ids` ni qayta ishga tushirish kifoya.
+
+**Turniketlarning IP manzili o'zgarsa** (TEKSHIRISH da "timed out" xatosi): SADP dasturida hozirgi IP larni ko'ring va
+`config.json` dagi `"host"` larni yangilang. Qayta takrorlanmasligi uchun SADP da har bir turniketni statik IP ga o'tkazing.
 
 ## 5. Doimiy ishga tushirish
 ```

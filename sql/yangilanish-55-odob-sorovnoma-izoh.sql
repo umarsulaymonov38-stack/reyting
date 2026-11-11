@@ -1,40 +1,44 @@
 -- Yangilanish 55:
 --  1) Fan baholari: fan o'qituvchisi QO'YILGAN bahoni (uyga vazifa, faollik, baho) o'zgartirsa — sababi (izoh) majburiy.
 --     O'zgarish tarixi saqlanadi va ota-onaga ko'rinadi.
---  2) 2-guruh (5–10-sinflar): «Ota-onaga yaxshilik»ni endi sinf rahbari emas, OTA-ONA belgilaydi —
+--  2) 1- va 2-guruh (1–10-sinflar): «Ota-onaga yaxshilik»ni endi sinf rahbari emas, OTA-ONA belgilaydi —
 --     har hafta juma kuni (juma–yakshanba) ota-ona profilida so'rovnoma: «Shu hafta farzandingiz sizni xursand qildimi yoki ranjitdimi?»
 --     Javob haftaning har bir kelgan kuniga yoziladi: xursand qildi — 10, aralash — 5, ranjitdi — 0.
 --     Ota-ona javob bermasa, bu mezon hisobga olinmaydi (qolgan mezonlar 50 ballga keltiriladi).
---  3) 2-guruhda «Sport» mezoni olib tashlandi. Kunlik maksimal 51, oylik 1020 ball o'zgarmaydi:
---     kitob + odoblar + yaxshilik ×5/3 (yaxshilik hali belgilanmagan bo'lsa: kitob + odoblar ×2.5).
+--  3) 1–10-sinflarda «Sport» mezoni olib tashlandi. Kunlik maksimal 51, oylik 1020 ball o'zgarmaydi:
+--     2–10-sinf: kitob + odoblar + yaxshilik ×5/3 (yaxshilik hali belgilanmagan bo'lsa: kitob + odoblar ×2.5);
+--     1-sinf (kitob yo'q): odoblar + yaxshilik ×2.5 (yaxshilik belgilanmagan bo'lsa: odoblar ×5).
 --     Bu qoida shu haftadan (09.11.2026) boshlab; avvalgi kunlar eski qoidada qoladi.
 --  4) «Maktabdagi odoblar» → «Odoblar». Kunlik baho bildirishnomalari qayta yoqildi.
 -- Supabase → SQL Editor ga to'liq nusxalab, "Run" bosing. Qayta ishga tushirish xavfsiz.
 
--- ============ 2-guruh (5–10-sinflar) ============
+-- ============ 1–10-sinflar (asosiy sinflar; nomi tarixiy: yk_g2) ============
 create or replace function public.yk_g2(p_class bigint) returns boolean
 language sql stable security definer set search_path = public as $$
   select coalesce((select c.kind is distinct from 'rep' and coalesce(c.grp, '') = ''
                           and coalesce(c.subject, '') !~* '^(arab|koreys)'
-                          and coalesce(c.grade, nullif(substring(c.name from '^\s*(\d+)'), '')::int) between 5 and 10
+                          and coalesce(c.grade, nullif(substring(c.name from '^\s*(\d+)'), '')::int) between 1 and 10
                      from public.classes c where c.id = p_class), false)
 $$;
 grant execute on function public.yk_g2(bigint) to authenticated;
 
--- yk_g1: 1-sinf — true, 2-guruh (5–10) — NULL (yk_day_total shunga qarab hisoblaydi), qolganlari — false
+-- yk_g1: 1-sinf — true, 2–10-sinflar — NULL (yk_day_total shunga qarab hisoblaydi), qolganlari — false
 create or replace function public.yk_g1(p_class bigint) returns boolean
 language sql stable security definer set search_path = public as $$
-  select case when public.yk_g2(p_class) then null else
-         coalesce((select c.kind is distinct from 'rep' and coalesce(c.grp, '') = ''
-                          and coalesce(c.subject, '') !~* '^(arab|koreys)'
-                          and coalesce(c.grade, nullif(substring(c.name from '^\s*(\d+)'), '')::int) = 1
-                     from public.classes c where c.id = p_class), false) end
+  select case when coalesce((select c.kind is distinct from 'rep' and coalesce(c.grp, '') = ''
+                                    and coalesce(c.subject, '') !~* '^(arab|koreys)'
+                                    and coalesce(c.grade, nullif(substring(c.name from '^\s*(\d+)'), '')::int) = 1
+                               from public.classes c where c.id = p_class), false) then true
+              when public.yk_g2(p_class) then null else false end
 $$;
 
 create or replace function public.yk_day_total(g1 boolean, att int, book int, sport int, behavior int, kindness int, activity int)
 returns int language sql immutable as $$
   select (case when att = 1 then 1 else 0 end)
-       + case when g1 then round((coalesce(sport, 0) + coalesce(behavior, 0) + coalesce(kindness, 0)) * 5 / 3.0)::int
+       + case when g1 and sport is null then
+                   case when kindness is null then coalesce(behavior, 0) * 5
+                        else round((coalesce(behavior, 0) + kindness) * 2.5)::int end
+              when g1 then round((coalesce(sport, 0) + coalesce(behavior, 0) + coalesce(kindness, 0)) * 5 / 3.0)::int
               when g1 is null and sport is null then
                    case when kindness is null then round((coalesce(book, 0) + coalesce(behavior, 0)) * 2.5)::int
                         else round((coalesce(book, 0) + coalesce(behavior, 0) + kindness) * 5 / 3.0)::int end
@@ -76,7 +80,7 @@ alter table public.grade_changes enable row level security;
 revoke all on public.parent_week, public.grade_changes from anon, authenticated;
 create index if not exists grade_changes_student_idx on public.grade_changes (student_id, day);
 
--- «Baho to'liq qo'yildi» (o'qituvchilar reytingi) + 2-guruhda sport yo'q, yaxshilik — ota-ona javobidan
+-- «Baho to'liq qo'yildi» (o'qituvchilar reytingi) + 1–10-sinflarda sport yo'q, yaxshilik — ota-ona javobidan
 create or replace function public.yk_mark_done() returns trigger
 language plpgsql security definer set search_path = public as $$
 declare g text; cid bigint; done boolean; j jsonb := to_jsonb(new);
@@ -92,7 +96,7 @@ begin
       new.sport := null;
       new.kindness := case when new.att = 1 then
         (select pw.score from public.parent_week pw where pw.student_id = new.student_id and pw.week = date_trunc('week', new.day)::date) end;
-      done := new.att is not null and (new.att = 0 or (new.book is not null and new.behavior is not null));
+      done := new.att is not null and (new.att = 0 or (new.behavior is not null and (new.book is not null or coalesce(public.yk_g1(cid), false))));
     else
       done := new.att is not null and (new.att = 0 or (new.sport is not null and new.behavior is not null and new.kindness is not null
               and (new.book is not null or coalesce(public.yk_g1(cid), false))));
@@ -104,7 +108,7 @@ begin
   return new;
 end $$;
 
--- Shu haftadagi 2-guruh yozuvlari yangi qoidaga o'tkaziladi (sport va o'qituvchi qo'ygan yaxshilik olib tashlanadi)
+-- Shu haftadagi 1–10-sinf yozuvlari yangi qoidaga o'tkaziladi (sport va o'qituvchi qo'ygan yaxshilik olib tashlanadi)
 update public.daily_scores d set updated_at = now()
   from public.students s
  where s.id = d.student_id and d.day >= date '2026-11-09' and public.yk_g2(s.class_id)
@@ -139,7 +143,7 @@ begin
   if p_mood not between 0 and 2 then raise exception 'Javobni tanlang'; end if;
   if p_honest is not true then raise exception 'Vijdonan belgilaganingizni tasdiqlang'; end if;
   select s.id, s.class_id into sid, cid from public.students s where s.id::text = p_sid;
-  if sid is null or not public.yk_g2(cid) then raise exception 'So''rovnoma faqat 5–10-sinflar uchun'; end if;
+  if sid is null or not public.yk_g2(cid) then raise exception 'So''rovnoma faqat asosiy sinflar (1–10) uchun'; end if;
   insert into public.parent_week (student_id, week, mood, score, note, honest)
   values (sid, w, p_mood, case p_mood when 2 then 10 when 1 then 5 else 0 end, nullif(btrim(left(p_note, 500)), ''), true)
   on conflict do nothing;
@@ -224,7 +228,7 @@ begin
   for c in select * from (values ('book', 'Kitob o''qish', 10), ('sport', 'Sport', 10), ('behavior', case when g then 'Tartib-intizom' else 'Odoblar' end, case when g then 5 else 10 end),
                                  ('kindness', 'Ota-onaga yaxshilik', 10), ('hw', 'Uyga vazifa', 5), ('activity', 'Sinfdagi faollik', 5)) v(k, t, m) loop
     continue when (case when g then c.k not in ('hw', 'activity', 'behavior')
-                        when g2 then c.k not in ('book', 'behavior')   -- 2-guruh: sport yo'q, yaxshilikni ota-onaning o'zi belgilaydi
+                        when g2 then c.k not in ('book', 'behavior')   -- 1–10-sinflar: sport yo'q, yaxshilikni ota-onaning o'zi belgilaydi
                         else c.k not in ('book', 'sport', 'behavior', 'kindness') end);
     if tg_op = 'INSERT' or (to_jsonb(new) ->> c.k) is distinct from (to_jsonb(old) ->> c.k) then
       perform public.yk_grade_mark(sid, 'd:' || c.k, (to_jsonb(new) ->> c.k)::numeric,
@@ -247,5 +251,5 @@ create trigger yk_push_daily after insert or update on public.daily_scores for e
 
 notify pgrst, 'reload schema';
 
--- Tekshiruv: 2-guruh sinflari (sport yo'q, yaxshilik — ota-ona so'rovnomasidan)
-select c.name as "2-guruh sinflari (yangi qoida)" from public.classes c where public.yk_g2(c.id) order by c.grade, c.name;
+-- Tekshiruv: yangi qoidadagi sinflar (sport yo'q, yaxshilik — ota-ona so'rovnomasidan)
+select c.name as "1–10-sinflar (yangi qoida)" from public.classes c where public.yk_g2(c.id) order by c.grade, c.name;

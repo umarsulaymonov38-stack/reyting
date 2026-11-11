@@ -1,12 +1,13 @@
 -- Yangilanish 57:
 --  1) Turniket davomati faqat belgilangan vaqtlarda hisoblanadi:
---       KELISH — har kuni 07:40 dan 09:20 gacha (shu oraliqdagi birinchi o'tish);
+--       KELISH — har kuni 09:20 gacha (erta kelganlar ham; kunning birinchi o'tishi);
 --       KETISH — 16:00 dan 17:30 gacha (shu oraliqdagi oxirgi o'tish).
 --     Boshqa vaqtdagi o'tishlar saqlanadi, lekin davomatga ham, ota-onaga xabarga ham ta'sir qilmaydi.
 --  2) Buxgalter: o'qituvchi akkauntiga «Buxgalter» belgisi (bosh admin «O'qituvchilar» bo'limida qo'yadi).
 --     Buxgalter profilida faqat «To'lov» bo'limi: barcha sinflar kesimida o'quvchilar, to'lov belgilash,
 --     kunlik to'lovlar ro'yxati (PDF) va statistika. Belgilangan to'lov ota-ona profilida ko'rinadi.
--- Supabase → SQL Editor ga to'liq nusxalab, "Run" bosing (loyiha: YUKSALISH-REYTING). Qayta ishga tushirish xavfsiz.
+-- Supabase → SQL Editor ga to'liq nusxalab, "Run" bosing (loyiha: YUKSALISH-REYTING). Qayta ishga tushirish xavfsiz
+-- (avvalgi nusxasini ishga tushirgan bo'lsangiz ham — shu faylni yana bir marta Run qiling).
 
 -- ============ 1. Turniket vaqt oraliqlari ============
 create or replace function public.tk_push(p_token text, p_events jsonb) returns int
@@ -31,7 +32,7 @@ begin
     returning id, (xmax = 0) into eid, isnew;
     if eid is not null and sid is not null and public.yk_tk_class(cid) then
       lt := e.ts at time zone 'Asia/Tashkent';
-      if lt::time between time '07:40' and time '09:20' then
+      if lt::time <= time '09:20' then
         insert into public.daily_scores (student_id, day, att, excused, arrived_at) values (sid, lt::date, 1, false, e.ts)
         on conflict (student_id, day) do update
           set att = 1, excused = false, arrived_at = least(coalesce(public.daily_scores.arrived_at, excluded.arrived_at), excluded.arrived_at);
@@ -43,8 +44,8 @@ begin
         n := n + 1;
       end if;
       -- xabarlar faqat yangi o'tishlar uchun (ko'prik eski kunlarni keyin yuborsa — xabar ketmaydi)
-      -- xabar faqat hisoblanadigan oraliqdagi o'tishlar uchun: 07:40–09:20 — «keldi», 16:00–17:30 — «ketdi»
-      kind := case when lt::time between time '07:40' and time '09:20' then 'keldi' when lt::time between time '16:00' and time '17:30' then 'ketdi' end;
+      -- xabar faqat hisoblanadigan oraliqdagi o'tishlar uchun: 09:20 gacha — «keldi», 16:00–17:30 — «ketdi»
+      kind := case when lt::time <= time '09:20' then 'keldi' when lt::time between time '16:00' and time '17:30' then 'ketdi' end;
       if isnew and kind is not null and e.ts > now() - interval '3 hours' then
         perform public.yk_push_add(kind, sid::text, e.ts);
         if has_sms then perform public.yk_sms_add(kind, sid::text, e.ts); end if;
@@ -103,7 +104,7 @@ begin
              on conflict (emp) do nothing returning emp)
   select (select count(*) from u) + (select count(*) from x) into linked;
 
-  -- yangi bog'langanlarning shu kungacha hisobga olinmagan o'tishlari: 07:40–09:20 — kelish, 16:00–17:30 — ketish
+  -- yangi bog'langanlarning shu kungacha hisobga olinmagan o'tishlari: 09:20 gacha — kelish, 16:00–17:30 — ketish
   -- (1–2-sinflar turniket bo'yicha hisoblanmaydi — ular turniketsiz binoda o'qiydi)
   if linked > 0 then
     update public.turnstile_events e set student_id = s.id::text
@@ -115,7 +116,7 @@ begin
       from public.turnstile_events e
       join public.students s on s.id::text = e.student_id
       join tk_p p on p.emp = e.emp_no
-     where public.yk_tk_class(s.class_id) and (e.ts at time zone 'Asia/Tashkent')::time between time '07:40' and time '09:20'
+     where public.yk_tk_class(s.class_id) and (e.ts at time zone 'Asia/Tashkent')::time <= time '09:20'
      group by s.id, (e.ts at time zone 'Asia/Tashkent')::date
     on conflict (student_id, day) do update
       set att = 1, excused = false,
@@ -166,12 +167,12 @@ begin
      and (s.ext_id = te.emp_no or s.id::text = (select t.student_id from public.tk_ids t where t.emp = te.emp_no))
      and c.kind is distinct from 'rep' and coalesce(c.grp, '') = '';
   get diagnostics b = row_count;
-  -- 2. Kelish: kunning 07:40–09:20 oralig'idagi birinchi o'tishi
+  -- 2. Kelish: kunning 09:20 gacha birinchi o'tishi
   with a as (
     select s.id, (te.ts at time zone 'Asia/Tashkent')::date d, min(te.ts) t
       from public.turnstile_events te join public.students s on s.id::text = te.student_id
      where te.ts >= (p_from::timestamp at time zone 'Asia/Tashkent')
-       and (te.ts at time zone 'Asia/Tashkent')::time between time '07:40' and time '09:20' and public.yk_tk_class(s.class_id)
+       and (te.ts at time zone 'Asia/Tashkent')::time <= time '09:20' and public.yk_tk_class(s.class_id)
      group by 1, 2)
   insert into public.daily_scores (student_id, day, att, excused, arrived_at)
   select id, d, 1, false, t from a

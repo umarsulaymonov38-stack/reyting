@@ -1332,7 +1332,10 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[
    else if(!ce&&cr&&cr.st=='new'){const u=await sb.auth.signUp({email:EM('p',p),password:c});
     if(!u.error&&u.data.session){const{error:e2}=await sb.rpc('register_parent',{p_name:'Ota-ona: '+(cr.name||''),p_phone:p});if(e2){flash(netMsg(e2));return}r=u;k='p'}
     else if(u.error&&authBad(u.error))r={error:u.error}}}
-  if(r.error){flash(authBad(r.error)||"Telefon yoki parol noto'g'ri. Ota-ona bo'lsangiz, parolni sinf rahbaridan so'rang");return}try{localStorage.setItem('ysh_pf'+p,k)}catch(e){}await loadMe(r.data.user.id)}
+  if(r.error){flash(authBad(r.error)||"Telefon yoki parol noto'g'ri. Ota-ona bo'lsangiz, parolni sinf rahbaridan so'rang");return}
+  // Bir raqamda ikki akkaunt (o'qituvchi + bo'sh «pending» ota-ona): pending bo'lsa, shu parol bilan o'qituvchi akkauntiga kirib ko'riladi
+  if(k=='p'){const{data:pr}=await sb.from('profiles').select('role').eq('id',r.data.user.id).maybeSingle();if(!pr||pr.role=='pending'){const r2=await sb.auth.signInWithPassword({email:EM('o',p),password});if(!r2.error){r=r2;k='o'}}}
+  try{localStorage.setItem('ysh_pf'+p,k)}catch(e){}await loadMe(r.data.user.id)}
  else if(t.id=='rgo'){const p=PE($('rph').value),password=$('rpw').value,name=$('rn').value.trim();if(!name||!p||password.length<6){flash("Ism familiya, telefon (9 raqam) va kamida 6 belgili parolni kiriting");return}
   const{data:st,error:e0}=await sb.rpc('phone_status',{p_phone:p});if(e0){flash("Baza yangilanmagan (6-SQL ishga tushirilmagan): "+e0.message);return}
   if(st=='none'){flash("Bu telefon raqam maktab ro'yxatida yo'q. Sinf rahbari raqamni o'quvchi ma'lumotiga yozishi kerak");return}

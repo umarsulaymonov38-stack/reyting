@@ -1117,7 +1117,7 @@ async function setView(){const np=noPh(CL.find(x=>x.id==S.cls)),tcard=await tCar
 // Ota-ona profili: farzand ma'lumotlari bo'limlarga ajratilgan (bosh sahifadagi xizmatlar va har bir bo'lim uchun)
 async function parentData(){const mm=S.month.split('-'),a=S.month+'-01',b=S.month+'-'+String(new Date(Date.UTC(+mm[0],+mm[1],0)).getUTCDate()).padStart(2,'0');
  const[me,kids]=await Promise.all([q(sb.from('students').select('full_name,class_id').eq('id',ME.student_id).single()),q(sb.rpc('my_kids'))]);
- const c=CL.find(x=>x.id==me.class_id)||{},kind=c.kind=='rep'?'r':(c.grp||(c.grade||0)>7)?'u':'p';setMode(c);S.kc=c;S.kn=me.full_name;
+ const c=CL.find(x=>x.id==me.class_id)||{},kind=c.kind=='rep'?'r':c.grp?'u':'p';setMode(c);S.kc=c;S.kn=me.full_name;
  const X={c,kind,me,kids,s:{}},dd=x=>x.day.slice(8)+'.'+x.day.slice(5,7),none='<tr><td colspan="9" class="mut">Bu oy ma\'lumot yo\'q</td></tr>';
  X.head=`<div class="card"><div class="top"><b class="cn2">${esc(me.full_name)}</b><span class="mut">${esc(clsLbl(c))}${c.kind=='rep'?' (Repetitor)':''}</span><span style="margin-left:auto"><b>Oy:</b> <input type="month" id="mo" value="${S.month}"></span></div></div>`;
  if(kind=='r'){
@@ -1127,7 +1127,7 @@ async function parentData(){const mm=S.month.split('-'),a=S.month+'-01',b=S.mont
   X.krit=critCard(c,rows);X.cnt=critCount(c,rows,[]);X.s.baho=r?`Guruhda ${r.rank}-o'rin`:'';return X}
  const[rk,rows]=await Promise.all([q(sb.rpc('my_task_rank',{p_from:a,p_to:b})),q(sb.from('daily_scores').select('*').eq('student_id',ME.student_id).gte('day',a).lte('day',b).order('day'))]);const r=rk&&rk[0];
  const sub=await sb.rpc('parent_subjects',{p_from:a,p_to:b}).then(r=>(r.data||[]).filter(x=>x.student_id==ME.student_id)).catch(()=>[]),g=!!c.grp;
- X.baho=`<div class="card"><div class="kpi"><div><b>${r?r.total:0}</b>jami ball</div><div><b>${r?r.class_rank+'/'+r.class_size:'—'}</b>${ic('school')}sinfda o'rin</div><div><b>${r?r.school_rank+'/'+r.school_size:'—'}</b>${ic('trophy')}${kind=='p'?"1–7-sinflar orasida":"reytingda"} o'rin</div></div></div>`+
+ X.baho=`<div class="card"><div class="kpi"><div><b>${r?r.total:0}</b>jami ball</div><div><b>${r?r.class_rank+'/'+r.class_size:'—'}</b>${ic('school')}sinfda o'rin</div><div><b>${r?r.school_rank+'/'+r.school_size:'—'}</b>${ic('trophy')}maktab bo'yicha o'rin</div></div></div>`+
   (kind=='p'?`<div class="card"><b>${ic('clip')}Kunlik vazifalar</b><div class="wrap"><table><tr><th>Sana</th>${th()}<th>Jami</th></tr>${rows.length?rows.map(x=>`<tr><td>${dd(x)}</td>${CR.map(k=>`<td>${k.c=='att'?attIc(x):(x[k.c]??'—')}</td>`).join('')}<td class="tot">${sum(x)}</td></tr>`).join(''):none}</table></div></div>`
   :`<div class="card"><b>${ic('cal')}Davomat${g?' va baholar':''}</b><div class="wrap"><table><tr><th>Sana</th><th>Davomat</th>${g?"<th>Uyga vazifa</th><th>Sinfdagi faollik</th><th>Tartib-intizom</th><th class=\"l\">Tartib bo'yicha izoh</th><th>O'rtacha</th>":''}</tr>${rows.length?rows.map(x=>`<tr><td>${dd(x)}</td><td>${attIc(x)}</td>${g?`<td>${x.hw??'—'}</td><td>${x.activity??'—'}</td><td>${x.behavior??'—'}</td><td class="l">${x.beh_band?`<span style="color:var(--bad)">${x.beh_band}-band: ${esc((BB.find(b=>b[0]==x.beh_band)||[])[1]||'')}</span>`:'—'}</td><td class="tot">${gAvg(x)}</td>`:''}</tr>`).join(''):none}</table></div></div>`+(g?bbStat(rows):''));
  X.s.baho=r?`${r.total} ball · sinfda ${r.class_rank}-o'rin`:'';

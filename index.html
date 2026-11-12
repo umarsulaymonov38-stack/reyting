@@ -256,6 +256,9 @@ b.bdx{color:var(--bad)}b.okx{color:var(--ok)}
 .ckeys button.op{background:#475467;color:#84caff}.ckeys button.cl{color:#fda29b}.ckeys button.eq{background:linear-gradient(135deg,#1971c2,#5f3dc4)}
 .cact{display:flex;gap:8px;margin-top:10px}.cact button{flex:1;border:0;border-radius:12px;background:#1d2939;color:#d0d5dd;padding:9px 6px;font-family:inherit;font-weight:700;font-size:12.5px;cursor:pointer}.cact button:hover{background:#344054}
 @media(max-width:600px){.bxhero{padding:20px 18px}.bxk,.bxqa{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.bxk>div{padding:12px 13px}.bxk b{font-size:22px}.bxring{flex-direction:column;align-items:flex-start;gap:6px}.ring{width:52px;height:52px}.ring i{width:38px;height:38px;font-size:12px}.bxqa button{flex-direction:column;align-items:flex-start;padding:12px;gap:8px}.bxqa small{font-size:11.5px}.bxtabs button{flex-direction:column;gap:3px;padding:9px 6px;font-size:12px}.bxtabs{overflow:visible}#calcBox{width:min(300px,calc(100vw - 36px))}#calcFab{width:54px;height:54px;font-size:24px}}
+.tab.gpk.on{background:#d6336c;color:#fff;border-color:#d6336c}.gapc summary{gap:10px}.gpn{display:flex;flex-direction:column}.gpn small{color:var(--mut);font-weight:500;font-size:12.5px}
+.gpd{border-top:1px solid var(--ln);padding:10px 0}.gpd:first-child{border-top:0}.gpbar{flex:1;min-width:80px;max-width:220px;height:8px;background:var(--ln);border-radius:8px;overflow:hidden;display:block}.gpbar b{display:block;height:100%;background:#f59f00;border-radius:8px}
+.gpm{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.gpm span{background:#fff0f6;color:#a61e4d;border:1px solid #fcc2d7;border-radius:99px;padding:3px 10px;font-size:12.5px;font-weight:600}.gpm.ok span{background:#ebfbee;color:#2b8a3e;border-color:#b2f2bb}
 .tab.rkb.on{background:#1c7ed6;color:#fff;border-color:#1c7ed6}
 .pfl{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 12px;align-items:center}.tab.pfb.on{background:#1c7ed6;color:#fff;border-color:#1c7ed6}.pinf{font-size:12.5px;padding:6px 10px}.pinfo{max-width:760px!important;max-height:90vh;overflow:auto}
 .pmc{display:inline-flex;gap:2px}.pmc i{font-style:normal;font-size:10.5px;font-weight:700;width:17px;height:19px;line-height:19px;text-align:center;border-radius:5px;background:#f1f3f5;color:#adb5bd}.pmc i.ok{background:#2f9e44;color:#fff}.pmc i.cur{outline:2px solid #1c7ed6;outline-offset:1px}.prc{font-size:12.5px;padding:6px 10px;white-space:nowrap}.tab.pmt.on{background:#1c7ed6;color:#fff;border-color:#1c7ed6}
@@ -607,7 +610,7 @@ async function tkLast(){const{data,error}=await sb.from('turnstile_events').sele
  if(!data.length)return `<p class="mut">${ic('wifi')}Turniket: hali ma'lumot kelmagan</p>`;const m=(Date.now()-new Date(data[0].ts))/6e4;
  return `<p class="mut">${ic('wifi')}Turniket: oxirgi o'tish ${fdt(data[0].ts).slice(-5)}${m>120&&nowT().h>=7&&nowT().h<19?' <b style="color:var(--bad)">— ko\'prik ishlayaptimi?</b>':''}</p>`}
 // 2-darajali admin: o'qituvchi akkaunti + butun platformani kuzatish (o'zgartirmaydi)
-const BUX=()=>!!ME&&ME.role=='teacher'&&!!ME.bux,ADM=()=>!!ME&&(ME.role=='admin'||(ME.role=='teacher'&&!!ME.admin2)),A2=()=>!!ME&&ME.role=='teacher'&&!!ME.admin2,A2SEC=['cls','abs','late','leave','trt','ota','fb'];
+const BUX=()=>!!ME&&ME.role=='teacher'&&!!ME.bux,ADM=()=>!!ME&&(ME.role=='admin'||(ME.role=='teacher'&&!!ME.admin2)),A2=()=>!!ME&&ME.role=='teacher'&&!!ME.admin2,A2SEC=['cls','abs','late','leave','trt','gap','ota','fb'];
 async function sideView(){const el=$('side');if(!ADM()||(S.as&&S.as!='cls')){el.innerHTML='';document.body.classList.remove('hs-side');return}
  document.body.classList.add('hs-side');const t=nowT(),hd=`<b>${ic('school')}Bugun maktabga kelganlar</b>`;
  if(t.h*60+t.m<440){el.innerHTML=`<div class="card sd">${hd}<div class="big" id="scd">—</div><p class="mut">Kelish davomati soat <b>7:20</b> da boshlanadi va <b>9:20</b> gacha jonli yangilanadi.</p></div>`;tick();return}
@@ -859,6 +862,25 @@ function calcMount(){if($('calc'))return;const d=document.createElement('div');d
   else if(b.dataset.cx=='put'){const i=document.querySelector('.mwhy input[type=number]');if(v==null)return;if(i){i.value=Math.round(v);d.classList.remove('open');i.focus();flash("✅ Summa katagiga qo'yildi: "+fmtN(Math.round(v)))}else flash("Avval «To'lanmagan» tugmasini bosib, to'lov oynasini oching")}});
  document.addEventListener('keydown',e=>{if(!d.isConnected||!d.classList.contains('open'))return;const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return;
   const m={'*':'×','/':'÷','-':'−','+':'+','Enter':'=','=':'=','Backspace':'⌫','Escape':'C','Delete':'C','%':'%','.':'.',',':'.'},k=/^\d$/.test(e.key)?e.key:m[e.key];if(k){e.preventDefault();press(k)}});sh()}
+// Admin: «Baho qo'yilmaganlar» — sinflar kesimida, kunlar bo'yicha, mas'ul o'qituvchi bilan (yangilanish-63)
+function gapRange(){const t=nowT().d,d=new Date(t+'T00:00:00Z'),wd=(d.getUTCDay()+6)%7,mon=new Date(d.getTime()-wd*864e5),iso=x=>x.toISOString().slice(0,10),k=S.gpk||'week';
+ if(k=='today')return[t,t];if(k=='last')return[iso(new Date(mon.getTime()-7*864e5)),iso(new Date(mon.getTime()-3*864e5))];if(k=='custom')return[S.gpa||t,S.gpb||t];return[iso(mon),iso(new Date(mon.getTime()+4*864e5))]}
+async function gapView(){const[a,b]=gapRange(),k=S.gpk||'week',{data,error}=await sb.rpc('grade_gaps',{p_from:a,p_to:b});
+ const bar=`<div class="card"><div class="top"><b>${ic('edit')}Baho qo'yilmaganlar</b><span class="pfl" style="margin:0 0 0 auto">${[['today','Bugun'],['week','Shu hafta'],['last',"O'tgan hafta"],['custom','Sana bo\'yicha']].map(([x,n])=>`<button class="tab gpk ${k==x?'on':''}" data-k="${x}">${n}</button>`).join('')}</span></div>
+ ${k=='custom'?`<div class="top"><b>Dan:</b><input type="date" id="gpa" value="${a}" max="${today}"><b>Gacha:</b><input type="date" id="gpb" value="${b}" max="${today}"></div>`:''}
+ <p class="mut">${fd2(a)}${a!=b?' – '+fd2(b):''} · Asosiy sinflarda dushanba–juma kunlari baholari <b>juma soat 20:00 gacha</b> qo'yilishi kerak; guruhlarda — dars bo'lgan kunlar. «To'liq» — davomat va barcha mezonlar qo'yilgan.</p></div>`;
+ if(error)return bar+`<div class="card"><p class="mut">${/grade_gaps/.test(error.message||'')?"Bo'limni ochish uchun Supabase'da <b>yangilanish-63</b> ni ishga tushiring.":esc(netMsg(error))}</p></div>`;
+ const R0=data||[],by={};R0.forEach(r=>(by[r.class_id]=by[r.class_id]||[]).push(r));
+ const C=Object.keys(by).map(id=>{const L=by[id].sort((x,y)=>x.day<y.day?1:-1),c=CL.find(x=>x.id==id)||{name:L[0].class_name};return{c,L,miss:L.reduce((q,r)=>q+(r.n-r.done),0),bad:L.filter(r=>r.done<r.n).length,t:L[0].teachers||''}});
+ const G=C.filter(x=>x.miss>0).sort((x,y)=>y.miss-x.miss||clsCmp(x.c,y.c)),OK=C.filter(x=>!x.miss).sort((x,y)=>clsCmp(x.c,y.c));
+ const tot=R0.length,full=R0.filter(r=>r.done>=r.n).length,ms=R0.reduce((q,r)=>q+(r.n-r.done),0);S.gapP={a,b,G};
+ const dd=d=>{const x=String(d);return x.slice(8,10)+'.'+x.slice(5,7)},wdn=d=>DN[new Date(d+'T00:00:00Z').getUTCDay()].slice(0,3);
+ return bar+`<div class="card"><div class="kpi"><div><b>${G.length}</b>⚠️ sinf/guruhda baho to'liq emas</div><div><b>${ms}</b>baho qo'yilmagan o'quvchi-kun</div><div><b>${full} / ${tot}</b>to'liq baholangan sinf-kun</div></div>
+ ${G.length?`<div class="top" style="margin-top:8px"><button class="tab" id="gapPdf">${ic('printer')}PDF</button><span class="mut">Sinf nomini bosing — kunlar va o'quvchilar ro'yxati ochiladi.</span></div>`:''}</div>
+ ${G.length?G.map(x=>`<details class="card fold gapc"><summary><span class="gpn"><b>${esc(clsLbl(x.c))}</b><small>${esc(x.t||"o'qituvchi biriktirilmagan")}</small></span><span class="bdg r" style="margin-left:auto">${x.bad} kun · ${x.miss} ta baho yo'q</span><span class="chev"></span></summary><div class="fbd">
+  ${x.L.filter(r=>r.done<r.n).map(r=>`<div class="gpd"><div class="top"><b>${dd(r.day)} · ${wdn(r.day)}</b><span class="mut">${r.done} / ${r.n} baholangan</span><i class="gpbar"><b style="width:${Math.round(r.done/r.n*100)}%"></b></i></div><div class="gpm">${(r.missing||[]).map(n=>`<span>${esc(n)}</span>`).join('')}</div></div>`).join('')}</div></details>`).join('')
+  :`<div class="card"><p>✅ Bu davrda barcha sinflarda baholar to'liq qo'yilgan.</p></div>`}
+ ${OK.length?`<details class="card fold"><summary><b>✅ To'liq baholangan sinflar (${OK.length})</b><span class="chev"></span></summary><div class="fbd"><div class="gpm ok">${OK.map(x=>`<span>${esc(clsLbl(x.c))}</span>`).join('')}</div></div></details>`:''}`}
 // To'lovlar hisoboti: kunlik / oylik — sinflar kesimida, naqd va karta alohida, yopish (muhrlash) va PDF
 const rPer=()=>S.rk=='kun'?[S.pdd,S.pdd]:[S.rmo+'-01',mr(S.rmo).b],fN=v=>Number(v||0).toLocaleString('ru-RU').replace(/,/g,' ');
 function repBody(R,cl,pdf){const mo=r=>r.yearly?"Yillik (sentyabr–iyun)":MON[+String(r.month).slice(5,7)-1]+' '+String(r.month).slice(0,4),
@@ -1051,12 +1073,12 @@ document.addEventListener('click',async e=>{const t=e.target.closest('.ppc,.otg,
 const pPing=()=>{const n=Date.now();if(ME&&ME.role=='parent'&&!document.hidden&&n-(S.pg||0)>60000){S.pg=n;sb.rpc('parent_ping').then(()=>{},()=>{})}};
 setInterval(pPing,120000);document.addEventListener('visibilitychange',pPing);
 // Admin boshqaruv paneli (davlat portali uslubida): bosh sahifa — xizmatlar to'ri, har bir xizmat alohida bo'lim
-const ASEC={cls:['school','#1c7ed6',"Sinflar va baholash","Sinf tanlab baholash, reyting, sozlamalar"],tch:['users','#1971c2',"O'qituvchilar","Sinflar, vazifalar va parollar"],trt:['award','#c2255c',"O'qituvchilar reytingi","Oylik ish natijalari"],
+const ASEC={cls:['school','#1c7ed6',"Sinflar va baholash","Sinf tanlab baholash, reyting, sozlamalar"],tch:['users','#1971c2',"O'qituvchilar","Sinflar, vazifalar va parollar"],trt:['award','#c2255c',"O'qituvchilar reytingi","Oylik ish natijalari"],gap:['edit','#d6336c',"Baho qo'yilmaganlar","Qaysi sinfda kimga baho qo'yilmagan"],
  abs:['userx','#e03131',"Kelmaganlar","Bugun kelmagan o'quvchilar"],late:['clock','#f08c00',"Kech kelganlar","08:30 dan keyin kelganlar"],leave:['logout','#7048e8',"Ketish davomati","Maktabdan ketish vaqtlari"],tkb:['wifi','#0b7285',"Turniket bog'lash","Bog'lanmagan shaxslar va turniketda yuzi yo'q o'quvchilar"],
  ota:['link','#2f9e44',"Ota-onalar ulanishi","Jonli tahlil va kodlarni tarqatish"],fb:['msg','#5f3dc4',"Fikr-mulohazalar","Ota-onalar fikri va savolnoma"],
  pay:['card','#0c8599',"To'lov","Oylik to'lovlar va eslatmalar"],menu:['food','#e8590c',"Taomnoma","Kunlik ovqatlanish menyusi"],bk:['down','#495057',"Zaxira nusxa","Barcha ma'lumotlarni yuklab olish"]};
-const AGRP=[["O'quv jarayoni",['cls','tch','trt']],["Davomat nazorati",['abs','late','leave','tkb']],["Ota-onalar bilan ishlash",['ota','fb']],["Moliya va xo'jalik",['pay','menu','bk']]];
-const aView=k=>({abs:absView,late:lateView,leave:leaveView,tkb:tkbView,pay:payView,tch:tView,trt:ratingView,menu:menuView,fb:fbView,ota:otaView,bk:async()=>bkCard()})[k];
+const AGRP=[["O'quv jarayoni",['cls','tch','trt','gap']],["Davomat nazorati",['abs','late','leave','tkb']],["Ota-onalar bilan ishlash",['ota','fb']],["Moliya va xo'jalik",['pay','menu','bk']]];
+const aView=k=>({gap:gapView,abs:absView,late:lateView,leave:leaveView,tkb:tkbView,pay:payView,tch:tView,trt:ratingView,menu:menuView,fb:fbView,ota:otaView,bk:async()=>bkCard()})[k];
 const aCrumb=k=>`<nav class="acr"><button class="acb" data-as="">${ic('home')}Bosh sahifa</button><span class="acs">›</span><b>${esc((ASEC[k]||[])[2]||'')}</b></nav>`;
 async function admHome(){const t=nowT(),M=CL.filter(c=>[1,2].includes(grpOf(c)));
  const[n,pr,R]=await Promise.all([sb.from('students').select('id',{count:'exact',head:true}).in('class_id',M.map(c=>c.id)).neq('full_name','').then(r=>r.count||0,()=>0),
@@ -1395,7 +1417,7 @@ async function tchView(){const mm=S.month.split('-'),a=S.month+'-01',b=S.month+'
 function rs(f,cb,mx){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,(mx||110)/Math.max(im.width,im.height)),v=document.createElement('canvas');v.width=Math.round(im.width*k);v.height=Math.round(im.height*k);const x=v.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,v.width,v.height);x.drawImage(im,0,0,v.width,v.height);cb(v.toDataURL('image/jpeg',.82))};im.src=r.result};r.readAsDataURL(f)}
 const upd=async(tb,v,k,id)=>{const{error}=await sb.from(tb).update(v).eq(k,id);if(error)flash(netMsg(error))};
 async function signOut(){await sb.auth.signOut();ME=null;flash('');loginView()}
-document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[data-t],[data-lt],.att,.ratt,.pay,#imb,.imdel,.gimg,#smsauto,#net,#out,#pk,#gc,#lgb,#tgo,#lgo,#rgo,#mkt,#mna,#mnb,.mdel,.tadd,.trem,.pdel,#rty,#absPdf,#latePdf,#leavePdf,.smsTg,#smsTest,#smsAll,.smsCls,#smsLogB,#ppw,#pushOn,#pushOff,#pushTest,#pgOk,[data-pv],.pback,.ckx,#ckSend,#ratePdf,#bkb,#bku,.bdel,#fbs,.fdel,#fbPdf,#payPdf,.payPdf,.kidgo,#stadd,#infPdf,.satt,.tcd,.tcadd,.tpwb,#bkp,.wkx,#wkSend,#wkYes,#wkNo,.gask,.tqr,.tans,#pdPdf,.pyr,.prc,.pfb,.pinf,#paidPdf,.rkb,#repPdf,#repClose,#repOpen,[data-bt]');if(!t)return;
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[data-t],[data-lt],.att,.ratt,.pay,#imb,.imdel,.gimg,#smsauto,#net,#out,#pk,#gc,#lgb,#tgo,#lgo,#rgo,#mkt,#mna,#mnb,.mdel,.tadd,.trem,.pdel,#rty,#absPdf,#latePdf,#leavePdf,.smsTg,#smsTest,#smsAll,.smsCls,#smsLogB,#ppw,#pushOn,#pushOff,#pushTest,#pgOk,[data-pv],.pback,.ckx,#ckSend,#ratePdf,#bkb,#bku,.bdel,#fbs,.fdel,#fbPdf,#payPdf,.payPdf,.kidgo,#stadd,#infPdf,.satt,.tcd,.tcadd,.tpwb,#bkp,.wkx,#wkSend,#wkYes,#wkNo,.gask,.tqr,.tans,#pdPdf,.pyr,.prc,.pfb,.pinf,#paidPdf,.rkb,#repPdf,#repClose,#repOpen,[data-bt],.gpk,#gapPdf');if(!t)return;
  const G=t.matches('#tgo,#lgo,#rgo,#mkt,#mna,#gc,#smsauto,#net,.pay,.imdel,.mdel,.tadd,.trem,.pdel,#bku,.bdel,#fbs,.fdel');if(G){if(t.disabled)return;t.disabled=true}try{
  if(t.classList.contains('smsTg')&&S.smsCfg){const k=t.dataset.k,n=!S.smsCfg[k];if(n&&!confirm("Yoqilsinmi? Shundan keyin SMS'lar avtomatik yuboriladi va har biri uchun Eskiz balansidan pul yechiladi."))return;
   const{error}=await sb.from('sms_config').update({[k]:n,updated_at:new Date().toISOString()}).eq('id',1);if(error){flash(netMsg(error));return}S.smsCfg[k]=n;t.classList.toggle('on',n);t.textContent=n?'✅ Yoqilgan':"⛔ O'chiq";flash(n?'✅ Yoqildi':"O'chirildi");return}
@@ -1407,6 +1429,8 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[
  if(t.dataset.pv&&ME&&ME.role=='parent'){S.pv=t.dataset.pv;try{history.pushState({pv:S.pv},'')}catch(e){}scrollTo(0,0);render();return}
  if(t.classList.contains('pback')){if(history.state&&history.state.pv)history.back();else{S.pv=null;render()}return}
  if(t.classList.contains('rkb')){S.rk=t.dataset.k;render();return}
+ if(t.classList.contains('gpk')){S.gpk=t.dataset.k;render();return}
+ if(t.id=='gapPdf'&&S.gapP){const P=S.gapP,dd=d=>fd2(String(d));printDoc("Baho qo'yilmaganlar — "+dd(P.a)+(P.a!=P.b?' – '+dd(P.b):''),`<p><b>Davr:</b> ${dd(P.a)}${P.a!=P.b?' – '+dd(P.b):''}<br><b>Baho to'liq qo'yilmagan sinf/guruhlar:</b> ${P.G.length} ta</p>${P.G.map(x=>`<h2>${esc(clsLbl(x.c))} — ${esc(x.t||"o'qituvchi biriktirilmagan")}</h2><table><tr><th style="width:90px">Sana</th><th style="width:90px">Baholangan</th><th>Baho qo'yilmagan o'quvchilar</th></tr>${x.L.filter(r=>r.done<r.n).map(r=>`<tr><td>${dd(r.day)}</td><td>${r.done} / ${r.n}</td><td>${(r.missing||[]).map(esc).join(', ')}</td></tr>`).join('')}</table>`).join('')}`);return}
  if(t.dataset&&t.dataset.bt){S.bt=t.dataset.bt;if(t.dataset.pf)S.pf=t.dataset.pf;if(t.dataset.rk)S.rk=t.dataset.rk;render();scrollTo({top:0,behavior:'smooth'});return}
  if(t.id=='repPdf'&&S.rep){const[a]=rPer(),cl=S.rep.cl,ttl=S.rk=='kun'?"Kunlik to'lov hisoboti — "+fd2(a):"Oylik to'lov hisoboti — "+MON[+a.slice(5,7)-1]+' '+a.slice(0,4);
   printDoc(ttl,`<p><b>Davr:</b> ${S.rk=='kun'?fd2(a):MON[+a.slice(5,7)-1]+' '+a.slice(0,4)}<br><b>Holati:</b> ${cl?`yopilgan — ${esc(cl.closed_name||'')}, ${new Date(cl.closed_at).toLocaleString('uz-UZ',{timeZone:TZ})}`:'yopilmagan (joriy holat)'}<br><b>Tayyorladi:</b> ${esc(ME.full_name||'')}</p>${repBody(S.rep.rows,cl,true)}<p style="margin-top:24px">Buxgalter: <b>${esc((cl&&cl.closed_name)||ME.full_name||'')}</b> &nbsp;&nbsp; Imzo: ____________________</p>`);return}
@@ -1559,6 +1583,7 @@ document.addEventListener('change',async e=>{const t=e.target;
  if(t.id=='mo'&&t.value){S.month=t.value;render()}
  if(t.id=='pm'&&t.value){S.pm=t.value;render()}
  if(t.id=='pdd'&&t.value){S.pdd=t.value;$('pdBox').innerHTML=await repHtml();return}
+ if((t.id=='gpa'||t.id=='gpb')&&t.value){S[t.id]=t.value;render();return}
  if(t.id=='rmo'&&t.value){S.rmo=t.value;$('pdBox').innerHTML=await repHtml();return}
  if(t.id=='imf'&&t.files[0])rs(t.files[0],async u=>{const{error}=await sb.from('class_images').insert({class_id:S.cls,caption:($('icap')||{}).value||'',img:u});if(error)flash(netMsg(error));else render()},1000);
  if(t.id=='lg'&&t.files[0])rs(t.files[0],async u=>{await upd('classes',{logo:u},'id',S.cls);CL.find(c=>c.id==S.cls).logo=u;const lc=logoGet();lc[S.cls]=u;logoPut(lc);render()})});

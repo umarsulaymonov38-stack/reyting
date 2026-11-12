@@ -488,7 +488,7 @@ async function booksView(){const c0=CL.find(x=>x.id==S.cls)||{},g=grpOf(c0),A=ME
 async function parentBooks(){const c=S.kc;if(!c||!c.id)return '';const{data,error}=await sb.from('books').select('*').eq('grp',grpOf(c)).or(`class_id.is.null,class_id.eq.${c.id}`).order('created_at',{ascending:false});
  return error||!data||!data.length?'':`<div class="card"><b>${ic('books')}Fan darsliklari</b>${data.map(b=>bItem(b,false)).join('')}</div>`}
 // Fikr-mulohazalar: ota-ona yozadi, admin sinflar kesimida ko'radi va PDF qiladi
-const LATE='08:30',TK_UNTIL='09:20',TK_LEAVE='16:00',TK_LEND='17:30';  // yangilanish-57: kelish 09:20 gacha, ketish 16:00–17:30
+const LATE='08:30',TK_FROM='07:20',TK_UNTIL='09:20',TK_LEAVE='16:00',TK_LEND='17:30';  // yangilanish-61: kelish 07:20–09:20, ketish 16:00–17:30
   // shu vaqtdan keyin kelganlar to'q sariq rangda ko'rsatiladi
 const FBC=['Umumiy',"Ta'lim sifati","O'qituvchilar",'Ovqatlanish','Xavfsizlik va tartib','Taklif'];
 const fdt=t=>new Date(t).toLocaleString('en-GB',{timeZone:TZ,day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).replace(/\//g,'.');
@@ -610,7 +610,7 @@ async function tkLast(){const{data,error}=await sb.from('turnstile_events').sele
 const BUX=()=>!!ME&&ME.role=='teacher'&&!!ME.bux,ADM=()=>!!ME&&(ME.role=='admin'||(ME.role=='teacher'&&!!ME.admin2)),A2=()=>!!ME&&ME.role=='teacher'&&!!ME.admin2,A2SEC=['cls','abs','late','leave','trt','ota','fb'];
 async function sideView(){const el=$('side');if(!ADM()||(S.as&&S.as!='cls')){el.innerHTML='';document.body.classList.remove('hs-side');return}
  document.body.classList.add('hs-side');const t=nowT(),hd=`<b>${ic('school')}Bugun maktabga kelganlar</b>`;
- if(t.h*60+t.m<560){el.innerHTML=`<div class="card sd">${hd}<div class="big" id="scd">—</div><p class="mut">Natija soat <b>9:20</b> da chiqadi.</p></div>`;tick();return}
+ if(t.h*60+t.m<440){el.innerHTML=`<div class="card sd">${hd}<div class="big" id="scd">—</div><p class="mut">Kelish davomati soat <b>7:20</b> da boshlanadi va <b>9:20</b> gacha jonli yangilanadi.</p></div>`;tick();return}
  const M=CL.filter(c=>c.kind!='rep'&&!c.grp),ids=g=>M.filter(c=>!g||grpOf(c)==g).map(c=>c.id);
  const cnt=async(ci,att)=>{if(!ci.length)return 0;const{count,error}=await sb.from('daily_scores').select('student_id,students!inner(class_id)',{count:'exact',head:true}).eq('day',t.d).eq('att',att).in('students.class_id',ci);if(error)throw error;return count||0};
  const tot=async ci=>{if(!ci.length)return 0;const{count,error}=await sb.from('students').select('id',{count:'exact',head:true}).in('class_id',ci).neq('full_name','');if(error)throw error;return count||0};
@@ -1585,7 +1585,7 @@ let lastD=today;
 function tick(){const t=nowT();$('clk').innerHTML=`<b>${t.hms}</b><span>${t.wd}, ${t.lbl} · Toshkent vaqti</span>`;
  if(t.d!==lastD){if(S.date==lastD){S.date=t.d;S.month=t.d.slice(0,7)}lastD=t.d;if(ME){render();sideView()}}
  if(ME&&ME.role=='admin'&&t.s==0&&t.h>=9&&(t.m%5==0||(t.h==9&&t.m==0)))sideView();
- const sc=$('scd');if(sc){const r=33600-(t.h*3600+t.m*60+t.s);if(r<=0){sc.removeAttribute('id');sideView()}else sc.textContent=[r/3600|0,(r%3600)/60|0,r%60].map(v=>String(v).padStart(2,'0')).join(':')}
+ const sc=$('scd');if(sc){const r=26400-(t.h*3600+t.m*60+t.s);if(r<=0){sc.removeAttribute('id');sideView()}else sc.textContent=[r/3600|0,(r%3600)/60|0,r%60].map(v=>String(v).padStart(2,'0')).join(':')}
  const cd=$('cd');if(cd){const r=36000-(t.h*3600+t.m*60+t.s);if(r<=0){cd.removeAttribute('id');render()}else cd.textContent=[r/3600|0,(r%3600)/60|0,r%60].map(v=>String(v).padStart(2,'0')).join(':')}}
 addEventListener('unhandledrejection',e=>flash(netMsg(e.reason)));
 addEventListener('offline',()=>flash("⚠️ Internet uzildi. Ulanmaguncha kiritilgan ma'lumotlar saqlanmaydi."));addEventListener('online',()=>flash("✅ Internet qayta ulandi"));

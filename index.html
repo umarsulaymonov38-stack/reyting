@@ -437,6 +437,8 @@ const flash=t=>{$('msg').textContent=t||''};
 const q=async p=>{const{data,error}=await p;if(error){flash(netMsg(error));throw error}return data};
 // 1000 qatordan ko'p bo'lishi mumkin bo'lgan ro'yxatlarni bo'lib-bo'lib o'qish (Supabase bir so'rovda 1000 tagacha beradi)
 const all=async mk=>{let out=[];for(let f=0;;f+=1000){const d=await q(mk().range(f,f+999));out=out.concat(d);if(d.length<1000)return out}};
+// Ixtiyoriy ma'lumot (masalan, SMS jurnali o'rnatilmagan bo'lishi mumkin): xato ekranga chiqmaydi, bo'sh ro'yxat qaytadi
+const allQ=async mk=>{let out=[];for(let f=0;;f+=1000){const{data,error}=await mk().range(f,f+999);if(error)return out;out=out.concat(data||[]);if((data||[]).length<1000)return out}};
 const dbn=(k,fn,ms=400)=>{if(tm[k])clearTimeout(tm[k].t);const go=()=>{delete tm[k];fn().catch(()=>{})};tm[k]={t:setTimeout(go,ms),go}};
 const flush=()=>Object.values(tm).forEach(x=>{clearTimeout(x.t);x.go()});
 const empty=(t,d,x)=>`<div class="card empty"><span class="cl ph">${ic('school')}</span><div><b>${t}</b><p class="mut">${d}</p>${x||''}</div></div>`;
@@ -984,7 +986,7 @@ async function payDaily(d){let{data,error}=await sb.from('payments').select('stu
 async function payView(){S.pm=S.pm||today.slice(0,7);const m=S.pm+'-01',reg=CL.filter(c=>[1,2].includes(grpOf(c))).map(c=>c.id);
  const bx=BUX(),[st,pr,sq,cf,bp,yr,pa]=await Promise.all([reg.length?all(()=>sb.from('students').select(bx?'id,class_id,slot,full_name':'id,class_id,slot,full_name,student_private(parent_phone)').in('class_id',reg).neq('full_name','').order('class_id').order('slot')):[],
   all(()=>sb.from('payments').select('*').eq('month',m).order('student_id')),
-  all(()=>sb.from('sms_queue').select('student_id,status,day,error').eq('kind','tolov').gte('day',m).lte('day',mr(S.pm).b).order('day')).catch(()=>[]),
+  allQ(()=>sb.from('sms_queue').select('student_id,status,day,error').eq('kind','tolov').gte('day',m).lte('day',mr(S.pm).b).order('day')),
   bx?{data:null,error:1}:sb.from('sms_config').select('*').eq('id',1).maybeSingle(),bx?sb.rpc('bux_phones').then(r=>r.data||[],()=>[]):[],sb.from('payments').select('student_id').eq('yearly',true).gte('month',syMonths().sy+'-09-01').then(r=>r.data||[],()=>[]),all(()=>sb.from('payments').select('student_id,month').eq('paid',true).gte('month',syMonths().sy+'-09-01').lte('month',(syMonths().sy+1)+'-06-01').order('student_id')).catch(()=>[])]);
  const pd={},sm={},bph={},pms={},yrs=new Set(yr.map(x=>String(x.student_id)));pa.forEach(r=>(pms[r.student_id]=pms[r.student_id]||new Set()).add(String(r.month).slice(0,7)));bp.forEach(x=>bph[x.student_id]=x.parent_phone);if(bx)st.forEach(s=>s.student_private={parent_phone:bph[s.id]||''});pr.forEach(r=>pd[r.student_id]=r);sq.forEach(r=>sm[r.student_id]=r);
  S.pay=st.filter(s=>s.full_name.trim()&&reg.includes(s.class_id)).map(s=>{const p=Array.isArray(s.student_private)?s.student_private[0]:s.student_private,t0=(p&&p.parent_phone)||'';

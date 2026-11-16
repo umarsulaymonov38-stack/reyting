@@ -415,7 +415,7 @@ const bbSel=(id,r)=>`<select class="bb${r.behavior!=null&&+r.behavior<5&&!r.beh_
 // 1–2-guruh (yangilanish-65): davomat (1) + mezonlar 30 ballga keltiriladi = kuniga 31, oyiga 620; 1-sinfda «Kitob o'qish» ham yo'q — 3 mezon ×5/3
 // 1–10-sinflar (yangilanish-55): sport yo'q; «Ota-onaga yaxshilik»ni ota-ona juma kuni belgilaydi.
 // 2–10-sinf: kitob + odoblar + yaxshilik (yaxshilik yo'q bo'lsa kitob + odoblar ×1.5); 1-sinf: odoblar + yaxshilik ×1.5 (yaxshilik yo'q bo'lsa odoblar ×3)
-const CR1=CR51.filter(x=>x.c!='book'&&x.c!='sport'),CR2=CR51.filter(x=>x.c!='sport'),isG1=c=>!!c&&c.kind!='rep'&&!c.grp&&!isLang(c)&&gradeOf(c)==1,isG2=c=>!!c&&c.kind!='rep'&&!c.grp&&!isLang(c)&&gradeOf(c)>=1&&gradeOf(c)<=10,crOf=c=>isG1(c)?CR1:isG2(c)?CR2:CR51;
+const CR1=CR51.filter(x=>x.c!='book'&&x.c!='sport'),CR2=CR51.filter(x=>x.c!='sport'),isG1=c=>!!c&&c.kind!='rep'&&!c.grp&&!isLang(c)&&gradeOf(c)==1,isG2=c=>!!c&&c.kind!='rep'&&!c.grp&&!isLang(c)&&(gradeOf(c)||5)>=1&&(gradeOf(c)||5)<=10,crOf=c=>isG1(c)?CR1:isG2(c)?CR2:CR51;
 const WKM=[['😞','Ranjitdi','Ranjitdi'],['😐','Aralash',"Ba'zan xursand qildi, ba'zan ranjitdi"],['😊','Xursand qildi','Xursand qildi']];
 function setMode(c){const g=c&&c.grp&&c.kind!='rep';CR=g?CRG:crOf(c);MAXD=g?16:31;PARF=CR===CR2||CR===CR1?['kindness']:[]}
 const PE=v=>{const d=String(v||'').replace(/\D/g,'').slice(-9);return d.length==9?d:''},EM=(r,p)=>r+p+'@ota.yuksalish.app';

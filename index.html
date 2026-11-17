@@ -669,7 +669,7 @@ async function render(){
  if(!rp&&[1,2].includes(grpOf(c0))){tabs.splice(2,0,T('chart','Oylik infografika'));V.splice(2,0,infoView)}
  // Oddiy sinfda (1–2-guruh): sinf rahbari kunlik vazifalarni, fan o'qituvchisi faqat o'z fanidan baho qo'yadi
  const reg=!rp&&[1,2].includes(grpOf(c0)),fan=reg&&!canPh(c0);
- if(fan){tabs[0]=T('edit','Fan baholari');V[0]=subjView}else if(reg){tabs.splice(1,0,T('layers','Fan baholari'));V.splice(1,0,subjView)}
+ if(fan){tabs[0]=T('edit','Fan baholari');V[0]=subjView}else if(reg){tabs.splice(1,0,T('layers','Fan baholari'));V.splice(1,0,subjView);tabs.splice(2,0,T('userx','Baholanmaganlar'));V.splice(2,0,clsGapView)}
  if(!A){tabs.push(T('chart',"O'quvchilar va statistika"));V.push(tchView)}
  if(BOOKS){tabs.push(T('books','Fan darsliklari'));V.push(booksView)}
  if(!A){tabs.push(T('award',"O'qituvchilar reytingi"));V.push(ratingView)}
@@ -677,9 +677,25 @@ async function render(){
  if(ME.role=='admin'){const tc=await q(sb.from('teacher_classes').select('class_id')).catch(()=>null);if(tc)S.tcSet=new Set(tc.map(x=>x.class_id));if(tk!=S.rt)return}
  chips();if(ADM()){const ch=$('chips');ch.insertAdjacentHTML('afterbegin',aCrumb('cls'));if(!$('side').innerHTML)sideView()}const c=CL.find(x=>x.id==S.cls)||{};
  const top=`<div class="card"><div class="top">${c.logo?`<img class="cl" src="${c.logo}">`:`<span class="cl ph">${ic('school')}</span>`}<b class="cn2" id="cnB">${esc(clsLbl(c))}</b>${c.id&&canPh(c)?`<button class="tab cnE" data-c="${c.id}" title="Sinf nomini o'zgartirish (faqat sinf rahbari)">${ic('edit')}</button>`:''}<span class="mut">${esc(c.teacher_name||'')}</span>${ME.roles&&ME.roles[c.id]?`<span class="rl">${ME.roles[c.id]=='rahbar'?'Sinf rahbari':"Fan o'qituvchisi"}</span>`:''}</div><div class="tabs">${tabs.map((t,i)=>`<button class="tab ${i==S.tab?'on':''}" data-t="${i}">${t}</button>`).join('')}</div></div>`;
- $('view').innerHTML=top+'<div class="ld"><i class="spin"></i>Yuklanmoqda…</div>';let h='';const taP=ME.role=='teacher'?taCard().catch(()=>''):'';
+ $('view').innerHTML=top+'<div class="ld"><i class="spin"></i>Yuklanmoqda…</div>';let h='';const taP=ME.role=='teacher'?Promise.all([myGapCard().catch(()=>''),taCard().catch(()=>'')]).then(a=>a.join('')):'';
  try{h=V[S.tab]?await V[S.tab]():''}catch(e){h='<div class="card">Ma\'lumotni o\'qib bo\'lmadi. Sahifani yangilang.</div>'}
  const ta=await taP;if(tk==S.rt)$('view').innerHTML=top+ta+h}
+// Sinf rahbari: qaysi ustoz qaysi o'quvchini baholamagan (yangilanish-77)
+async function clsGapView(){const{data,error}=await sb.rpc('class_gaps',{p_class:S.cls,p_day:S.date});
+ const bar=dtBar('<span class="mut">Fan o\'qituvchilari, guruh (Matematika, Ingliz tili, Arab/Koreys tili) va repetitor ustozlari hamda kunlik vazifalar bo\'yicha shu kuni baholanmagan o\'quvchilar. Dars kunlari — «O\'qituvchilar» bo\'limidagi jadval bo\'yicha.</span>');
+ if(error)return `<div class="card">${bar}<p class="mut">${/class_gaps/.test(error.message||'')?"Bu bo'lim uchun Supabase'da <b>yangilanish-77</b> ni ishga tushiring.":esc(netMsg(error))}</p></div>`;
+ const by={};(data||[]).forEach(r=>{const k=r.kind+'|'+r.subject+'|'+r.teacher+'|'+(r.group_name||'');(by[k]=by[k]||{...r,L:[]}).L.push(r.student)});const G=Object.values(by).sort((a,b)=>b.L.length-a.L.length);
+ if(S.date==today){clearTimeout(S.cgTm);const tk0=S.rt;S.cgTm=setTimeout(()=>{if(S.rt==tk0&&!document.querySelector('.mwhy'))render()},60000)}
+ return `<div class="card">${bar}<div class="kpi" style="margin-top:8px"><div><b>${G.length}</b>⚠️ fan / ustoz</div><div><b>${new Set((data||[]).map(r=>r.student)).size}</b>baholanmagan o'quvchi</div></div></div>
+ ${G.length?G.map(x=>`<div class="card tgc"><div class="top"><span class="bxav" style="--c:${x.kind=='rahbar'?'#1971c2':x.kind=='fan'?'#d6336c':'#7048e8'}">${esc((x.subject||'?').trim()[0]||'?')}</span><span class="gpn"><b>${esc(x.subject)}</b><small>${esc(x.teacher||'')}${x.group_name?' · '+esc(x.group_name):x.kind=='rahbar'?' · sinf rahbari':''}</small></span><span class="bdg r" style="margin-left:auto">${x.L.length} ta baholanmagan</span></div><div class="gpm">${x.L.map(n=>`<span>${esc(n)}</span>`).join('')}</div></div>`).join('')
+  :`<div class="card"><p>✅ ${S.date==today?'Hozircha':'Bu kuni'} barcha ustozlar baholarni qo'ygan${S.date==today?' (yoki bugun dars hali bo\'lmagan)':''}.</p></div>`}`}
+// O'qituvchi: o'zi bugun baholamagan o'quvchilar + har kuni 15:00 eslatmani yoqish
+async function myGapCard(){const[{data,error},sub]=await Promise.all([sb.rpc('my_gaps',{p_day:today}),pushOK()?pushSub().catch(()=>null):Promise.resolve(null)]);
+ const on=!!sub&&typeof Notification!='undefined'&&Notification.permission=='granted',L=error?[]:(data||[]),miss=L.reduce((q,r)=>q+(r.n-r.done),0);
+ const pb=on?'':pushOK()&&!(isIOS()&&!standalone())&&!(typeof Notification!='undefined'&&Notification.permission=='denied')?`<button class="btn" id="pushOn" style="margin:8px 0 0">🔔 Eslatmalarni yoqish — har kuni 15:00</button>`:'';
+ if(!L.length)return pb?`<div class="card"><div class="top"><span class="pti" style="--c:#d6336c">${ic('bell')}</span><div><b>Baho eslatmalari</b><br><span class="mut">Baholanmagan o'quvchilar bo'lsa, har kuni soat 15:00 da telefoningizga eslatma keladi.</span></div></div>${pb}</div>`:'';
+ return `<div class="card mgap"><div class="top"><span class="pti" style="--c:#d6336c">${ic('edit')}</span><div><b>Bugun baholanmagan o'quvchilar: ${miss} ta</b><br><span class="mut">Iltimos, bugunoq baholang${on?' · 🔔 eslatma yoqilgan':''}.</span></div></div>
+ ${L.map(r=>`<div class="gpd"><div class="top"><b>${esc(clsLbl(CL.find(c=>c.id==r.class_id)||{name:r.class_name}))}</b><span class="mut">${r.role=='rahbar'?'kunlik vazifalar':esc(r.subject||'')}</span><span class="mut" style="margin-left:auto">${r.done} / ${r.n}</span><button class="tab" data-c="${r.class_id}">Baholash →</button></div><div class="gpm">${(r.missing||[]).slice(0,12).map(n=>`<span>${esc(n)}</span>`).join('')}${(r.missing||[]).length>12?`<span>+${r.missing.length-12}</span>`:''}</div></div>`).join('')}${pb}</div>`}
 // O'qituvchi: ota-onalardan «Nima sababdan farzandimni baholamadingiz?» savollari (yangilanish-56)
 const TQR=["Darsda javob bermadi","Uyga vazifani bajarmagan edi","Keyingi darsda baholayman","Baho qo'yildi, tekshiring"];
 async function taCard(){const{data,error}=await sb.rpc('teacher_asks');if(error||!data||!data.length)return '';const op=data.filter(x=>!x.answered_at),dn=data.filter(x=>x.answered_at),dd=d=>d.slice(8,10)+'.'+d.slice(5,7);

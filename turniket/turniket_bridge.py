@@ -27,6 +27,7 @@ except ImportError:
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TZ = dt.timezone(dt.timedelta(hours=5))  # Toshkent vaqti
+VERSION = "2026-11-18"
 USER_DAYS = 14  # shaxslar ro'yxati yopiq bo'lsa, necha kunlik o'tishlardan yig'iladi
 log = logging.getLogger("turniket")
 
@@ -188,6 +189,9 @@ class Platform:
     def map_ids(self, people):
         return self.rpc("tk_map", {"p_token": self.token, "p_people": people})
 
+    def heartbeat(self, doors):
+        return self.rpc("tk_heartbeat", {"p_token": self.token, "p_doors": doors, "p_ver": VERSION})
+
 
 def event_person(item):
     """O'tish voqeasidagi shaxs: (employeeNo, ism)."""
@@ -223,21 +227,29 @@ def run_once(devices, platform, state):
             if not st.get("err"):  # bir xil xatoni har 20 soniyada qayta yozmaslik uchun
                 log.warning("%s: turniketdan o'qib bo'lmadi: %s", d.name, e)
             st["err"] = True
+            st["errmsg"] = str(e)[:200]
             continue
         if st.pop("err", None):
             log.info("%s: aloqa tiklandi", d.name)
+        st.pop("errmsg", None)
+        st["ok_at"] = now.isoformat()
         # Yangi ko'rilgan shaxslarni ism-familiya bo'yicha o'quvchilar bilan avtomatik bog'lash (davomatdan oldin)
         known = state.setdefault("_known", {})
+        tried = state.setdefault("_tried", {})  # bog'lanmaganlar 30 daqiqada bir marta qayta tekshiriladi (serverni ortiqcha yuklamaslik uchun)
         new = {}
         for it in items:
             emp, name = event_person(it)
             if emp and name and known.get(emp) != name:
+                t0 = tried.get(emp)
+                if t0 and now - dt.datetime.fromisoformat(t0) < dt.timedelta(minutes=30):
+                    continue
                 new[emp] = name
         if new:
             try:
                 res = platform.map_ids([{"emp": k, "name": v} for k, v in new.items()])
                 miss = {m["emp"] for m in res.get("boglanmadi", [])}
                 known.update({k: v for k, v in new.items() if k not in miss})  # bog'lanmaganlar keyingi safar qayta tekshiriladi
+                tried.update({k: now.isoformat() for k in miss})
                 if res.get("boglandi"):
                     log.info("%s: %s ta yangi o'quvchi turniket bilan bog'landi", d.name, res["boglandi"])
             except Exception as e:  # noqa: BLE001
@@ -249,6 +261,8 @@ def run_once(devices, platform, state):
             if ev and key not in seen:
                 batch.append(ev)
                 seen.add(key)
+            if ev and ev.get("ts") and ev["ts"] > st.get("ev_at", ""):
+                st["ev_at"] = ev["ts"]  # eshikdagi oxirgi o'tish vaqti (holat nazorati uchun)
         if batch:
             try:
                 n = 0
@@ -261,6 +275,20 @@ def run_once(devices, platform, state):
                 continue
         st["last"] = now.isoformat()
         st["seen"] = list(seen)[-2000:]
+    # Holat xabari (har daqiqada): ko'prik ishlayapti, qaysi eshik javob beryapti — platforma adminga ogohlantirish yuboradi
+    hb = state.get("_hb")
+    if not hb or now - dt.datetime.fromisoformat(hb) >= dt.timedelta(seconds=55):
+        doors = [{"name": d.name, "host": d.base.split("://")[-1].split(":")[0].split("/")[0],
+                  "ok": not state.get(d.name, {}).get("err") and not d.locked_out,
+                  "err": ("login/parol noto'g'ri" if d.locked_out else state.get(d.name, {}).get("errmsg", "")),
+                  "ok_at": state.get(d.name, {}).get("ok_at"), "ev_at": state.get(d.name, {}).get("ev_at")} for d in devices]
+        try:
+            platform.heartbeat(doors)
+            state["_hb"] = now.isoformat()
+        except Exception as e:  # noqa: BLE001 — eski platformada funksiya bo'lmasa ham ko'prik ishlayveradi
+            if not state.get("_hb_err"):
+                log.info("Holat xabarini yuborib bo'lmadi: %s", str(e)[:150])
+            state["_hb_err"] = True
     return sent
 
 

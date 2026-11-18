@@ -122,10 +122,14 @@ input,button{touch-action:manipulation}
 /* Chap panel: bugun maktabga kelganlar */
 #side:empty{display:none}
 body.hs-side main{max-width:1340px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:16px;align-items:start}
-.mc{min-width:0}#side .sd{position:sticky;top:12px;margin:0}
+.mc{min-width:0}#side{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow-y:auto;display:flex;flex-direction:column;gap:12px;scrollbar-width:thin}#side .sd{margin:0}
+.dvt{margin:10px 0 6px;font-size:13px;font-variant-numeric:tabular-nums}.dvh,.dvr{display:grid;grid-template-columns:minmax(0,1fr) 64px 46px;gap:6px;align-items:center}.dvh{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);padding:0 4px 6px;border-bottom:1.5px solid var(--ln)}.dvh span:nth-child(n+2),.dvr>span:nth-child(n+2){text-align:right}
+.dvr{width:100%;font:inherit;color:inherit;text-align:left;background:none;border:0;border-bottom:1px solid var(--ln);padding:7px 4px;cursor:pointer;line-height:1.2;border-radius:0;box-shadow:none;transition:background .15s}.dvr:hover,.dvr:focus-visible{background:rgba(127,127,127,.1);outline:none}.dvs{min-width:0}.dvs b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}.dvr small{display:block;font-size:10.5px;color:var(--mut);font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dvr small.dvn{color:#e03131}.dvc{white-space:nowrap;font-weight:700}.dvc small{color:#e03131;font-weight:700}
+.dvp{display:inline-block;min-width:40px;text-align:center;padding:3px 6px;border-radius:7px;font-size:11.5px;font-weight:800;color:#fff}.dvp.z{background:#e03131}.dvp.l{background:#f76707}.dvp.m{background:#f59f00}.dvp.h{background:#2f9e44}
+.dvok{display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 12px;border-radius:10px;background:#2f9e44;color:#fff;font-weight:800;font-size:13px}
 .sd>b{display:block;font-size:15px}.sd .big{font-size:46px;font-weight:800;color:var(--ac);line-height:1.1;margin:10px 0 2px;font-variant-numeric:tabular-nums}
 .sd .bar{margin:10px 0 4px}.sl{list-style:none;padding:0;margin:12px 0 6px}.sl li{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-top:1px solid var(--ln);font-size:14px}.sl b{font-variant-numeric:tabular-nums}
-@media(max-width:900px){body.hs-side main{display:block}#side .sd{position:static;margin-bottom:14px}}
+@media(max-width:900px){body.hs-side main{display:block}#side{position:static;max-height:none;overflow:visible;margin-bottom:14px}#side .sd{position:static}}
 /* Sinflar guruhlari */
 #chips.grp{display:flex;flex-direction:column;gap:8px;padding:0 0 12px}
 .cg{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:8px 10px;box-shadow:var(--sh)}
@@ -649,8 +653,28 @@ async function sideView(){const el=$('side');if(!ADM()||(S.as&&S.as!='cls')){el.
  try{const[p,a,n,p1,p2]=await Promise.all([cnt(ids(),1),cnt(ids(),0),tot(ids()),cnt(ids(1),1),cnt(ids(2),1)]);
   const ci=ids(),{count:ec}=ci.length?await sb.from('daily_scores').select('student_id,students!inner(class_id)',{count:'exact',head:true}).eq('day',t.d).eq('att',0).eq('excused',true).in('students.class_id',ci):{count:0},e=ec||0;
   el.innerHTML=`<div class="card sd">${hd}<span class="mut">${t.lbl} · ${t.hms.slice(0,5)} holati</span><div class="big">${p}</div><div class="mut">jami ${n} o'quvchidan${n?' ('+Math.round(p/n*100)+'%)':''}</div><div class="bar"><i style="width:${n?Math.min(100,p/n*100):0}%"></i></div>
-  <ul class="sl"><li><span>${ic('bag')}Boshlang'ich (1–4)</span><b>${p1}</b></li><li><span>${ic('cap')}Yuqori (5–10)</span><b>${p2}</b></li><li><span>${ic('xc')}Kelmagan (sababsiz)</span><b>${a-e}</b></li><li><span><i class=exd></i> Sababli</span><b>${e}</b></li><li><span>${ic('minus')}Belgilanmagan</span><b>${Math.max(0,n-p-a)}</b></li></ul><p class="mut">Har 5 daqiqada yangilanadi.</p>${await tkLast()}</div>`}
+  <ul class="sl"><li><span>${ic('bag')}Boshlang'ich (1–4)</span><b>${p1}</b></li><li><span>${ic('cap')}Yuqori (5–10)</span><b>${p2}</b></li><li><span>${ic('xc')}Kelmagan (sababsiz)</span><b>${a-e}</b></li><li><span><i class=exd></i> Sababli</span><b>${e}</b></li><li><span>${ic('minus')}Belgilanmagan</span><b>${Math.max(0,n-p-a)}</b></li></ul><p class="mut">Har 5 daqiqada yangilanadi.</p>${await tkLast()}</div>${await attGapHtml(t,M).catch(()=>'')}`}
  catch(e){el.innerHTML=`<div class="card sd">${hd}<p class="mut">Ma'lumotni o'qib bo'lmadi. Birozdan so'ng qayta urinadi.</p></div>`}}
+// Davomat to'liq qilinmagan sinflar (bugun) — chap panel jadvali
+async function attGapHtml(t,M){const hd=`<b>${ic('clip')}Davomat to'liq emas</b>`;
+ if(t.wd=='Yakshanba')return `<div class="card sd dv">${hd}<p class="mut">Bugun dam olish kuni.</p></div>`;
+ const ci=M.map(c=>c.id);if(!ci.length)return'';
+ const[st,ds,rb]=await Promise.all([
+  sb.from('students').select('id,class_id').in('class_id',ci).neq('full_name','').limit(5000),
+  sb.from('daily_scores').select('student_id,att,students!inner(class_id)').eq('day',t.d).in('students.class_id',ci).not('att','is',null).limit(5000),
+  sb.from('teacher_classes').select('class_id,profiles(full_name)').eq('role','rahbar').in('class_id',ci).then(r=>r,()=>({data:[]}))]);
+ if(st.error)throw st.error;if(ds.error)throw ds.error;
+ const n={},m={},R={},done=new Set((ds.data||[]).map(r=>r.student_id));
+ (st.data||[]).forEach(r=>{n[r.class_id]=(n[r.class_id]||0)+1;if(done.has(r.id))m[r.class_id]=(m[r.class_id]||0)+1});
+ (rb.data||[]).forEach(r=>{const f=r.profiles&&r.profiles.full_name;if(f)(R[r.class_id]=R[r.class_id]||[]).push(f)});
+ const rows=M.filter(c=>n[c.id]&&(m[c.id]||0)<n[c.id]).map(c=>({c,n:n[c.id],m:m[c.id]||0,p:Math.floor((m[c.id]||0)/n[c.id]*100)})).sort((a,b)=>a.p-b.p||clsCmp(a.c,b.c));
+ const all=M.filter(c=>n[c.id]).length,ok=all-rows.length,short=s=>{const w=String(s).trim().split(/\s+/);return w.length>1?w[0]+' '+w[1][0]+'.':w[0]};
+ if(!rows.length)return `<div class="card sd dv">${hd}<div class="dvok">${ic('check')}Barcha ${all} ta sinfda davomat 100%</div></div>`;
+ const lv=p=>p==0?'z':p<50?'l':p<90?'m':'h';
+ return `<div class="card sd dv">${hd}<span class="mut">${t.hms.slice(0,5)} holati · <b>${rows.length}</b> ta sinfda to'liq emas, <b>${ok}</b>/${all} ta to'liq</span>
+ <div class="dvt" role="table"><div class="dvh" role="row"><span>Sinf</span><span>Belgilandi</span><span>%</span></div>${rows.map(r=>`<button class="dvr" role="row" data-dvc="${r.c.id}" title="${esc(clsLbl(r.c))} — ${r.n-r.m} ta o'quvchi belgilanmagan${R[r.c.id]?' · Sinf rahbari: '+esc(R[r.c.id].join(', ')):''}"><span class="dvs"><b>${esc(clsLbl(r.c))}</b>${R[r.c.id]?`<small>${esc(R[r.c.id].map(short).join(', '))}</small>`:'<small class="dvn">rahbar yo\'q</small>'}</span><span class="dvc">${r.m}/${r.n}<small>−${r.n-r.m}</small></span><span><span class="dvp ${lv(r.p)}">${r.p}%</span></span></button>`).join('')}</div>
+ <p class="mut">Sinfni bosing — davomatini oching.</p></div>`}
+document.addEventListener('click',e=>{const dv=e.target.closest('.dvr');if(!dv||!ADM())return;S.kidv=null;S.cls=+dv.dataset.dvc;S.tab=0;S.date=nowT().d;S.as='cls';try{history.pushState({as:'cls'},'')}catch(_){}scrollTo(0,0);render()});
 function chips(){
  const el=$('chips'),A=ME.role=='admin',L=A?CL:CL.filter(c=>(ME.cls||[]).includes(c.id));
  const K=!A&&ME.kids?ME.kids:[];if(!A&&L.length<2&&!K.length){el.className='';el.innerHTML='';return}

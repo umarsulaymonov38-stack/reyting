@@ -35,8 +35,20 @@ def load_json(name, default=None):
     path = os.path.join(HERE, name)
     if not os.path.exists(path):
         return default
-    with open(path, encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except (ValueError, OSError) as e:
+        # Fayl buzilgan (masalan, kompyuter yozish paytida o'chib qolgan): holat fayli bo'lsa — chetga olib, boshidan boshlanadi
+        if name == "holat.json":
+            bad = path + ".buzilgan"
+            try:
+                os.replace(path, bad)
+            except OSError:
+                pass
+            logging.getLogger("turniket").warning("%s buzilgan edi (%s) — chetga olindi, bugungi o'tishlar qayta yuboriladi", name, e)
+            return default
+        raise
 
 
 def save_json(name, data):
@@ -44,6 +56,8 @@ def save_json(name, data):
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=1)
+        f.flush()
+        os.fsync(f.fileno())  # elektr o'chsa ham fayl bo'sh qolmasin
     os.replace(tmp, path)
 
 

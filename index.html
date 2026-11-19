@@ -682,9 +682,11 @@ const RO_ERR={message:"👁 Kuzatuvchi rejimi: faqat ko'rish mumkin — o'zgarti
 function roFake(){const r={data:null,error:RO_ERR,count:null,status:403};roNote();const p=new Proxy(function(){},{get(_,k){if(k==='then')return(a,b)=>Promise.resolve(r).then(a,b);return()=>p},apply(){return p}});return p}
 let roT=0;function roNote(){flash(RO_ERR.message);clearTimeout(roT);roT=setTimeout(()=>{if(ME&&OBS())render()},900)}
 const RO_RPC=/^(teacher_answer|tk_ignore|parent_pw_mark|switch_kid|parent_ask|set_|close_|reopen_|tk_link|tk_qayta|yk_link|register|parent_set|parent_week_submit|ss_change|grade_ask|grade_answer|send|sms|push|create|delete|del_|upd|save|add_|rename|reset|gen|class_rename|admin_)/;
+// O'z telefoniga bildirishnoma yoqish — ruxsat (bu ma'lumotni o'zgartirish emas)
+const RO_OK=/^(push_public_key|push_fn_url|push_test)$/,RO_TBL=['push_subs'];
 function obsMode(){if(sb.__ro)return;sb.__ro=1;document.body.classList.add('obs');
- const of=sb.from.bind(sb);sb.from=t=>{const b=of(t);['insert','update','upsert','delete'].forEach(m=>b[m]=()=>roFake());return b};
- const orpc=sb.rpc.bind(sb);sb.rpc=(f,a,o)=>RO_RPC.test(f)?roFake():orpc(f,a,o);
+ const of=sb.from.bind(sb);sb.from=t=>{const b=of(t);if(!RO_TBL.includes(t))['insert','update','upsert','delete'].forEach(m=>b[m]=()=>roFake());return b};
+ const orpc=sb.rpc.bind(sb);sb.rpc=(f,a,o)=>RO_RPC.test(f)&&!RO_OK.test(f)?roFake():orpc(f,a,o);
  if(sb.functions)sb.functions.invoke=async()=>{roNote();return{data:null,error:RO_ERR}};
  if(sb.storage){const os=sb.storage.from.bind(sb.storage);sb.storage.from=b=>{const x=os(b);['upload','remove','update','move'].forEach(m=>x[m]=async()=>{roNote();return{data:null,error:RO_ERR}});return x}}
  const lock=()=>document.querySelectorAll('#view table :is(input,select,textarea,button.att,button.ratt):not([data-ro]),#view .tch :is(input,select,textarea):not([data-ro])').forEach(e=>{e.setAttribute('data-ro','');e.disabled=true});

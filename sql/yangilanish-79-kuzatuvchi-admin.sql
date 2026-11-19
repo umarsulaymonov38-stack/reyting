@@ -71,7 +71,8 @@ do $$
 declare t text;
 begin
   for t in select c.relname from pg_class c join pg_namespace n on n.oid = c.relnamespace
-            where n.nspname = 'public' and c.relkind = 'r' and c.relrowsecurity loop
+            where n.nspname = 'public' and c.relkind = 'r' and c.relrowsecurity
+              and c.relname <> 'push_subs' loop  -- o'z telefoniga bildirishnoma yoqishi mumkin
     execute format('drop policy if exists obs_no_ins on public.%I', t);
     execute format('drop policy if exists obs_no_upd on public.%I', t);
     execute format('drop policy if exists obs_no_del on public.%I', t);

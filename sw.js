@@ -43,13 +43,14 @@ self.addEventListener('push', e => {
     body: d.body || '', tag: d.tag || undefined, icon: 'icons/icon-192.png', badge: 'icons/icon-192.png',
     // ovoz va tebranish bilan (ovoz telefonning bildirishnoma sozlamasidagi tovush bo'ladi)
     silent: false, renotify: !!d.tag, vibrate: [300, 120, 300, 120, 300],
-    lang: 'uz', data: { url: './' }
+    lang: 'uz', data: { url: /^sorov/.test(d.tag || '') ? './#sorov' : './' }
   }));
 });
 self.addEventListener('notificationclick', e => {
   e.notification.close();
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(ws => {
-    for (const w of ws) if ('focus' in w) return w.focus();
-    return self.clients.openWindow('./');
+    const url = (e.notification.data && e.notification.data.url) || './';
+    for (const w of ws) if ('focus' in w) { if (url.includes('#sorov')) w.postMessage({ go: 'sorov' }); return w.focus(); }
+    return self.clients.openWindow(url);
   }));
 });

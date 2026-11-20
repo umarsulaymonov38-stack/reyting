@@ -123,6 +123,7 @@ input,button{touch-action:manipulation}
 #side:empty{display:none}
 body.hs-side main{max-width:1340px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:16px;align-items:start}
 .mc{min-width:0}#side{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow-y:auto;display:flex;flex-direction:column;gap:12px;scrollbar-width:thin}#side .sd{margin:0}
+#wkq{transition:box-shadow .4s}#wkq.wkhi{box-shadow:0 0 0 4px #e8590c,0 8px 24px rgba(232,89,12,.35)}
 .obsBn{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:80;font-size:12.5px;padding:7px 14px;border-radius:999px;background:#0b7285;color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.25);white-space:nowrap;max-width:calc(100vw - 24px);overflow:hidden;text-overflow:ellipsis;pointer-events:none}body.obs .tch :is(button,select,input.fld,.tadd,.trem,.tcd),body.obs .tch .top:has(input.fld),body.obs .tch .top:has(select){display:none!important}body.obs .tch input.tnm{border-color:transparent!important;background:none!important}body.obs #view table :is(input,select,textarea,button)[disabled]{opacity:1;cursor:default;color:inherit;-webkit-text-fill-color:currentColor}body.obs #calc{display:none}
 .dvt{margin:10px 0 6px;font-size:13px;font-variant-numeric:tabular-nums}.dvh,.dvr{display:grid;grid-template-columns:minmax(0,1fr) 64px 46px;gap:6px;align-items:center}.dvh{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);padding:0 4px 6px;border-bottom:1.5px solid var(--ln)}.dvh span:nth-child(n+2),.dvr>span:nth-child(n+2){text-align:right}
 .dvr{width:100%;font:inherit;color:inherit;text-align:left;background:none;border:0;border-bottom:1px solid var(--ln);padding:7px 4px;cursor:pointer;line-height:1.2;border-radius:0;box-shadow:none;transition:background .15s}.dvr:hover,.dvr:focus-visible{background:rgba(127,127,127,.1);outline:none}.dvs{min-width:0}.dvs b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}.dvr small{display:block;font-size:10.5px;color:var(--mut);font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dvr small.dvn{color:#e03131}.dvc{white-space:nowrap;font-weight:700}.dvc small{color:#e03131;font-weight:700}
@@ -708,7 +709,7 @@ async function render(){
   let html;if(!X&&!P)html='<div class="card">Ma\'lumotni o\'qib bo\'lmadi. Sahifani yangilang.</div>';
   else if(S.pv)html=pSection(S.pv,X,P,hp,hf,hb);
   else{const pi=P||await payInfo().catch(()=>({b:'',t:''}));html=X?pHome(X,P,hp,ck)+(P?'':pi.b+pi.t):pi.b+pi.t+hf}
-  if(tk==S.rt){$('view').innerHTML=html;if(!S.pv)pgrTick();pwGate().then(sh=>{if(!sh)pushGate().catch(()=>{})},()=>pushGate().catch(()=>{}))}pPing();return}
+  if(tk==S.rt){$('view').innerHTML=html;if(!S.pv)pgrTick();wkGo();pwGate().then(sh=>{if(!sh)pushGate().catch(()=>{})},()=>pushGate().catch(()=>{}))}pPing();return}
  if(!BUX()){const cc=$('calc');if(cc)cc.remove()}
  if(BUX()){$('chips').innerHTML='';$('side').innerHTML='';document.body.classList.remove('hs-side');$('view').innerHTML='<div class="ld"><i class="spin"></i>Yuklanmoqda…</div>';let h='';
   try{h=await payView()}catch(e){h='<div class="card">Ma\'lumotni o\'qib bo\'lmadi. Sahifani yangilang.</div>'}
@@ -1345,6 +1346,9 @@ const CKT=["«Bugun nimani yangi o'rganding?» deb so'rang — javobini oxirigac
  "Kelajakdagi kasblar haqida birga video ko'ring yoki gaplashing.","Uy vazifasini birga ko'rib chiqing — tanqid emas, yordam bering.",
  "«Senga qanday yordam bera olaman?» deb so'rang.","Dam olish kunini birga rejalashtiring — fikrini so'rang."];
 // 2-guruh: har juma (juma–yakshanba) ota-ona so'rovnomasi — «Ota-onaga yaxshilik» (vijdonan tasdiqlash bilan)
+// Bildirishnoma bosilganda — to'g'ridan-to'g'ri haftalik so'rovnomaga
+let WKGO=location.hash=='#sorov';function wkGo(){if(!WKGO)return;const q=$('wkq');if(!q)return;WKGO=false;try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}setTimeout(()=>{q.scrollIntoView({behavior:'smooth',block:'center'});q.classList.add('wkhi');setTimeout(()=>q.classList.remove('wkhi'),2600)},250)}
+if(navigator.serviceWorker)navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.go=='sorov'){WKGO=true;if(ME&&ME.role=='parent'){S.pv=null;render()}}});
 async function wkpCard(){const{data:s,error}=await sb.rpc('parent_week_status');if(error||!s||!s.ok)return '';
  if(s.ans){const a=s.ans;return `<div class="card ckd"><div class="top"><span class="pti" style="--c:#2f9e44">${ic('heart')}</span><div><b>Haftalik so'rovnoma: javobingiz qabul qilindi</b><br><span class="mut">${WKM[a.mood][0]} ${esc(WKM[a.mood][2])}${a.note?' · '+esc(a.note):''}</span></div></div></div>`}
  if(!s.open)return '';S.wkm=null;

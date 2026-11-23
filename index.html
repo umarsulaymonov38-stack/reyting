@@ -223,6 +223,35 @@ b.bdx{color:var(--bad)}b.okx{color:var(--ok)}
 .pal svg{flex:none;width:22px;height:22px}.pal.r{border-color:#f3c3b3;background:#fff4ef}.pal.r svg{color:var(--bad)}.pal.g{border-color:#bfe3c8;background:var(--ok2)}.pal.g svg{color:var(--ok)}
 .psec{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin:6px 2px 10px}
 .ptiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+/* Reyting va o'rinlar (yangilanish-83) */
+.rkwrap{display:flex;flex-direction:column;gap:13px}
+.rranks{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.rtile{background:var(--card);border:1px solid var(--ln);border-radius:18px;padding:14px;box-shadow:var(--sh)}
+.rtile .ric{font-size:20px}
+.rbig{font-size:30px;font-weight:800;line-height:1;margin-top:8px;font-variant-numeric:tabular-nums}
+.rbig small{font-size:15px;color:var(--mut);font-weight:700}
+.rlbl{font-size:12px;color:var(--mut);font-weight:700;margin-top:3px}
+.rtr{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:800;margin-top:8px;padding:2px 8px;border-radius:999px}
+.rtr.up{color:#2f9e44;background:color-mix(in srgb,#2f9e44 14%,transparent)}
+.rtr.dn{color:#e03131;background:color-mix(in srgb,#e03131 14%,transparent)}
+.rtr.eq{color:var(--mut);background:color-mix(in srgb,var(--mut) 14%,transparent)}
+.rsh{display:flex;align-items:center;justify-content:space-between;margin:4px 2px -2px}
+.rsh b{font-size:15px;font-weight:800}.rsh span{font-size:11.5px;color:var(--mut);font-weight:600}
+.rsubs{display:flex;flex-direction:column;gap:9px}
+.rsu{background:var(--card);border:1px solid var(--ln);border-radius:16px;padding:12px 13px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px}
+.rsi{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-size:20px;flex:none;position:relative;background:color-mix(in srgb,var(--ac) 12%,transparent)}
+.rsi .rmed{position:absolute;right:-5px;bottom:-5px;font-size:15px}
+.rsm{min-width:0;flex:1}
+.rsn{font-size:14.5px;font-weight:800;line-height:1.15;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.rtg{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:999px;background:color-mix(in srgb,var(--mut) 14%,transparent);color:var(--mut)}
+.rst{font-size:11.5px;color:var(--mut);font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rsr{text-align:right;flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.rpl{font-size:20px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.rpl small{font-size:12px;color:var(--mut);font-weight:700}
+.rpl.pl1{color:#e9a400}.rpl.pl2{color:#8a93a6}.rpl.pl3{color:#c0773a}
+.rab{font-size:11px;font-weight:700;color:#e8870a}
+.rfoot{text-align:center;font-size:11px;color:var(--mut);padding-top:4px;line-height:1.55}
+
 .ptile{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:16px;border-radius:18px;border:1px solid var(--ln);background:var(--card);color:var(--ink);font:inherit;cursor:pointer;box-shadow:var(--sh);transition:transform .15s,box-shadow .15s,border-color .15s;min-height:128px}
 .ptile:hover{transform:translateY(-2px);border-color:var(--c)}.ptile b{font-size:15px;line-height:1.25}.ptile small{color:var(--mut);font-size:12.5px;line-height:1.3}
 .pti{display:grid;place-items:center;width:46px;height:46px;border-radius:14px;background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--c);flex:none}.pti svg{width:24px;height:24px}
@@ -709,7 +738,7 @@ async function render(){
   let html;if(!X&&!P)html='<div class="card">Ma\'lumotni o\'qib bo\'lmadi. Sahifani yangilang.</div>';
   else if(S.pv)html=pSection(S.pv,X,P,hp,hf,hb);
   else{const pi=P||await payInfo().catch(()=>({b:'',t:''}));html=X?pHome(X,P,hp,ck)+(P?'':pi.b+pi.t):pi.b+pi.t+hf}
-  if(tk==S.rt){$('view').innerHTML=html;if(!S.pv)pgrTick();wkGo();pwGate().then(sh=>{if(!sh)pushGate().catch(()=>{})},()=>pushGate().catch(()=>{}))}pPing();return}
+  if(tk==S.rt){$('view').innerHTML=html;if(!S.pv)pgrTick();if(S.pv=='reyting')rkFill();wkGo();pwGate().then(sh=>{if(!sh)pushGate().catch(()=>{})},()=>pushGate().catch(()=>{}))}pPing();return}
  if(!BUX()){const cc=$('calc');if(cc)cc.remove()}
  if(BUX()){$('chips').innerHTML='';$('side').innerHTML='';document.body.classList.remove('hs-side');$('view').innerHTML='<div class="ld"><i class="spin"></i>Yuklanmoqda…</div>';let h='';
   try{h=await payView()}catch(e){h='<div class="card">Ma\'lumotni o\'qib bo\'lmadi. Sahifani yangilang.</div>'}
@@ -1364,7 +1393,7 @@ async function ckCard(){if(typeof ON=='function'&&!ON('suhbat'))return '';const 
  return `<div class="card ckq"><div class="top"><span class="pti" style="--c:#e8590c">${ic('heart')}</span><div><b>Bugungi savol</b><br><span class="mut">Farzandingiz bilan muloqot · har kuni yangi savol</span></div></div>
  <p class="ckone">${q}</p><div class="ckb2"><button class="btn ckx" data-k="${k}" data-v="1">${ic('check')}Ha</button><button class="tab ckx" data-k="${k}" data-v="0">Yo'q, hali emas</button></div><p class="cktip">💡 <b>Bugungi maslahat:</b> ${tip}</p></div>`}
 // Bosh sahifa (my.gov.uz uslubida): farzand kartochkasi, muhim xabarlar va xizmatlar
-const PSEC={bugun:['clock','#2f9e44',"Bugungi davomat"],baho:['clip','#1c7ed6',"Kunlik vazifalar va baholar"],krit:['chart','#7048e8',"Ko'rsatkichlar"],
+const PSEC={bugun:['clock','#2f9e44',"Bugungi davomat"],reyting:['award','#ec6611',"Reyting va o'rinlar"],baho:['clip','#1c7ed6',"Kunlik vazifalar va baholar"],krit:['chart','#7048e8',"Ko'rsatkichlar"],
  fan:['layers','#0c8599',"Fan baholari"],tanga:['award','#d4a017',"Tangalar"],oylar:['cal','#e8590c',"Oylik natijalar"],tolov:['card','#c2410c',"To'lovlar"],
  farzand:['users','#495057',"Farzandlarim"],menu:['food','#2b8a3e',"Taomnoma"],fikr:['msg','#1971c2',"Fikr-mulohaza"],bildirish:['bell','#f76707',"Bildirishnomalar"],kitob:['books','#5c7cfa',"Darsliklar"]};
 const LFS='<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l1.6 3.6 3-1.4-.8 4 3.7-.6-1.9 3.3 3.4 1.6-3.6 1.4 1.4 3.1-4-1L14 20h-1.2v2h-1.6v-2H10l-.8-4-4 1 1.4-3.1L3 12.5l3.4-1.6-1.9-3.3 3.7.6-.8-4 3 1.4z"/></svg>';
@@ -1392,7 +1421,7 @@ function pHome(X,P,hp,ck){const me=X.me,ini=String(me.full_name||'').trim().spli
  const al=[bad?`<button class="pal r" data-pv="krit">${ic('shield')}<span><b>${bad} ta past natija</b> — ko'rish</span></button>`:'',
   nl?`<button class="pal r" data-pv="tolov">${ic('card')}<span><b>${nl} oy to'lov kechikmoqda</b> — batafsil</span></button>`:'',
   good?`<button class="pal g" data-pv="krit">${ic('star')}<span><b>${good} ta yaxshi natija</b> — tabriklaymiz!</span></button>`:''].join('');
- const T=[['bugun',st.length?st[0].a.t:''],['baho',X.s.baho],['krit',bad?`⚠️ ${bad} ta past baho`:good?`👍 ${good} ta yaxshi baho`:''],['fan',X.s.fan],
+ const T=[['bugun',st.length?st[0].a.t:''],['reyting','Sinf, maktab va fanlar'],['baho',X.s.baho],['krit',bad?`⚠️ ${bad} ta past baho`:good?`👍 ${good} ta yaxshi baho`:''],['fan',X.s.fan],
   X.tanga!=null?['tanga',X.s.tanga]:null,X.oylar!=null?['oylar','Har oy alohida']:null,P?['tolov',nl?`❌ ${nl} oy to'lanmagan`:"✅ Qarzdorlik yo'q"]:null,
   P&&P.G?['farzand',`${P.G.length} nafar`]:null,X.menu?['menu',X.s.menu]:null,['fikr','Taklif va murojaat'],['bildirish',pushOn?'✅ Yoqilgan':"⛔ O'chiq"],BOOKS?['kitob','']:null].filter(Boolean);
  return hero+(al?`<div class="pals">${al}</div>`:'')+(X.pt||'')+(ck||'')+`<div class="psec">Xizmatlar</div><div class="ptiles">${T.map(([k,sub])=>{const[i,c,t]=PSEC[k];
@@ -1400,7 +1429,7 @@ function pHome(X,P,hp,ck){const me=X.me,ini=String(me.full_name||'').trim().spli
 function pSection(k,X,P,hp,hf,hb){const[i,c,t]=PSEC[k]||['school','#16213d',''],op=h=>String(h||'').replace(/<details class="card fold/g,'<details open class="card fold'),
   none='<div class="card"><p class="mut">Hozircha ma\'lumot yo\'q.</p></div>',head=X?X.head:'';
  const body={bugun:P?P.td:'',baho:head+(X?X.baho:''),krit:head+((X&&X.krit)||none)+(P?P.mk:''),fan:head+((X&&X.fan)||'<div class="card"><p class="mut">Bu oy fan o\'qituvchilari hali baho qo\'ymagan.</p></div>'),
-  tanga:head+((X&&X.tanga)||none),oylar:(X&&X.oylar)||none,tolov:P?op(P.pr)+op(P.ph):'',farzand:P?op(P.ov):'',menu:(X&&X.menu)||none,fikr:hf,bildirish:hp,kitob:hb}[k]||none;
+  tanga:head+((X&&X.tanga)||none),oylar:(X&&X.oylar)||none,tolov:P?op(P.pr)+op(P.ph):'',farzand:P?op(P.ov):'',menu:(X&&X.menu)||none,fikr:hf,bildirish:hp,kitob:hb,reyting:'<div id="rkbox"><div class="ld"><i class="spin"></i>Yuklanmoqda…</div></div>'}[k]||none;
  return `<div class="psh" style="--c:${c}"><button class="tab pback">← Orqaga</button><span class="pti">${ic(i)}</span><b>${t}</b></div>${body||none}`}
 // Ota-ona uchun: har bir ko'rsatkich bo'yicha oy davomida qancha yaxshi va qancha past baho olgani
 // Chegara: 10 ballikda 9–10 yaxshi, 0–4 past; 5 ballikda 5 yaxshi, 0–2 past; test 90%+ yaxshi, 40% dan past — past
@@ -1475,6 +1504,28 @@ async function kidMonths(){const{sy,out}=syMonths(),cur=nowT().d.slice(0,7),{dat
 // Baho katagi: fan bahosi (1–5), guruhda tartib-intizom (1–5), repetitorda topshiriq (0–5)
 const gB=v=>`<b class="${v<=2?'bdx':v==5?'okx':''}">${v}</b>`,gBaho=x=>x.src=='guruh'?(x.behavior!=null?`<span class="mut" style="font-size:11.5px">tartib</span> ${gB(x.behavior)}`:'—'):x.grade!=null?gB(x.grade):'—';
 // Ota-ona bosh sahifasi: bugungi baholar (jonli — har 1 daqiqada yangilanadi)
+// Ota-ona: Reyting va o'rinlar (yangilanish-83)
+async function rkFill(){const box=$('rkbox');if(!box)return;
+ const{data:d,error}=await sb.rpc('parent_ranks',{p_sid:ME.student_id});
+ if(error){box.innerHTML=`<div class="card"><p class="mut">${/parent_ranks/.test(error.message||'')?"Bu bo'lim uchun Supabase'da <b>yangilanish-83</b> ni ishga tushiring.":esc(netMsg(error))}</p></div>`;return}
+ if(!d){box.innerHTML='<div class="card"><p class="mut">Ma\'lumot topilmadi.</p></div>';return}
+ box.innerHTML=rkHtml(d)}
+const MED=['','🥇','🥈','🥉'];
+function rkTr(x){if(x==null||x===0)return '<span class="rtr eq">=</span>';return x>0?`<span class="rtr up">▲${x}</span>`:`<span class="rtr dn">▼${-x}</span>`}
+function rkTile(ic,v,sz,lbl,dl){return `<div class="rtile"><div class="ric">${ic}</div><div class="rbig">${v}<small>/${sz}</small></div><div class="rlbl">${esc(lbl)}</div>${rkTr(dl)}</div>`}
+function rkHtml(d){const c=d.class||{},sc=d.school||{},subs=d.subjects||[];
+ const sub=s=>{const med=s.medal?`<span class="rmed">${MED[s.medal]}</span>`:'',plc=s.medal?'pl'+s.medal:'';
+  return `<div class="rsu"><div class="rsi">${subIcon(s.name)}${med}</div>
+   <div class="rsm"><div class="rsn">${esc(s.name)} <span class="rtg">${s.kind=='repetitor'?'repetitor':'guruh'}</span></div>
+   <div class="rst">${esc(s.teacher||s.group_name||'')}</div></div>
+   <div class="rsr"><div class="rpl ${plc}">${s.rank}<small>/${s.size}</small></div>${s.avg!=null?`<div class="rab">⭐ ${s.avg}</div>`:''}${rkTr(s.delta)}</div></div>`};
+ return `<div class="rkwrap">
+  <div class="rranks">${rkTile('🏆',c.rank??'—',c.size??'—',"Sinfda o'rni",c.delta)}${rkTile('🎖️',sc.rank??'—',sc.size??'—',"Maktabda o'rni",sc.delta)}</div>
+  ${subs.length?`<div class="rsh"><b>Fanlar va guruhlar bo'yicha</b><span>o'rin / jami</span></div><div class="rsubs">${subs.map(sub).join('')}</div>`
+    :`<div class="card"><p class="mut">Farzandingiz hali guruh yoki repetitor fanlariga biriktirilmagan, yoki guruhda baho qo'yilmagan.</p></div>`}
+  <div class="rfoot">🥇🥈🥉 — guruhda birinchi uchlik · ▲▼ — o'tgan haftaga nisbatan<br>O'rinlar har kuni soat 21:00 da yangilanadi · o'quv yili boshidan hisoblanadi</div>
+ </div>`}
+function subIcon(n){n=(n||'').toLowerCase();if(/matem/.test(n))return '📐';if(/ingliz|english|ielts/.test(n))return '🇬🇧';if(/arab/.test(n))return '🕌';if(/koreys/.test(n))return '🇰🇷';if(/rus/.test(n))return '🇷🇺';if(/ona til|adabiyot/.test(n))return '📖';if(/fizika/.test(n))return '🔬';if(/kimyo/.test(n))return '🧪';if(/biolog/.test(n))return '🧬';if(/informat|dastur/.test(n))return '💻';if(/tarix/.test(n))return '🏛️';if(/geograf/.test(n))return '🗺️';return '📘'}
 async function pgrCard(){const t=today,{data,error}=await sb.rpc('parent_grades',{p_from:t,p_to:t});if(error)return '';const L=(data||[]).filter(x=>x.student_id==ME.student_id).sort((a,b)=>String(b.at||'').localeCompare(String(a.at||'')));
  const tm=x=>x.at?new Date(x.at).toLocaleTimeString('uz-UZ',{timeZone:TZ,hour:'2-digit',minute:'2-digit'}):'';
  return `<div class="card pgr" id="pgr"><div class="top"><span class="pti" style="--c:#1c7ed6">${ic('layers')}</span><div><b>Bugungi baholar</b><br><span class="mut">🟢 Jonli · fan va guruh o'qituvchilari qo'ygan baholar</span></div><button class="tab" data-pv="fan" style="margin-left:auto">Barchasi →</button></div>

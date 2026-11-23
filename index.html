@@ -251,6 +251,45 @@ b.bdx{color:var(--bad)}b.okx{color:var(--ok)}
 .rpl.pl1{color:#e9a400}.rpl.pl2{color:#8a93a6}.rpl.pl3{color:#c0773a}
 .rab{font-size:11px;font-weight:700;color:#e8870a}
 .rfoot{text-align:center;font-size:11px;color:var(--mut);padding-top:4px;line-height:1.55}
+/* Dars jadvali (jadval.json) */
+.jwrap{display:flex;flex-direction:column;gap:12px;margin-bottom:14px}
+.jlive{background:var(--card);border:1.5px solid var(--ac);border-radius:16px;padding:13px 14px;box-shadow:var(--sh)}
+.jlive.soon{border-color:var(--ln)}
+.jlh{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;color:var(--ac);text-transform:uppercase;letter-spacing:.04em}
+.jlive.soon .jlh{color:var(--mut)}
+.jpz{width:8px;height:8px;border-radius:50%;background:var(--ac);box-shadow:0 0 0 0 color-mix(in srgb,var(--ac) 50%,transparent);animation:jpz 1.6s infinite}
+.jpz.g{background:#2f9e44;animation:none}
+@keyframes jpz{70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.jlb{display:flex;align-items:center;gap:11px;margin-top:9px}
+.jli{width:42px;height:42px;border-radius:12px;background:color-mix(in srgb,var(--ac) 12%,transparent);display:grid;place-items:center;font-size:19px;flex:none}
+.jlm{min-width:0;flex:1}.jls{font-size:15.5px;font-weight:800;line-height:1.1}.jlt2{font-size:12px;color:var(--mut);font-weight:600;margin-top:1px}
+.jlr{text-align:right;flex:none}.jlc{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}.jln{font-size:10.5px;color:var(--ac);font-weight:700}
+.jlive.soon .jln{color:var(--mut)}
+.jbar{height:5px;border-radius:3px;background:var(--ln);margin-top:11px;overflow:hidden}
+.jbar i{display:block;height:100%;background:var(--ac);border-radius:3px}
+.jsh{display:flex;align-items:center;justify-content:space-between;margin:2px 2px -2px}
+.jsh b{font-size:15px;font-weight:800;display:inline-flex;align-items:center;gap:6px}.jsh b .i{width:17px;height:17px}
+.jsh span{font-size:12px;color:var(--mut);font-weight:700}
+.jweek{font:inherit;font-size:12px;font-weight:700;color:var(--ac);background:none;border:0;cursor:pointer;padding:2px 4px}
+.jsched{background:var(--card);border:1px solid var(--ln);border-radius:16px;padding:4px 14px;box-shadow:var(--sh)}
+.jles{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--ln)}
+.jles:last-child{border-bottom:0}
+.jnum{width:26px;height:26px;border-radius:8px;background:color-mix(in srgb,var(--mut) 12%,transparent);color:var(--mut);display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
+.jles.done .jnum{background:color-mix(in srgb,#2f9e44 16%,transparent);color:#2f9e44}
+.jles.now .jnum{background:var(--ac);color:#fff}
+.jinfo{min-width:0;flex:1}.jsub{font-size:14px;font-weight:700;line-height:1.15}
+.jles.now .jsub{color:var(--ac)}
+.jclk{text-align:right;flex:none;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.jclk small{display:block;font-size:10.5px;color:var(--mut);font-weight:600}
+.jles.lunch{justify-content:center;color:#e8870a;font-weight:700;font-size:12.5px;border-bottom:1px dashed var(--ln)}
+.jweekwrap{display:flex;flex-direction:column;gap:12px}
+.jtop{font-size:14px}.jtop b{font-size:15px}
+.jday{background:var(--card);border:1px solid var(--ln);border-radius:16px;padding:4px 14px 8px;box-shadow:var(--sh)}
+.jday.on{border-color:var(--ac)}
+.jdh{font-size:13px;font-weight:800;padding:9px 0 3px;color:var(--ink)}
+.jday .jdh em{font-size:10px;font-weight:800;color:#fff;background:var(--ac);padding:1px 7px;border-radius:999px;font-style:normal;margin-left:6px}
+.jday .jsched{border:0;box-shadow:none;padding:0}
+
 
 .ptile{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:16px;border-radius:18px;border:1px solid var(--ln);background:var(--card);color:var(--ink);font:inherit;cursor:pointer;box-shadow:var(--sh);transition:transform .15s,box-shadow .15s,border-color .15s;min-height:128px}
 .ptile:hover{transform:translateY(-2px);border-color:var(--c)}.ptile b{font-size:15px;line-height:1.25}.ptile small{color:var(--mut);font-size:12.5px;line-height:1.3}
@@ -734,11 +773,11 @@ function chips(){
 async function render(){
  flush();const tk=++S.rt;if(!ME)return;railPaint();
  if(ME.role=='parent'){$('view').innerHTML='<div class="ld"><i class="spin"></i>Yuklanmoqda…</div>';
-  const[X,P,hf,hp,hb,ck,pt]=await Promise.all([parentData().catch(()=>null),parentAll().catch(()=>null),fbParent().catch(()=>''),pushCard().catch(()=>''),BOOKS?parentBooks().catch(()=>''):'',S.pv?'':Promise.all([pgrCard().catch(()=>''),wkpCard().catch(()=>''),ckCard().catch(()=>'')]).then(a=>a.join('')),'']);
+  const[X,P,hf,hp,hb,ck,pt]=await Promise.all([parentData().catch(()=>null),parentAll().catch(()=>null),fbParent().catch(()=>''),pushCard().catch(()=>''),BOOKS?parentBooks().catch(()=>''):'',S.pv?'':Promise.all([pgrCard().catch(()=>''),wkpCard().catch(()=>''),ckCard().catch(()=>'')]).then(a=>a.join('')),loadJadval().catch(()=>null)]);
   let html;if(!X&&!P)html='<div class="card">Ma\'lumotni o\'qib bo\'lmadi. Sahifani yangilang.</div>';
   else if(S.pv)html=pSection(S.pv,X,P,hp,hf,hb);
   else{const pi=P||await payInfo().catch(()=>({b:'',t:''}));html=X?pHome(X,P,hp,ck)+(P?'':pi.b+pi.t):pi.b+pi.t+hf}
-  if(tk==S.rt){$('view').innerHTML=html;if(!S.pv)pgrTick();if(S.pv=='reyting')rkFill();wkGo();pwGate().then(sh=>{if(!sh)pushGate().catch(()=>{})},()=>pushGate().catch(()=>{}))}pPing();return}
+  if(tk==S.rt){$('view').innerHTML=html;if(!S.pv)pgrTick();if(S.pv=='reyting')rkFill();if(!S.pv)jadTick();wkGo();pwGate().then(sh=>{if(!sh)pushGate().catch(()=>{})},()=>pushGate().catch(()=>{}))}pPing();return}
  if(!BUX()){const cc=$('calc');if(cc)cc.remove()}
  if(BUX()){$('chips').innerHTML='';$('side').innerHTML='';document.body.classList.remove('hs-side');$('view').innerHTML='<div class="ld"><i class="spin"></i>Yuklanmoqda…</div>';let h='';
   try{h=await payView()}catch(e){h='<div class="card">Ma\'lumotni o\'qib bo\'lmadi. Sahifani yangilang.</div>'}
@@ -1393,7 +1432,7 @@ async function ckCard(){if(typeof ON=='function'&&!ON('suhbat'))return '';const 
  return `<div class="card ckq"><div class="top"><span class="pti" style="--c:#e8590c">${ic('heart')}</span><div><b>Bugungi savol</b><br><span class="mut">Farzandingiz bilan muloqot · har kuni yangi savol</span></div></div>
  <p class="ckone">${q}</p><div class="ckb2"><button class="btn ckx" data-k="${k}" data-v="1">${ic('check')}Ha</button><button class="tab ckx" data-k="${k}" data-v="0">Yo'q, hali emas</button></div><p class="cktip">💡 <b>Bugungi maslahat:</b> ${tip}</p></div>`}
 // Bosh sahifa (my.gov.uz uslubida): farzand kartochkasi, muhim xabarlar va xizmatlar
-const PSEC={bugun:['clock','#2f9e44',"Bugungi davomat"],reyting:['award','#ec6611',"Reyting va o'rinlar"],baho:['clip','#1c7ed6',"Kunlik vazifalar va baholar"],krit:['chart','#7048e8',"Ko'rsatkichlar"],
+const PSEC={bugun:['clock','#2f9e44',"Bugungi davomat"],reyting:['award','#ec6611',"Reyting va o'rinlar"],jadval:['cal','#2f7cf6',"Dars jadvali"],baho:['clip','#1c7ed6',"Kunlik vazifalar va baholar"],krit:['chart','#7048e8',"Ko'rsatkichlar"],
  fan:['layers','#0c8599',"Fan baholari"],tanga:['award','#d4a017',"Tangalar"],oylar:['cal','#e8590c',"Oylik natijalar"],tolov:['card','#c2410c',"To'lovlar"],
  farzand:['users','#495057',"Farzandlarim"],menu:['food','#2b8a3e',"Taomnoma"],fikr:['msg','#1971c2',"Fikr-mulohaza"],bildirish:['bell','#f76707',"Bildirishnomalar"],kitob:['books','#5c7cfa',"Darsliklar"]};
 const LFS='<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l1.6 3.6 3-1.4-.8 4 3.7-.6-1.9 3.3 3.4 1.6-3.6 1.4 1.4 3.1-4-1L14 20h-1.2v2h-1.6v-2H10l-.8-4-4 1 1.4-3.1L3 12.5l3.4-1.6-1.9-3.3 3.7.6-.8-4 3 1.4z"/></svg>';
@@ -1412,6 +1451,48 @@ async function ptCard(){const[{data,error},{data:kd}]=await Promise.all([sb.rpc(
 document.addEventListener('change',async e=>{const t=e.target;if(!t.classList||!t.classList.contains('pts')||!ME||ME.role!='parent')return;
  const v=t.value===''?null:+t.value;t.disabled=true;const{error}=await sb.rpc('parent_set_score',{p_sid:t.dataset.s,p_field:t.dataset.k,p_val:v});t.disabled=false;
  if(error){flash(error.code=='PGRST202'?"Bu imkoniyat hali yoqilmagan (admin yangilanish-46 ni ishga tushirishi kerak)":netMsg(error));return}t.classList.toggle('ok',v!=null);flash('✅ Saqlandi')});
+// ===== Dars jadvali (jadval.json — statik fayl) =====
+let JAD=null;
+async function loadJadval(){if(JAD)return JAD;try{const r=await fetch('jadval.json?v=1',{cache:'force-cache'});JAD=await r.json()}catch(e){JAD={classes:{}}}return JAD}
+function schedKey(c){if(!c||!([1,2].includes(grpOf(c))))return null;const g=+c.grade||parseInt(c.name)||0;
+ const m=String(c.name||'').match(/\d+\s*[-\s]\s*([A-Za-zА-Яа-я])/);let L=m?m[1].toUpperCase():'';
+ const mp={'А':'A','Б':'B','В':'V','Г':'G','Д':'D','Ғ':'G'};L=mp[L]||L;return g&&L?g+'-'+L:null}
+function dowNow(){const d=new Date(nowT().d+'T12:00:00Z');const w=d.getUTCDay();return w===0?7:w}
+const toMin=t=>{const x=String(t||'').split(':');return (+x[0])*60+(+x[1]||0)};
+function jadToday(key){const C=JAD&&JAD.classes[key];if(!C)return null;const dw=dowNow();
+ return (C.days[String(dw)]||[]).slice().sort((a,b)=>toMin(a.start)-toMin(b.start))}
+function jadState(list){const now=toMin(nowT().hms.slice(0,5));let cur=null,next=null;
+ for(const l of list){const a=toMin(l.start),b=toMin(l.end);l._st=now>=b?'done':(now>=a&&now<b?'now':'next');
+   if(l._st=='now')cur=l;else if(l._st=='next'&&!next)next=l}
+ return{cur,next,now}}
+const DOWN=['','Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba','Yakshanba'];
+function jadLiveCard(list){const{cur,next,now}=jadState(list);
+ if(cur){const a=toMin(cur.start),b=toMin(cur.end),pct=Math.max(2,Math.min(100,Math.round((now-a)/(b-a)*100))),left=b-now;
+  return `<div class="jlive"><div class="jlh"><span class="jpz"></span>Jonli · ${cur.p}-dars ketyapti</div>
+   <div class="jlb"><div class="jli">${subIcon(cur.subject)}</div><div class="jlm"><div class="jls">${esc(cur.subject)}</div><div class="jlt2">${cur.start}–${cur.end}</div></div>
+   <div class="jlr"><div class="jlc">${cur.start}</div><div class="jln">${left} daq qoldi</div></div></div>
+   <div class="jbar"><i style="width:${pct}%"></i></div></div>`}
+ if(next){const left=toMin(next.start)-now;
+  return `<div class="jlive soon"><div class="jlh"><span class="jpz g"></span>Keyingi dars</div>
+   <div class="jlb"><div class="jli">${subIcon(next.subject)}</div><div class="jlm"><div class="jls">${esc(next.subject)}</div><div class="jlt2">${next.start}–${next.end}</div></div>
+   <div class="jlr"><div class="jlc">${next.start}</div><div class="jln">${left} daq qoldi</div></div></div></div>`}
+ return ''}
+function jadDayList(list,live){if(!list||!list.length)return '<div class="card"><p class="mut">Bugun dars yo‘q.</p></div>';
+ if(live)jadState(list);let h='<div class="jsched">',prevEnd=null;
+ for(const l of list){if(prevEnd!=null&&toMin(l.start)-prevEnd>=25)h+=`<div class="jles lunch">🍽 Tanaffus · ${min2t(prevEnd)}–${l.start}</div>`;
+  h+=`<div class="jles ${live?(l._st||''):''}"><div class="jnum">${l.p}</div><div class="jinfo"><div class="jsub">${esc(l.subject)}</div></div><div class="jclk">${l.start}<small>${l.end}</small></div></div>`;
+  prevEnd=toMin(l.end)}
+ return h+'</div>'}
+const min2t=m=>String(m/60|0).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+function jadCards(c){const key=schedKey(c);if(!key||!JAD||!JAD.classes[key])return '';
+ const list=jadToday(key);if(!list)return '';const dw=dowNow();
+ if(!list.length)return `<div class="jwrap"><div class="jsh"><b>${ic('cal')}Bugungi jadval</b><span>${DOWN[dw]}</span></div><div class="card"><p class="mut">Bugun (${DOWN[dw]}) dars yo‘q.</p></div></div>`;
+ return `<div class="jwrap">${jadLiveCard(list)}<div class="jsh"><b>${ic('cal')}Bugungi jadval</b><button class="jweek" data-pv="jadval">Hafta ›</button></div>${jadDayList(list,true)}</div>`}
+function jadWeek(c){const key=schedKey(c);if(!key||!JAD||!JAD.classes[key])return '<div class="card"><p class="mut">Bu sinf uchun dars jadvali kiritilmagan.</p></div>';
+ const C=JAD.classes[key],dw=dowNow();let h='';
+ for(let d=1;d<=6;d++){const list=(C.days[String(d)]||[]).slice().sort((a,b)=>toMin(a.start)-toMin(b.start));if(!list.length)continue;
+  h+=`<div class="jday ${d==dw?'on':''}"><div class="jdh">${DOWN[d]}${d==dw?' <em>bugun</em>':''}</div>${jadDayList(list,d==dw)}</div>`}
+ return `<div class="jweekwrap"><div class="card jtop"><b>${esc(clsLbl(c))}</b> · haftalik dars jadvali</div>${h||'<div class="card"><p class="mut">Jadval yo‘q.</p></div>'}</div>`}
 function pHome(X,P,hp,ck){const me=X.me,ini=String(me.full_name||'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase(),
   g=P&&P.G?P.G.find(x=>x.en.some(e=>e.id==ME.student_id)):null,st=g?g.en.map(e=>({e,a:enAtt(e)})).filter(x=>x.a):[],
   pushOn=/Yoqilgan\./.test(hp),bad=(X.cnt||{}).b||0,good=(X.cnt||{}).g||0,nl=P?P.nl||0:0;
@@ -1421,15 +1502,15 @@ function pHome(X,P,hp,ck){const me=X.me,ini=String(me.full_name||'').trim().spli
  const al=[bad?`<button class="pal r" data-pv="krit">${ic('shield')}<span><b>${bad} ta past natija</b> — ko'rish</span></button>`:'',
   nl?`<button class="pal r" data-pv="tolov">${ic('card')}<span><b>${nl} oy to'lov kechikmoqda</b> — batafsil</span></button>`:'',
   good?`<button class="pal g" data-pv="krit">${ic('star')}<span><b>${good} ta yaxshi natija</b> — tabriklaymiz!</span></button>`:''].join('');
- const T=[['bugun',st.length?st[0].a.t:''],['reyting','Sinf, maktab va fanlar'],['baho',X.s.baho],['krit',bad?`⚠️ ${bad} ta past baho`:good?`👍 ${good} ta yaxshi baho`:''],['fan',X.s.fan],
+ const T=[['bugun',st.length?st[0].a.t:''],['jadval','Haftalik dars jadvali'],['reyting','Sinf, maktab va fanlar'],['baho',X.s.baho],['krit',bad?`⚠️ ${bad} ta past baho`:good?`👍 ${good} ta yaxshi baho`:''],['fan',X.s.fan],
   X.tanga!=null?['tanga',X.s.tanga]:null,X.oylar!=null?['oylar','Har oy alohida']:null,P?['tolov',nl?`❌ ${nl} oy to'lanmagan`:"✅ Qarzdorlik yo'q"]:null,
   P&&P.G?['farzand',`${P.G.length} nafar`]:null,X.menu?['menu',X.s.menu]:null,['fikr','Taklif va murojaat'],['bildirish',pushOn?'✅ Yoqilgan':"⛔ O'chiq"],BOOKS?['kitob','']:null].filter(Boolean);
- return hero+(al?`<div class="pals">${al}</div>`:'')+(X.pt||'')+(ck||'')+`<div class="psec">Xizmatlar</div><div class="ptiles">${T.map(([k,sub])=>{const[i,c,t]=PSEC[k];
+ return hero+(al?`<div class="pals">${al}</div>`:'')+jadCards(X.c)+(X.pt||'')+(ck||'')+`<div class="psec">Xizmatlar</div><div class="ptiles">${T.map(([k,sub])=>{const[i,c,t]=PSEC[k];
   return`<button class="ptile" data-pv="${k}" style="--c:${c}"><span class="pti">${ic(i)}</span><b>${t}</b>${sub?`<small>${esc(sub)}</small>`:''}</button>`}).join('')}</div>`}
 function pSection(k,X,P,hp,hf,hb){const[i,c,t]=PSEC[k]||['school','#16213d',''],op=h=>String(h||'').replace(/<details class="card fold/g,'<details open class="card fold'),
   none='<div class="card"><p class="mut">Hozircha ma\'lumot yo\'q.</p></div>',head=X?X.head:'';
  const body={bugun:P?P.td:'',baho:head+(X?X.baho:''),krit:head+((X&&X.krit)||none)+(P?P.mk:''),fan:head+((X&&X.fan)||'<div class="card"><p class="mut">Bu oy fan o\'qituvchilari hali baho qo\'ymagan.</p></div>'),
-  tanga:head+((X&&X.tanga)||none),oylar:(X&&X.oylar)||none,tolov:P?op(P.pr)+op(P.ph):'',farzand:P?op(P.ov):'',menu:(X&&X.menu)||none,fikr:hf,bildirish:hp,kitob:hb,reyting:'<div id="rkbox"><div class="ld"><i class="spin"></i>Yuklanmoqda…</div></div>'}[k]||none;
+  tanga:head+((X&&X.tanga)||none),oylar:(X&&X.oylar)||none,tolov:P?op(P.pr)+op(P.ph):'',farzand:P?op(P.ov):'',menu:(X&&X.menu)||none,fikr:hf,bildirish:hp,kitob:hb,reyting:'<div id="rkbox"><div class="ld"><i class="spin"></i>Yuklanmoqda…</div></div>',jadval:(X?jadWeek(X.c):none)}[k]||none;
  return `<div class="psh" style="--c:${c}"><button class="tab pback">← Orqaga</button><span class="pti">${ic(i)}</span><b>${t}</b></div>${body||none}`}
 // Ota-ona uchun: har bir ko'rsatkich bo'yicha oy davomida qancha yaxshi va qancha past baho olgani
 // Chegara: 10 ballikda 9–10 yaxshi, 0–4 past; 5 ballikda 5 yaxshi, 0–2 past; test 90%+ yaxshi, 40% dan past — past
@@ -1532,6 +1613,7 @@ async function pgrCard(){const t=today,{data,error}=await sb.rpc('parent_grades'
  ${L.length?L.map(x=>`<div class="pgri"><span class="pgs"><b>${esc(x.subject)}</b><small>${esc(x.teacher||'')}${tm(x)?' · '+tm(x):''}</small></span><span class="pgv">${attIc(x)}${x.hw!=null?`<span class="pgc">UV ${x.hw}</span>`:''}${x.activity!=null?`<span class="pgc">F ${x.activity}</span>`:''}${x.src=='guruh'&&x.behavior!=null?`<span class="pgc">T ${x.behavior}</span>`:''}${x.grade!=null?`<span class="pgc pgb ${x.grade<=2?'bd':x.grade==5?'ok':''}">${x.src=='rep'?'Topshiriq':'Baho'} ${x.grade}</span>`:''}</span></div>`).join('')
   :`<p class="mut" style="margin:8px 0 0">Bugun hali baho qo'yilmagan. O'qituvchi baho qo'yishi bilan shu yerda ko'rinadi.</p>`}
  <p class="mut" style="font-size:11.5px;margin:6px 0 0">UV — uyga vazifa, F — faollik, T — tartib-intizom (1–5).</p></div>`}
+function jadTick(){clearTimeout(S.jadTm);S.jadTm=setTimeout(()=>{if(ME&&ME.role=='parent'&&!S.pv)render()},60000)}
 function pgrTick(){clearTimeout(S.pgrTm);S.pgrTm=setTimeout(async()=>{const el=$('pgr');if(el&&ME&&ME.role=='parent'&&!S.pv){const h=await pgrCard().catch(()=>null);if(h&&$('pgr'))$('pgr').outerHTML=h;pgrTick()}},60000)}
 async function subjCard(a,b){const[{data},{data:chd}]=await Promise.all([sb.rpc('parent_grades',{p_from:a,p_to:b}).then(x=>x.error?sb.rpc('parent_subjects',{p_from:a,p_to:b}):x),sb.rpc('parent_grade_changes',{p_from:a,p_to:b}).then(x=>x,()=>({data:[]})),sb.rpc('parent_asks',{p_from:a,p_to:b}).then(x=>x,()=>({data:[]}))]).then(([x,y,z])=>(S.pask=z.data||[],[x,y]));const r=(data||[]).filter(x=>x.student_id==ME.student_id),ch=(chd||[]).filter(x=>x.student_id==ME.student_id);if(!r.length&&!ch.length)return '';
  const lim=new Date(Date.now()-14*864e5).toISOString().slice(0,10),askC=x=>{if(x.grade!=null||x.att==0||!x.ss_id)return '';const k=S.pask.find(y=>y.ss_id==x.ss_id);const h=k?(k.answer?`<span class="gans">💬 <b>O'qituvchi javobi:</b> ${esc(k.answer)}</span>`:`<span class="mut gwait">⏳ ${esc(x.subject)}: o'qituvchiga so'rov yuborilgan, javob kutilmoqda</span>`):x.day>=lim?`<button class="tab gask" data-id="${x.ss_id}" title="Fan o'qituvchisiga: «Nima sababdan farzandimni baholamadingiz?»">❓ ${esc(x.subject)}: nega baholanmadi? — o'qituvchidan so'rash</button>`:'';return h?`<tr class="gar"><td></td><td colspan="5" class="l">${h}</td></tr>`:''};

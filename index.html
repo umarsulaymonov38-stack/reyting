@@ -289,6 +289,9 @@ b.bdx{color:var(--bad)}b.okx{color:var(--ok)}
 .jles.now .jnum{background:var(--ac);color:#fff}
 .jinfo{min-width:0;flex:1}.jsub{font-size:14px;font-weight:700;line-height:1.15}
 .jles.now .jsub{color:var(--ac)}
+.jnowb{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;color:#fff;background:#2f9e44;padding:2px 8px 2px 7px;border-radius:999px;margin-left:7px;vertical-align:middle}
+.jnowb i{width:7px;height:7px;border-radius:50%;background:#fff;animation:jnbz 1.3s infinite}
+@keyframes jnbz{50%{opacity:.35}}
 .jclk{text-align:right;flex:none;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
 .jclk small{display:block;font-size:10.5px;color:var(--mut);font-weight:600}
 .jles.lunch{justify-content:center;color:#e8870a;font-weight:700;font-size:12.5px;border-bottom:1px dashed var(--ln)}
@@ -1524,7 +1527,7 @@ function jadLiveCard(list){const{cur,next,now}=jadState(list);
 function jadDayList(list,live){if(!list||!list.length)return '<div class="card"><p class="mut">Bugun dars yo‘q.</p></div>';
  if(live)jadState(list);let h='<div class="jsched">',prevEnd=null;
  for(const l of list){if(prevEnd!=null&&toMin(l.start)-prevEnd>=25)h+=`<div class="jles lunch">🍽 Tanaffus · ${min2t(prevEnd)}–${l.start}</div>`;
-  h+=`<div class="jles ${live?(l._st||''):''}"><div class="jnum">${l.p}</div><div class="jinfo"><div class="jsub">${esc(l.subject)}</div></div><div class="jclk">${l.start}<small>${l.end}</small></div></div>`;
+  h+=`<div class="jles ${live?(l._st||''):''}"><div class="jnum">${l.p}</div><div class="jinfo"><div class="jsub">${esc(l.subject)}${live&&l._st=='now'?' <span class="jnowb"><i></i>darsda</span>':''}</div></div><div class="jclk">${l.start}<small>${l.end}</small></div></div>`;
   prevEnd=toMin(l.end)}
  return h+'</div>'}
 const min2t=m=>String(m/60|0).padStart(2,'0')+':'+String(m%60).padStart(2,'0');

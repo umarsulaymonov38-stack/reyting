@@ -342,7 +342,20 @@ b.bdx{color:var(--bad)}b.okx{color:var(--ok)}
 .cact{display:flex;gap:8px;margin-top:10px}.cact button{flex:1;border:0;border-radius:12px;background:#1d2939;color:#d0d5dd;padding:9px 6px;font-family:inherit;font-weight:700;font-size:12.5px;cursor:pointer}.cact button:hover{background:#344054}
 @media(max-width:600px){.bxhero{padding:20px 18px}.bxk,.bxqa{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.bxk>div{padding:12px 13px}.bxk b{font-size:22px}.bxring{flex-direction:column;align-items:flex-start;gap:6px}.ring{width:52px;height:52px}.ring i{width:38px;height:38px;font-size:12px}.bxqa button{flex-direction:column;align-items:flex-start;padding:12px;gap:8px}.bxqa small{font-size:11.5px}.bxtabs button{flex-direction:column;gap:3px;padding:9px 6px;font-size:12px}.bxtabs{overflow:visible}#calcBox{width:min(300px,calc(100vw - 36px))}#calcFab{width:54px;height:54px;font-size:24px}}
 .bxtabs .gpm2{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;border:0;background:none;padding:12px 14px;border-radius:12px;font-family:inherit;font-weight:700;font-size:14px;color:var(--mut);cursor:pointer}.bxtabs .gpm2.on{background:linear-gradient(125deg,#d6336c,#ae3ec9);color:#fff}
-.dch{display:inline-flex;gap:3px}.tdy{border:1px solid var(--ln);background:var(--card);border-radius:7px;padding:4px 6px;font-family:inherit;font-weight:700;font-size:11.5px;color:var(--mut);cursor:pointer}.tdy.on{background:#1971c2;border-color:#1971c2;color:#fff}.tgc .gpd{padding:10px 0 4px}
+.dch{display:inline-flex;gap:3px}
+.mdc .mdays{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.mday{min-width:46px;border:1.5px solid var(--ln);background:var(--card);border-radius:9px;padding:8px 10px;font:inherit;font-weight:700;font-size:13px;color:var(--mut);cursor:pointer}
+.mday.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.gph{display:flex;flex-direction:column;gap:9px;margin-top:10px}
+.gphr{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gpn{flex:1;min-width:130px;font-size:14px;font-weight:600}
+.gphr .gpin{width:180px;flex:none}
+.gpcall{flex:none;display:inline-flex;align-items:center;gap:6px;padding:9px 14px;font-size:13px;font-weight:700;background:var(--ok);color:#fff;border-radius:10px;text-decoration:none;white-space:nowrap}
+.gpcall .i{width:16px;height:16px;stroke:#fff}
+.gpcall.off{background:var(--ln);color:var(--mut);pointer-events:none;opacity:.7}
+.gpcall.off .i{stroke:var(--mut)}
+@media(max-width:560px){.gphr .gpin{width:100%;flex:1}.gpn{min-width:100%}}
+.tdy{border:1px solid var(--ln);background:var(--card);border-radius:7px;padding:4px 6px;font-family:inherit;font-weight:700;font-size:11.5px;color:var(--mut);cursor:pointer}.tdy.on{background:#1971c2;border-color:#1971c2;color:#fff}.tgc .gpd{padding:10px 0 4px}
 .cnE{padding:6px 9px}.cnE .i{width:16px;height:16px}.cnEd{display:inline-flex;flex-wrap:wrap;gap:6px;align-items:center}.cnEd .fld{width:min(260px,60vw);margin:0;font-weight:700}.cnEd .btn{margin:0}
 .pmk{cursor:pointer}.pmk:hover{background:#d0ebff!important;color:#1864ab!important}.tab.pmo{font-size:12.5px;padding:6px 9px}.tab.pmo.on{background:#2f9e44;color:#fff;border-color:#2f9e44}.tab.pmo:disabled{opacity:.55;cursor:default}
 .exg{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:10px;margin:10px 0}.exg label{display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:13px}.exg .fld{margin:0}.tab.exm.on,.tab.xkb.on{background:#1c7ed6;color:#fff;border-color:#1c7ed6}.exc{background:#fff4e6!important;color:#d9480f!important;border-color:#ffd8a8!important}
@@ -803,6 +816,7 @@ async function render(){
  // Oddiy sinfda (1–2-guruh): sinf rahbari kunlik vazifalarni, fan o'qituvchisi faqat o'z fanidan baho qo'yadi
  const reg=!rp&&[1,2].includes(grpOf(c0)),fan=reg&&!AV()&&!canPh(c0);
  if(fan){tabs[0]=T('edit','Fan baholari');V[0]=subjView}else if(reg){tabs.splice(1,0,T('layers','Fan baholari'));V.splice(1,0,subjView);tabs.splice(2,0,T('userx','Baholanmaganlar'));V.splice(2,0,clsGapView)}
+ if([3,4,6].includes(grpOf(c0))&&ME.role=='teacher'&&(ME.cls||[]).includes(c0.id)){tabs.push(T('phone',"Ota-ona bilan aloqa"));V.push(groupPhoneView)}
  if(!AV()){tabs.push(T('chart',"O'quvchilar va statistika"));V.push(tchView)}
  if(BOOKS){tabs.push(T('books','Fan darsliklari'));V.push(booksView)}
  if(!AV()){tabs.push(T('award',"O'qituvchilar reytingi"));V.push(ratingView)}
@@ -810,9 +824,28 @@ async function render(){
  if(ME.role=='admin'){const tc=await q(sb.from('teacher_classes').select('class_id')).catch(()=>null);if(tc)S.tcSet=new Set(tc.map(x=>x.class_id));if(tk!=S.rt)return}
  chips();if(ADM()){const ch=$('chips');ch.insertAdjacentHTML('afterbegin',aCrumb('cls'));if(!$('side').innerHTML)sideView()}const c=CL.find(x=>x.id==S.cls)||{};
  const top=`<div class="card"><div class="top">${c.logo?`<img class="cl" src="${c.logo}">`:`<span class="cl ph">${ic('school')}</span>`}<b class="cn2" id="cnB">${esc(clsLbl(c))}</b>${c.id&&canPh(c)?`<button class="tab cnE" data-c="${c.id}" title="Sinf nomini o'zgartirish (faqat sinf rahbari)">${ic('edit')}</button>`:''}<span class="mut">${esc(c.teacher_name||'')}</span>${ME.roles&&ME.roles[c.id]?`<span class="rl">${ME.roles[c.id]=='rahbar'?'Sinf rahbari':"Fan o'qituvchisi"}</span>`:''}</div><div class="tabs">${tabs.map((t,i)=>`<button class="tab ${i==S.tab?'on':''}" data-t="${i}">${t}</button>`).join('')}</div></div>`;
- $('view').innerHTML=top+'<div class="ld"><i class="spin"></i>Yuklanmoqda…</div>';let h='';const taP=ME.role=='teacher'&&!OBS()?Promise.all([myGapCard().catch(()=>''),taCard().catch(()=>'')]).then(a=>a.join('')):'';
+ $('view').innerHTML=top+'<div class="ld"><i class="spin"></i>Yuklanmoqda…</div>';let h='';const taP=ME.role=='teacher'&&!OBS()?Promise.all([myDaysCard(c0).catch(()=>''),myGapCard().catch(()=>''),taCard().catch(()=>'')]).then(a=>a.join('')):'';
  try{h=V[S.tab]?await V[S.tab]():''}catch(e){h='<div class="card">Ma\'lumotni o\'qib bo\'lmadi. Sahifani yangilang.</div>'}
  const ta=await taP;if(tk==S.rt)$('view').innerHTML=top+ta+h}
+// O'qituvchi o'z dars kunlarini belgilaydi (yangilanish-84)
+async function myDaysCard(c){if(!c||!c.id||ME.role!='teacher'||OBS())return '';
+ const role=ME.roles&&ME.roles[c.id];
+ if([1,2].includes(grpOf(c))&&role=='rahbar')return '';
+ if(!(ME.cls||[]).includes(c.id))return '';
+ let days=[];try{const r=await sb.from('teacher_classes').select('days').eq('user_id',ME.id).eq('class_id',c.id).maybeSingle();days=(r.data&&r.data.days)||[]}catch(e){}
+ return `<div class="card mdc"><b>${ic('cal')}Dars kunlarim</b><p class="mut">Shu guruh/sinfda qaysi kunlari dars o'tasiz — belgilang. Bu kunlari baho qo'yilmasa, admin va sinf rahbariga ko'rinadi.</p>
+  <div class="mdays">${DNS.map((n,i)=>`<button class="mday ${days.includes(i+1)?'on':''}" data-d="${i+1}">${n}</button>`).join('')}</div></div>`}
+// Ingliz tili / Matematika (guruh) o'qituvchisi: ota-ona telefoni + bitta tugma bilan qo'ng'iroq (yangilanish-84)
+function gpTel(ph){return String(ph||'').replace(/[^0-9+]/g,'')}
+function gpRow(st,i,ph){const tel=gpTel(ph);
+ return `<div class="gphr" data-s="${esc(st.id)}"><span class="gpn"><b>${i+1}.</b> ${esc(st.full_name)}</span>
+  <input class="fld gpin" type="tel" inputmode="tel" data-s="${esc(st.id)}" value="${esc(ph||'')}" placeholder="+998 __ ___ __ __">
+  <a class="btn gpcall${tel?'':' off'}" ${tel?`href="tel:${esc(tel)}"`:'aria-disabled="true"'}>${ic('phone')}Qo'ng'iroq</a></div>`}
+async function groupPhoneView(){await loadCls();const st=S.st.filter(x=>x.full_name.trim());
+ let m={};try{const r=await sb.rpc('group_phones',{p_class:S.cls});if(r.error)throw r.error;(r.data||[]).forEach(x=>m[x.student_id]=x.parent_phone)}
+ catch(e){return `<div class="card"><p class="mut">${/group_phones/.test(e.message||'')?"Avval Supabase'da <b>yangilanish-84</b> ni ishga tushiring.":esc(netMsg(e))}</p></div>`}
+ return `<div class="card"><b>${ic('phone')}Ota-ona bilan aloqa</b><p class="mut">Har bir o'quvchi uchun ota-ona telefon raqamini yozing — avtomatik saqlanadi. So'ng <b>«Qo'ng'iroq»</b> tugmasini bossangiz, telefon raqamiga to'g'ridan-to'g'ri qo'ng'iroq boshlanadi.</p>
+  <div class="gph">${st.length?st.map((x,i)=>gpRow(x,i,m[x.id])).join(''):'<p class="mut">O\'quvchilar yo\'q.</p>'}</div></div>`}
 // Sinf rahbari: qaysi ustoz qaysi o'quvchini baholamagan (yangilanish-77)
 async function clsGapView(){const{data,error}=await sb.rpc('class_gaps',{p_class:S.cls,p_day:S.date});
  const bar=dtBar('<span class="mut">Fan o\'qituvchilari, guruh (Matematika, Ingliz tili, Arab/Koreys tili) va repetitor ustozlari hamda kunlik vazifalar bo\'yicha shu kuni baholanmagan o\'quvchilar. Dars kunlari — «O\'qituvchilar» bo\'limidagi jadval bo\'yicha.</span>');
@@ -1737,7 +1770,7 @@ async function tchView(){const mm=S.month.split('-'),a=S.month+'-01',b=S.month+'
 function rs(f,cb,mx){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,(mx||110)/Math.max(im.width,im.height)),v=document.createElement('canvas');v.width=Math.round(im.width*k);v.height=Math.round(im.height*k);const x=v.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,v.width,v.height);x.drawImage(im,0,0,v.width,v.height);cb(v.toDataURL('image/jpeg',.82))};im.src=r.result};r.readAsDataURL(f)}
 const upd=async(tb,v,k,id)=>{const{error}=await sb.from(tb).update(v).eq(k,id);if(error)flash(netMsg(error))};
 async function signOut(){const ro=sb.__ro;await sb.auth.signOut();ME=null;if(ro){location.reload();return}flash('');loginView()}
-document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[data-t],[data-lt],.att,.ratt,.pay,#imb,.imdel,.gimg,#smsauto,#net,#out,#pk,#gc,#lgb,#tgo,#lgo,#rgo,#mkt,#mna,#mnb,.mdel,.tadd,.trem,.pdel,#rty,#absPdf,#latePdf,#leavePdf,.smsTg,#smsTest,#smsAll,.smsCls,#smsLogB,#ppw,#pushOn,#pushOff,#pushTest,#pgOk,[data-pv],.pback,.ckx,#ckSend,#ratePdf,#bkb,#bku,.bdel,#fbs,.fdel,#fbPdf,#payPdf,.payPdf,.kidgo,#stadd,#infPdf,.satt,.tcd,.tcadd,.tpwb,#bkp,.wkx,#wkSend,#wkYes,#wkNo,.gask,.tqr,.tans,#pdPdf,.pyr,.prc,.pfb,.pinf,#paidPdf,.rkb,#repPdf,#repClose,#repOpen,[data-bt],.gpk,#gapPdf,.tdy,.gpm2,#tgPdf,.cnE,#cnOk,#cnNo,.pmk,#exAdd,.exDel,#exPdf,.xkb,.exm,[data-kid]');if(!t)return;
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[data-t],.mday,[data-lt],.att,.ratt,.pay,#imb,.imdel,.gimg,#smsauto,#net,#out,#pk,#gc,#lgb,#tgo,#lgo,#rgo,#mkt,#mna,#mnb,.mdel,.tadd,.trem,.pdel,#rty,#absPdf,#latePdf,#leavePdf,.smsTg,#smsTest,#smsAll,.smsCls,#smsLogB,#ppw,#pushOn,#pushOff,#pushTest,#pgOk,[data-pv],.pback,.ckx,#ckSend,#ratePdf,#bkb,#bku,.bdel,#fbs,.fdel,#fbPdf,#payPdf,.payPdf,.kidgo,#stadd,#infPdf,.satt,.tcd,.tcadd,.tpwb,#bkp,.wkx,#wkSend,#wkYes,#wkNo,.gask,.tqr,.tans,#pdPdf,.pyr,.prc,.pfb,.pinf,#paidPdf,.rkb,#repPdf,#repClose,#repOpen,[data-bt],.gpk,#gapPdf,.tdy,.gpm2,#tgPdf,.cnE,#cnOk,#cnNo,.pmk,#exAdd,.exDel,#exPdf,.xkb,.exm,[data-kid]');if(!t)return;
  const G=t.matches('#tgo,#lgo,#rgo,#mkt,#mna,#gc,#smsauto,#net,.pay,.imdel,.mdel,.tadd,.trem,.pdel,#bku,.bdel,#fbs,.fdel');if(G){if(t.disabled)return;t.disabled=true}try{
  if(t.classList.contains('smsTg')&&S.smsCfg){const k=t.dataset.k,n=!S.smsCfg[k];if(n&&!confirm("Yoqilsinmi? Shundan keyin SMS'lar avtomatik yuboriladi va har biri uchun Eskiz balansidan pul yechiladi."))return;
   const{error}=await sb.from('sms_config').update({[k]:n,updated_at:new Date().toISOString()}).eq('id',1);if(error){flash(netMsg(error));return}S.smsCfg[k]=n;t.classList.toggle('on',n);t.textContent=n?'✅ Yoqilgan':"⛔ O'chiq";flash(n?'✅ Yoqildi':"O'chirildi");return}
@@ -1771,6 +1804,8 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[
   const c=CL.find(x=>x.id==id);if(c){c.name=data||v;c.renamed=true}flash("✅ Sinf nomi o'zgartirildi");render();return}
  if(t.classList.contains('gpk')){S.gpk=t.dataset.k;render();return}
  if(t.classList.contains('gpm2')){S.gm=t.dataset.m;render();return}
+ if(t.classList.contains('mday')){const on=t.classList.toggle('on');const days=[...document.querySelectorAll('.mday.on')].map(x=>+x.dataset.d).sort();
+  const{error}=await sb.rpc('set_my_days',{p_class:S.cls,p_days:days});if(error){t.classList.toggle('on');flash(/set_my_days/.test(error.message||'')?"Avval Supabase'da yangilanish-84 ni ishga tushiring":netMsg(error));return}flash('✅ Dars kunlari saqlandi');return}
  if(t.classList.contains('tdy')){const u=t.dataset.u,c=+t.dataset.c,x=(S.tAll||[]).find(r=>r.user_id==u&&r.class_id==c);if(!x)return;const d=+t.dataset.d,cur=new Set(x.days||[]);cur.has(d)?cur.delete(d):cur.add(d);const nd=[...cur].sort();
   const{error}=await sb.from('teacher_classes').update({days:nd.length?nd:null}).eq('user_id',u).eq('class_id',c);if(error){flash(/days/.test(error.message||'')?"Avval Supabase'da yangilanish-64 ni ishga tushiring":netMsg(error));return}x.days=nd.length?nd:null;t.classList.toggle('on',cur.has(d));flash("✅ Dars kunlari saqlandi");return}
  if(t.id=='tgPdf'&&S.tgP){const P=S.tgP;printDoc("Baho qo'ymagan o'qituvchilar — "+fd2(P.d),`<p><b>Sana:</b> ${fd2(P.d)} · ${P.T.length} ta o'qituvchi</p>${P.T.map(x=>`<h2>${esc(x.n)}${x.ph?' · '+esc(x.ph):''}</h2><table><tr><th>Sinf / guruh</th><th style="width:90px">Baholangan</th><th>Baho qo'yilmagan o'quvchilar</th></tr>${x.L.filter(r=>r.done<r.n).map(r=>`<tr><td>${esc(r.cl)}${r.subject?' · '+esc(r.subject):''}</td><td>${r.done} / ${r.n}</td><td>${(r.missing||[]).map(esc).join(', ')}</td></tr>`).join('')}</table>`).join('')}`);return}
@@ -1908,6 +1943,12 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-c],[
   const{error}=await sb.from('menu').insert({day:$('mnd').value,meal:$('mnm').value,name:nm,photo:S.mph||null});S.mph=null;if(error)flash(netMsg(error));else render()}
  else if(t.classList.contains('mdel')){const{error}=await sb.from('menu').delete().eq('id',t.dataset.id);if(error)flash(netMsg(error));else render()}}finally{if(G)t.disabled=false}});
 document.addEventListener('change',async e=>{const t=e.target;
+ if(t.classList&&t.classList.contains('gpin')){const sid=t.dataset.s,v=t.value.trim();t.disabled=true;
+  const{data,error}=await sb.rpc('set_group_phone',{p_sid:String(sid),p_phone:v});t.disabled=false;
+  if(error){flash(/set_group_phone/.test(error.message||'')?"Avval Supabase'da yangilanish-84 ni ishga tushiring":netMsg(error));return}
+  t.value=data||'';const row=t.closest('.gphr'),call=row&&row.querySelector('.gpcall'),tel=gpTel(data);
+  if(call){if(tel){call.href='tel:'+tel;call.classList.remove('off');call.removeAttribute('aria-disabled')}else{call.removeAttribute('href');call.classList.add('off');call.setAttribute('aria-disabled','true')}}
+  flash(data?'✅ Telefon saqlandi':"Telefon o'chirildi");return}
  if(t.classList&&t.classList.contains('ssc')){const d=t.dataset,sid=d.s,k=d.k,sv=((S.ssv||{})[sid]||{})[k],val=t.value===''?null:+t.value;if(sv==null||val===sv)return;
   const nm=(t.closest('tr').querySelector('td.l')||{}).textContent||'',why=await askWhy(`${esc(nm)} · ${esc((SSK.find(x=>x[0]==k)||[])[1]||'')}: <b>${sv}</b> → <b>${val??"o'chiriladi"}</b>`);
   const back=()=>{t.value=sv;(S.ss[sid]=S.ss[sid]||{})[k]=sv};if(!why){back();return}

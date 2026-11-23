@@ -37,7 +37,7 @@ begin
   rk as (select id, tnow, days, rank() over (order by tnow desc) rn, rank() over (order by told desc) ro, count(*) over () sz from tot)
   select jsonb_build_object('rank', rn, 'size', sz, 'delta', ro - rn),
          case when days > 0 then round(tnow * 5.0 / (days * 51), 1) else null end
-    into cls, avg5 from rk where id = kid;
+    into cls, avg5 from rk where id::text = kid;
 
   -- 2) Maktabdagi o'rin (barcha asosiy sinf o'quvchilari)
   with st as (
@@ -53,7 +53,7 @@ begin
                filter (where d.day between yfrom and wk), 0) as told
       from st left join public.daily_scores d on d.student_id = st.id group by st.id),
   rk as (select id, rank() over (order by tnow desc) rn, rank() over (order by told desc) ro, count(*) over () sz from tot)
-  select jsonb_build_object('rank', rn, 'size', sz, 'delta', ro - rn) into sch from rk where id = kid;
+  select jsonb_build_object('rank', rn, 'size', sz, 'delta', ro - rn) into sch from rk where id::text = kid;
 
   -- 3) Fan va guruhlar bo'yicha o'rin
   with k as (
@@ -62,7 +62,7 @@ begin
            coalesce((select grade from public.classes where id = cid),
                     nullif(substring(cname from '^\s*(\d+)'), '')::int) as cg),
   links as (  -- kid bog'langan guruh yozuvlari (yk_grades_of bilan bir xil qoida + student_links)
-    select distinct g.id as gid, gc.id as gcid, gc.name::text as gname,
+    select distinct g.id::text as gid, gc.id as gcid, gc.name::text as gname,
            coalesce(nullif(gc.subject, ''), gc.name)::text as subj, gc.kind is not distinct from 'rep' as rep
       from k, public.students g join public.classes gc on gc.id = g.class_id
      where coalesce(btrim(g.full_name), '') <> ''
@@ -100,7 +100,7 @@ begin
       from public.teacher_classes t join public.profiles p on p.id = t.user_id group by t.class_id),
   mine as (
     select l.gcid, l.gname, l.subj, l.rep, r.rn, r.ro, r.sz, r.gavg, l.gid
-      from links l join rkd r on r.gcid = l.gcid and r.sid = l.gid)
+      from links l join rkd r on r.gcid = l.gcid and r.sid::text = l.gid)
   select coalesce(jsonb_agg(jsonb_build_object(
            'class_id', mine.gcid, 'name', mine.subj, 'group_name', mine.gname,
            'teacher', (select names from tch where tch.class_id = mine.gcid),

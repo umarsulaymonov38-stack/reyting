@@ -261,6 +261,7 @@ b.bdx{color:var(--bad)}b.okx{color:var(--ok)}
 .rpl.pl1{color:#e9a400}.rpl.pl2{color:#8a93a6}.rpl.pl3{color:#c0773a}
 .rab{font-size:11px;font-weight:700;color:#e8870a}
 .rfoot{text-align:center;font-size:11px;color:var(--mut);padding-top:4px;line-height:1.55}
+.stcoin{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;white-space:nowrap}.stcoin.g{color:#c88a00}.stcoin.s{color:#7c8794}.stcoin.b{color:#b06a2c}
 /* Dars jadvali (jadval.json) */
 .jwrap{display:flex;flex-direction:column;gap:12px;margin-bottom:14px}
 .jlive{background:var(--card);border:1.5px solid var(--ac);border-radius:16px;padding:13px 14px;box-shadow:var(--sh)}
@@ -1347,12 +1348,22 @@ document.addEventListener('click',async e=>{const t=e.target.closest('.ppc,.otg,
 const pPing=()=>{const n=Date.now();if(ME&&ME.role=='parent'&&!document.hidden&&n-(S.pg||0)>60000){S.pg=n;sb.rpc('parent_ping').then(()=>{},()=>{})}};
 setInterval(pPing,120000);document.addEventListener('visibilitychange',pPing);
 // Admin boshqaruv paneli (davlat portali uslubida): bosh sahifa — xizmatlar to'ri, har bir xizmat alohida bo'lim
-const ASEC={cls:['school','#1c7ed6',"Sinflar va baholash","Sinf tanlab baholash, reyting, sozlamalar"],tch:['users','#1971c2',"O'qituvchilar","Sinflar, vazifalar va parollar"],trt:['award','#c2255c',"O'qituvchilar reytingi","Oylik ish natijalari"],gap:['edit','#d6336c',"Baho qo'yilmaganlar","Qaysi sinfda kimga baho qo'yilmagan"],
+const ASEC={cls:['school','#1c7ed6',"Sinflar va baholash","Sinf tanlab baholash, reyting, sozlamalar"],tch:['users','#1971c2',"O'qituvchilar","Sinflar, vazifalar va parollar"],trt:['award','#c2255c',"O'qituvchilar reytingi","Oylik ish natijalari"],stand:['trophy','#d4a017',"O'quvchilar reytingi","Sinf/maktab o'rni, ball va tanga"],gap:['edit','#d6336c',"Baho qo'yilmaganlar","Qaysi sinfda kimga baho qo'yilmagan"],
  abs:['userx','#e03131',"Kelmaganlar","Bugun kelmagan o'quvchilar"],late:['clock','#f08c00',"Kech kelganlar","08:30 dan keyin kelganlar"],leave:['logout','#7048e8',"Ketish davomati","Maktabdan ketish vaqtlari"],tkb:['wifi','#0b7285',"Turniket bog'lash","Bog'lanmagan shaxslar va turniketda yuzi yo'q o'quvchilar"],
  ota:['link','#2f9e44',"Ota-onalar ulanishi","Jonli tahlil va kodlarni tarqatish"],fb:['msg','#5f3dc4',"Fikr-mulohazalar","Ota-onalar fikri va savolnoma"],
  pay:['card','#0c8599',"To'lov","Oylik to'lovlar va eslatmalar"],menu:['food','#e8590c',"Taomnoma","Kunlik ovqatlanish menyusi"],bk:['down','#495057',"Zaxira nusxa","Barcha ma'lumotlarni yuklab olish"]};
-const AGRP=[["O'quv jarayoni",['cls','tch','trt','gap']],["Davomat nazorati",['abs','late','leave','tkb']],["Ota-onalar bilan ishlash",['ota','fb']],["Moliya va xo'jalik",['pay','menu','bk']]];
-const aView=k=>({gap:gapView,abs:absView,late:lateView,leave:leaveView,tkb:tkbView,pay:payView,tch:tView,trt:ratingView,menu:menuView,fb:fbView,ota:otaView,bk:async()=>bkCard()})[k];
+const AGRP=[["O'quv jarayoni",['cls','tch','trt','stand','gap']],["Davomat nazorati",['abs','late','leave','tkb']],["Ota-onalar bilan ishlash",['ota','fb']],["Moliya va xo'jalik",['pay','menu','bk']]];
+const aView=k=>({gap:gapView,abs:absView,late:lateView,leave:leaveView,tkb:tkbView,pay:payView,tch:tView,trt:ratingView,stand:standView,menu:menuView,fb:fbView,ota:otaView,bk:async()=>bkCard()})[k];
+async function standView(){const M=CL.filter(c=>[1,2].includes(grpOf(c))).sort(clsCmp);if(!M.length)return '<div class="card"><p class="mut">Asosiy sinflar topilmadi.</p></div>';
+ if(!M.some(c=>c.id==S.stc))S.stc=M[0].id;S.stm=S.stm||today.slice(0,7);
+ const mo=S.stm+'-01';let rows=[];
+ try{const{data,error}=await sb.rpc('class_standings',{p_class:S.stc,p_month:mo});if(error)throw error;rows=data||[]}
+ catch(e){return `<div class="card"><p class="mut">${/class_standings/.test(e.message||'')?"Avval Supabase'da <b>yangilanish-88</b> ni ishga tushiring.":esc(netMsg(e))}</p></div>`}
+ const sel=`<select class="fld" id="stcSel" style="width:auto;max-width:100%">${GR.filter(g=>[1,2].includes(g[0])).map(g=>`<optgroup label="${esc(g[1])}">${M.filter(c=>grpOf(c)==g[0]).map(c=>`<option value="${c.id}" ${c.id==S.stc?'selected':''}>${esc(clsLbl(c))}</option>`).join('')}</optgroup>`).join('')}</select>`;
+ const msel=`<input type="month" id="stmSel" value="${S.stm}" max="${today.slice(0,7)}">`;
+ const coinB=p=>{const c=coinOf(p);return c?`<span class="stcoin ${c[2]}">${coinI(c,20)} ${c[0]}</span>`:'<span class="mut">—</span>'};
+ const body=rows.length?`<div class="wrap"><table><tr><th>Sinf o'rni</th><th class="l">F.I.Sh</th><th>Ball</th><th>Foiz</th><th>Tanga</th><th>Maktabda</th></tr>${rows.map(r=>`<tr><td class="tot">${MD3[r.class_rank-1]||r.class_rank}</td><td class="l">${esc(r.name)}</td><td class="tot">${r.total}<small class="mut">/620</small></td><td>${r.pct}%</td><td>${coinB(+r.pct)}</td><td class="tot"><b>${r.school_rank}</b></td></tr>`).join('')}</table></div>`:`<p class="mut">Bu oyda ball qo'yilmagan.</p>`;
+ return `<div class="card"><div class="top" style="flex-wrap:wrap;gap:10px">${sel}${msel}</div><p class="mut">Oylik ball <b>620</b> dan. Tanga: 🥇 Oltin ≥90%, 🥈 Kumush ≥80%, 🥉 Bronza ≥70%. «Maktabda» — butun maktab bo'yicha o'rin.</p>${body}</div>`}
 const aCrumb=k=>`<nav class="acr"><button class="acb" data-as="">${ic('home')}Bosh sahifa</button><span class="acs">›</span><b>${esc((ASEC[k]||[])[2]||'')}</b></nav>`;
 async function admHome(){const t=nowT(),M=CL.filter(c=>[1,2].includes(grpOf(c)));
  const[n,pr,R]=await Promise.all([sb.from('students').select('id',{count:'exact',head:true}).in('class_id',M.map(c=>c.id)).neq('full_name','').then(r=>r.count||0,()=>0),
@@ -1977,6 +1988,8 @@ document.addEventListener('change',async e=>{const t=e.target;
  if(t.id=='phk'){$('phw').innerHTML=payHist(+t.value);return}
  if(t.id=='kid'){const{error}=await sb.rpc('switch_kid',{p_id:t.value});if(error)flash(netMsg(error));else await loadMe(ME.id);return}
  if(t.id=='mnf'&&t.files[0])rs(t.files[0],u=>{S.mph=u;$('mnp').textContent='✅ rasm tanlandi'},240);
+ if(t.id=='stcSel'&&t.value){S.stc=+t.value;render();return}
+ if(t.id=='stmSel'&&t.value){S.stm=t.value;render();return}
  if(t.id=='mo'&&t.value){S.month=t.value;render()}
  if(t.id=='pm'&&t.value){S.pm=t.value;render()}
  if(t.id=='pdd'&&t.value){S.pdd=t.value;$('pdBox').innerHTML=await repHtml();return}

@@ -1500,7 +1500,7 @@ document.addEventListener('change',async e=>{const t=e.target;if(!t.classList||!
 function chatSoon(){return `<div class="card chatsoon"><div class="csicon">${ic('msg')}</div><h3>Suhbat tez kunda ochiladi</h3><p class="mut">Bu yerda farzandingizning sinf rahbari bilan to‘g‘ridan-to‘g‘ri yozishasiz — savol berasiz, javob olasiz. Bo‘lim hozircha tayyorlanmoqda, tez orada faollashtiriladi.</p><span class="csbadge">⏳ Tez kunda</span></div>`}
 // ===== Dars jadvali (jadval.json — statik fayl) =====
 let JAD=null;
-async function loadJadval(){if(JAD)return JAD;try{const r=await fetch('jadval.json?v=1',{cache:'force-cache'});JAD=await r.json()}catch(e){JAD={classes:{}}}return JAD}
+async function loadJadval(){if(JAD)return JAD;try{const r=await fetch('jadval.json?v=2',{cache:'force-cache'});JAD=await r.json()}catch(e){JAD={classes:{}}}return JAD}
 function schedKey(c){if(!c||!([1,2].includes(grpOf(c))))return null;const g=+c.grade||parseInt(c.name)||0;
  const m=String(c.name||'').match(/\d+\s*[-\s]\s*([A-Za-zА-Яа-я])/);let L=m?m[1].toUpperCase():'';
  const mp={'А':'A','Б':'B','В':'V','Г':'G','Д':'D','Ғ':'G'};L=mp[L]||L;return g&&L?g+'-'+L:null}
@@ -1526,7 +1526,7 @@ function jadLiveCard(list){const{cur,next,now}=jadState(list);
  return ''}
 function jadDayList(list,live){if(!list||!list.length)return '<div class="card"><p class="mut">Bugun dars yo‘q.</p></div>';
  if(live)jadState(list);let h='<div class="jsched">',prevEnd=null;
- for(const l of list){if(prevEnd!=null&&toMin(l.start)-prevEnd>=25)h+=`<div class="jles lunch">🍽 Tanaffus · ${min2t(prevEnd)}–${l.start}</div>`;
+ for(const l of list){if(prevEnd!=null&&toMin(l.start)-prevEnd>=25)h+=`<div class="jles lunch">🍽 Tushlik · ${min2t(prevEnd)}–${l.start}</div>`;
   h+=`<div class="jles ${live?(l._st||''):''}"><div class="jnum">${l.p}</div><div class="jinfo"><div class="jsub">${esc(l.subject)}${live&&l._st=='now'?' <span class="jnowb"><i></i>darsda</span>':''}</div></div><div class="jclk">${l.start}<small>${l.end}</small></div></div>`;
   prevEnd=toMin(l.end)}
  return h+'</div>'}

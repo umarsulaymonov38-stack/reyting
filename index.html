@@ -288,7 +288,7 @@ b.bdx{color:var(--bad)}b.okx{color:var(--ok)}
 .jnum{width:26px;height:26px;border-radius:8px;background:color-mix(in srgb,var(--mut) 12%,transparent);color:var(--mut);display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
 .jles.done .jnum{background:color-mix(in srgb,#2f9e44 16%,transparent);color:#2f9e44}
 .jles.now .jnum{background:var(--ac);color:#fff}
-.jinfo{min-width:0;flex:1}.jsub{font-size:14px;font-weight:700;line-height:1.15}
+.jinfo{min-width:0;flex:1}.jsub{font-size:14px;font-weight:700;line-height:1.15}.jtch{font-size:11.5px;color:var(--mut);font-weight:600;margin-top:1px}
 .jles.now .jsub{color:var(--ac)}
 .jnowb{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;color:#fff;background:#2f9e44;padding:2px 8px 2px 7px;border-radius:999px;margin-left:7px;vertical-align:middle}
 .jnowb i{width:7px;height:7px;border-radius:50%;background:#fff;animation:jnbz 1.3s infinite}
@@ -1514,7 +1514,7 @@ document.addEventListener('change',async e=>{const t=e.target;if(!t.classList||!
 function chatSoon(){return `<div class="card chatsoon"><div class="csicon">${ic('msg')}</div><h3>Suhbat tez kunda ochiladi</h3><p class="mut">Bu yerda farzandingizning sinf rahbari bilan to‘g‘ridan-to‘g‘ri yozishasiz — savol berasiz, javob olasiz. Bo‘lim hozircha tayyorlanmoqda, tez orada faollashtiriladi.</p><span class="csbadge">⏳ Tez kunda</span></div>`}
 // ===== Dars jadvali (jadval.json — statik fayl) =====
 let JAD=null;
-async function loadJadval(){if(JAD)return JAD;try{const r=await fetch('jadval.json?v=5',{cache:'force-cache'});JAD=await r.json()}catch(e){JAD={classes:{}}}return JAD}
+async function loadJadval(){if(JAD)return JAD;try{const r=await fetch('jadval.json?v=6',{cache:'force-cache'});JAD=await r.json()}catch(e){JAD={classes:{}}}return JAD}
 function schedKey(c){if(!c||!([1,2].includes(grpOf(c))))return null;const g=+c.grade||parseInt(c.name)||0;
  const m=String(c.name||'').match(/\d+\s*[-\s]\s*([A-Za-zА-Яа-я])/);let L=m?m[1].toUpperCase():'';
  const mp={'А':'A','Б':'B','В':'V','Г':'G','Д':'D','Ғ':'G'};L=mp[L]||L;return g&&L?g+'-'+L:null}
@@ -1530,19 +1530,19 @@ const DOWN=['','Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba','Y
 function jadLiveCard(list){const{cur,next,now}=jadState(list);
  if(cur){const a=toMin(cur.start),b=toMin(cur.end),pct=Math.max(2,Math.min(100,Math.round((now-a)/(b-a)*100))),left=b-now;
   return `<div class="jlive"><div class="jlh"><span class="jpz"></span>Jonli · ${cur.p}-dars ketyapti</div>
-   <div class="jlb"><div class="jli">${subIcon(cur.subject)}</div><div class="jlm"><div class="jls">${esc(cur.subject)}</div><div class="jlt2">${cur.start}–${cur.end}</div></div>
+   <div class="jlb"><div class="jli">${subIcon(cur.subject)}</div><div class="jlm"><div class="jls">${esc(cur.subject)}</div><div class="jlt2">${cur.teacher?esc(cur.teacher)+' · ':''}${cur.start}–${cur.end}</div></div>
    <div class="jlr"><div class="jlc">${cur.start}</div><div class="jln">${left} daq qoldi</div></div></div>
    <div class="jbar"><i style="width:${pct}%"></i></div></div>`}
  if(next){const left=toMin(next.start)-now;
   return `<div class="jlive soon"><div class="jlh"><span class="jpz g"></span>Keyingi dars</div>
-   <div class="jlb"><div class="jli">${subIcon(next.subject)}</div><div class="jlm"><div class="jls">${esc(next.subject)}</div><div class="jlt2">${next.start}–${next.end}</div></div>
+   <div class="jlb"><div class="jli">${subIcon(next.subject)}</div><div class="jlm"><div class="jls">${esc(next.subject)}</div><div class="jlt2">${next.teacher?esc(next.teacher)+' · ':''}${next.start}–${next.end}</div></div>
    <div class="jlr"><div class="jlc">${next.start}</div><div class="jln">${left} daq qoldi</div></div></div></div>`}
  return ''}
 function jadDayList(list,live){if(!list||!list.length)return '<div class="card"><p class="mut">Bugun dars yo‘q.</p></div>';
  if(live)jadState(list);let h='<div class="jsched">';
  for(const l of list){
   if(l.lunch){h+=`<div class="jles lunch">🍽 Tushlik · ${l.start}–${l.end}</div>`;continue}
-  h+=`<div class="jles ${live?(l._st||''):''}"><div class="jnum">${l.p}</div><div class="jinfo"><div class="jsub">${esc(l.subject)}${live&&l._st=='now'?' <span class="jnowb"><i></i>darsda</span>':''}</div></div><div class="jclk">${l.start}<small>${l.end}</small></div></div>`;
+  h+=`<div class="jles ${live?(l._st||''):''}"><div class="jnum">${l.p}</div><div class="jinfo"><div class="jsub">${esc(l.subject)}${live&&l._st=='now'?' <span class="jnowb"><i></i>darsda</span>':''}</div>${l.teacher?`<div class="jtch">${esc(l.teacher)}</div>`:''}</div><div class="jclk">${l.start}<small>${l.end}</small></div></div>`;
  }
  return h+'</div>'}
 const min2t=m=>String(m/60|0).padStart(2,'0')+':'+String(m%60).padStart(2,'0');

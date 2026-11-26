@@ -1448,7 +1448,17 @@ const ASEC={live:['run','#16a34a',"Jonli darslar","Qaysi sinfda hozir qaysi dars
  pay:['card','#0c8599',"To'lov","Oylik to'lovlar va eslatmalar"],menu:['food','#e8590c',"Taomnoma","Kunlik ovqatlanish menyusi"],bk:['down','#495057',"Zaxira nusxa","Barcha ma'lumotlarni yuklab olish"]};
 const AGRP=[["O'quv jarayoni",['live','cls','tch','trt','stand','gap']],["Davomat nazorati",['abs','late','leave','tkb']],["Ota-onalar bilan ishlash",['ota','fb']],["Moliya va xo'jalik",['pay','menu','bk']]];
 const aView=k=>({live:liveView,gap:gapView,abs:absView,late:lateView,leave:leaveView,tkb:tkbView,pay:payView,tch:tView,trt:ratingView,stand:standView,menu:menuView,fb:fbView,ota:otaView,bk:async()=>bkCard()})[k];
-async function standView(){const M=CL.filter(c=>[1,2].includes(grpOf(c))).sort(clsCmp);if(!M.length)return '<div class="card"><p class="mut">Asosiy sinflar topilmadi.</p></div>';
+const stTabs=()=>`<div class="top" style="gap:8px;flex-wrap:wrap">${[['top','🏆 Maktab TOP-10'],['cls','📊 Sinflar statistikasi'],['stu',"👥 Sinf bo'yicha o'quvchilar"]].map(([k,t])=>`<button class="tab ${(S.stt||'top')==k?'on':''}" data-stt="${k}">${t}</button>`).join('')}<input type="month" id="stmSel" value="${S.stm}" max="${today.slice(0,7)}" style="margin-left:auto"></div>`;
+const MDL=['🥇','🥈','🥉'];
+async function standView(){S.stm=S.stm||today.slice(0,7);const tb=S.stt||'top';if(tb=='stu'){const h=await standStu();return h.replace('<div class="card"><div class="top"','<div class="card">'+stTabs()+'<div class="top"')}
+ const mo=S.stm+'-01',miss=e=>`<div class="card">${stTabs()}<p class="mut">${/school_top|class_stats|yk_month_tot/.test(e.message||'')?"Avval Supabase'da <b>yangilanish-90</b> ni ishga tushiring.":esc(netMsg(e))}</p></div>`;
+ const coinB=p=>{const c=coinOf(p);return c?`<span class="stcoin ${c[2]}">${coinI(c,20)} ${c[0]}</span>`:'<span class="mut">—</span>'};
+ if(tb=='top'){let rows=[];try{const{data,error}=await sb.rpc('school_top',{p_month:mo,p_n:10});if(error)throw error;rows=data||[]}catch(e){return miss(e)}
+  return `<div class="card">${stTabs()}<p class="mut">Butun maktab bo'yicha oylik ball (620 dan) eng yuqori <b>10 ta o'quvchi</b>.</p>${rows.length?`<div class="wrap"><table><tr><th>O'rin</th><th class="l">F.I.Sh</th><th>Sinf</th><th>Ball</th><th>Foiz</th><th>Tanga</th></tr>${rows.map(r=>{const c=CL.find(x=>x.id==r.class_id);return `<tr><td class="tot">${MDL[r.school_rank-1]||r.school_rank}</td><td class="l"><b>${esc(r.name)}</b></td><td>${c?esc(clsLbl(c)):'—'}</td><td class="tot">${r.total}<small class="mut">/620</small></td><td>${r.pct}%</td><td>${coinB(+r.pct)}</td></tr>`}).join('')}</table></div>`:`<p class="mut">Bu oyda ball qo'yilmagan.</p>`}</div>`}
+ let rows=[];try{const{data,error}=await sb.rpc('class_stats',{p_month:mo});if(error)throw error;rows=data||[]}catch(e){return miss(e)}
+ const mx=Math.max(1,...rows.map(r=>+r.avg_total));
+ return `<div class="card">${stTabs()}<p class="mut">Sinflar o'rtacha oylik ball (620 dan) bo'yicha tartiblangan. Tanga — shu sinfda nechta o'quvchi qaysi tangani olish darajasida.</p>${rows.length?`<div class="wrap"><table><tr><th>O'rin</th><th class="l">Sinf</th><th>O'quvchi</th><th class="l" style="min-width:150px">O'rtacha ball</th><th>O'rtacha %</th><th>Eng yuqori</th><th>🥇</th><th>🥈</th><th>🥉</th></tr>${rows.map(r=>{const c=CL.find(x=>x.id==r.class_id);return `<tr><td class="tot">${MDL[r.class_rank-1]||r.class_rank}</td><td class="l"><b>${c?esc(clsLbl(c)):r.class_id}</b></td><td>${r.n}</td><td class="l"><div class="abar" style="margin:0"><i style="width:${Math.round(+r.avg_total/mx*100)}%"></i></div><small>${r.avg_total}</small></td><td>${r.avg_pct}%</td><td>${r.max_total}</td><td>${r.gold}</td><td>${r.silver}</td><td>${r.bronze}</td></tr>`}).join('')}</table></div>`:`<p class="mut">Bu oyda ball qo'yilmagan.</p>`}</div>`}
+async function standStu(){const M=CL.filter(c=>[1,2].includes(grpOf(c))).sort(clsCmp);if(!M.length)return '<div class="card"><p class="mut">Asosiy sinflar topilmadi.</p></div>';
  if(!M.some(c=>c.id==S.stc))S.stc=M[0].id;S.stm=S.stm||today.slice(0,7);
  const mo=S.stm+'-01';let rows=[];
  try{const{data,error}=await sb.rpc('class_standings',{p_class:S.stc,p_month:mo});if(error)throw error;rows=data||[]}
@@ -1457,7 +1467,7 @@ async function standView(){const M=CL.filter(c=>[1,2].includes(grpOf(c))).sort(c
  const msel=`<input type="month" id="stmSel" value="${S.stm}" max="${today.slice(0,7)}">`;
  const coinB=p=>{const c=coinOf(p);return c?`<span class="stcoin ${c[2]}">${coinI(c,20)} ${c[0]}</span>`:'<span class="mut">—</span>'};
  const body=rows.length?`<div class="wrap"><table><tr><th>Sinf o'rni</th><th class="l">F.I.Sh</th><th>Ball</th><th>Foiz</th><th>Tanga</th><th>Maktabda</th></tr>${rows.map(r=>`<tr><td class="tot">${MD3[r.class_rank-1]||r.class_rank}</td><td class="l">${esc(r.name)}</td><td class="tot">${r.total}<small class="mut">/620</small></td><td>${r.pct}%</td><td>${coinB(+r.pct)}</td><td class="tot"><b>${r.school_rank}</b></td></tr>`).join('')}</table></div>`:`<p class="mut">Bu oyda ball qo'yilmagan.</p>`;
- return `<div class="card"><div class="top" style="flex-wrap:wrap;gap:10px">${sel}${msel}</div><p class="mut">Oylik ball <b>620</b> dan. Tanga: 🥇 Oltin ≥90%, 🥈 Kumush ≥80%, 🥉 Bronza ≥70%. «Maktabda» — butun maktab bo'yicha o'rin.</p>${body}</div>`}
+ return `<div class="card"><div class="top" style="flex-wrap:wrap;gap:10px">${sel}</div><p class="mut">Oylik ball <b>620</b> dan. Tanga: 🥇 Oltin ≥90%, 🥈 Kumush ≥80%, 🥉 Bronza ≥70%. «Maktabda» — butun maktab bo'yicha o'rin.</p>${body}</div>`}
 // Jonli darslar: har bir sinfda hozir qaysi dars ketayotgani (dars jadvaliga ko'ra), 30 soniyada yangilanadi
 function liveState(list,now){if(!list||!list.length)return{k:'none',t:"Bugun dars yo'q"};
  const L=list.filter(l=>!l.lunch),lu=list.filter(l=>l.lunch),first=L[0],last=L[L.length-1];
@@ -1494,6 +1504,7 @@ function liveTbl(){const d=lvDate(),dw=new Date(d+'T12:00:00Z').getUTCDay()||7;i
 function liveBody(){return lvLive()?liveHtml():liveTbl()}
 function livePaint(){const b=$('liveBox');if(!b)return;b.innerHTML=liveBar()+'<div id="liveBody">'+liveBody()+'</div>';liveTick()}
 function liveTick(){clearTimeout(S.liveTm);S.liveTm=setTimeout(()=>{const b=$('liveBody');if(!b||S.as!='live')return;if(lvLive())b.innerHTML=liveHtml();liveTick()},30000)}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-stt]');if(t){S.stt=t.dataset.stt;render()}});
 document.addEventListener('click',e=>{const n=e.target.closest('[data-lvn]'),m=e.target.closest('[data-lvm]');if(!n&&!m)return;
  if(n){const v=+n.dataset.lvn;S.lvd=v?lvShift(lvDate(),v):nowT().d;S.lvm=S.lvd==nowT().d?(v?S.lvm:'live'):'tbl'}else S.lvm=m.dataset.lvm;livePaint()});
 document.addEventListener('change',e=>{if(e.target.id!='lvd'||!e.target.value)return;S.lvd=e.target.value;if(S.lvd!=nowT().d)S.lvm='tbl';livePaint()});

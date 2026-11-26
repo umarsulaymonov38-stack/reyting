@@ -696,7 +696,7 @@ const LATE='08:30',TK_FROM='06:00',TK_UNTIL='16:00',TK_LEAVE='16:00',TK_LEND='';
 const FBC=['Umumiy',"Ta'lim sifati","O'qituvchilar",'Ovqatlanish','Xavfsizlik va tartib','Taklif'];
 const fdt=t=>new Date(t).toLocaleString('en-GB',{timeZone:TZ,day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).replace(/\//g,'.');
 // To'lovlar: o'quv yili sentabrdan; har oy to'lovi shu oyning PAY_DUE-sanasigacha. Iyun–avgust hisoblanmaydi.
-const PAY_DUE=5,PAY_MONTHS=[9,10,11,12,1,2,3,4,5];
+const PAYW52=`<p style="margin:10px 0 0;padding:10px 12px;border-radius:10px;background:rgba(194,65,12,.1);border-left:4px solid var(--bad)"><b>⚠️ Jiddiy ogohlantirish.</b> Ta'lim xizmatlari shartnomasining <b>5.2-bandiga</b> ko'ra, to'lov joriy oyning ${5}-sanasigacha amalga oshirilmasa, maktab shartnomani <b>bir tomonlama bekor qilish huquqiga</b> ega; bunda shartnoma bekor qilinishi to'lanmagan qismni to'lashdan ozod qilmaydi. Shuningdek, to'lov kechiktirilsa, <b>Yuksalish ilovasida farzandingiz haqidagi ma'lumotlarni ko'rish cheklanishi mumkin</b>. Iltimos, to'lovni zudlik bilan amalga oshiring yoki maktab ma'muriyati bilan bog'laning.</p>`,PAY_DUE=5,PAY_MONTHS=[9,10,11,12,1,2,3,4,5];
 // Ota-onaga eslatilmaydigan oylar (2026-yil sentyabr va oktyabr): to'lanmagan bo'lsa ham ro'yxatda va ogohlantirishda chiqmaydi
 const PAY_SKIP=['2026-09','2026-10'];
 async function payInfo(){const c=S.kc||{};if(!c.id||c.kind=='rep'||!ME.student_id)return {b:'',t:''};
@@ -715,7 +715,7 @@ async function payInfo(){const c=S.kc||{};if(!c.id||c.kind=='rep'||!ME.student_i
  S.payH={kid:S.kn||'',cls:clsLbl(c),rows:months.map(k=>({m:lbl(k),paid:!!(pm[k]&&pm[k].paid),on:(pm[k]&&pm[k].paid_on)||''}))};
  const b=late.length?`<div class="card payw"><b>${ic('card')}To'lov eslatmasi</b><p>Hurmatli ota-ona! <b>${kid}</b> uchun quyidagi oylar to'lovi hali qayd etilmagan:</p>
   <ul>${late.map(x=>`<li><b>${lbl(x.k)}</b> — ${x.d?`<span class="lt">${x.d} kun kechikmoqda</span>`:"bugun to'lov kuni"}</li>`).join('')}</ul>
-  <p class="mut">To'lov har oyning ${PAY_DUE}-sanasigacha amalga oshiriladi. To'lagan bo'lsangiz, maktab ma'muriyati qayd etgach, eslatma o'zi yo'qoladi.</p></div>`:'';
+  <p class="mut">To'lov har oyning ${PAY_DUE}-sanasigacha amalga oshiriladi. To'lagan bo'lsangiz, maktab ma'muriyati qayd etgach, eslatma o'zi yo'qoladi.</p>${PAYW52}</div>`:'';
  S.payKids=[{full_name:S.kn||'',cls:clsLbl(c),rows:S.payH.rows}];const tb=payTable(S.payH.rows,0,`To'lovlar tarixi (${sy}–${sy+1} o'quv yili)`);
  return {b,t:tb}}
 const fd2=d=>d.slice(8,10)+'.'+d.slice(5,7)+'.'+d.slice(0,4);
@@ -778,7 +778,7 @@ async function parentAll(){const t=nowT(),y=+t.d.slice(0,4),mo=+t.d.slice(5,7),s
  const late=E.filter(e=>e.late.length);
  const nl=late.reduce((a,k)=>a+k.late.length,0),pr=late.length?fold(`${ic('card')}To'lov eslatmasi`,`<span class="bdg r">❌ ${nl} oy to'lanmagan</span>`,`<p>Hurmatli ota-ona! Quyidagi to'lovlar hali qayd etilmagan:</p>
   ${late.map(k=>`<p style="margin:8px 0 2px"><b>${esc(k.full_name)}</b> <span class="mut">(${esc(k.cls)})</span></p><ul>${k.late.map(lateLi).join('')}</ul>`).join('')}
-  <p class="mut">To'lov har oyning ${PAY_DUE}-sanasigacha, har bir farzand uchun alohida amalga oshiriladi. To'lagan bo'lsangiz, maktab qayd etgach, eslatma o'zi yo'qoladi.</p>`,'payw'):'';
+  <p class="mut">To'lov har oyning ${PAY_DUE}-sanasigacha, har bir farzand uchun alohida amalga oshiriladi. To'lagan bo'lsangiz, maktab qayd etgach, eslatma o'zi yo'qoladi.</p>${PAYW52}`,'payw'):'';
  // 4. Farzandlarim: har birining sinfi, fan guruhlari, to'garaklari va repetitorlari
  const ov=fold(`${ic('users')}Farzandlarim`,`<span class="bdg">${G.length} ta</span>`,G.map(g=>`<div class="kidc"><b class="cn2">${esc(g.name)}</b><div class="wrap"><table style="min-width:0"><tr><th class="l">Sinf / guruh</th><th>Turi</th><th>Bugun</th><th></th></tr>
   ${g.en.map(e=>{const a=enAtt(e);return`<tr${e.id==ME.student_id?' class="cur"':''}><td class="l">${esc(e.cls)}</td><td><span class="rl">${enTyp(e)}</span></td><td>${a?a.i+' '+a.t:'<span class="mut">—</span>'}</td>

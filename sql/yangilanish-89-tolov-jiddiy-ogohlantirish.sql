@@ -31,7 +31,8 @@ begin
   select p.id, 'ogoh', u.id::text,
          '⚠️ DIQQAT: to''lov kechikmoqda',
          u.full_name || ' uchun ' || oy[extract(month from t)::int] || ' oyi maktab to''lovi ' || late
-         || ' kundan beri to''lanmagan. Iltimos, to''lovni zudlik bilan amalga oshiring yoki maktab ma''muriyati bilan bog''laning.'
+         || ' kundan beri to''lanmagan. Shartnomaning 5.2-bandiga ko''ra, to''lov oyning ' || due || '-sanasigacha amalga oshirilmasa, maktab shartnomani bir tomonlama bekor qilish huquqiga ega (bu to''lanmagan qismni to''lashdan ozod qilmaydi). '
+         || 'Shuningdek, Yuksalish ilovasida farzandingiz ma''lumotlarini ko''rish cheklanishi mumkin. Iltimos, to''lovni zudlik bilan amalga oshiring yoki maktab ma''muriyati bilan bog''laning.'
     from _unp u join public.profiles p on p.student_id = u.id and p.role = 'parent'
    where exists (select 1 from public.push_subs ps where ps.user_id = p.id)
   on conflict do nothing;

@@ -515,8 +515,8 @@ th{background:#eef4ff}
 .dh{display:flex;flex-direction:column;gap:16px}
 .dhh{display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,320px);gap:16px}
 .dhb{position:relative;overflow:hidden;border-radius:22px;padding:30px 34px;min-height:200px;color:#fff;background:linear-gradient(115deg,#0b1d52 0%,#12338a 55%,#1b4fc4 100%);box-shadow:0 14px 34px rgba(18,51,138,.28)}
-.dhb h2{margin:0;font-size:clamp(24px,2.2vw,36px);line-height:1.15;font-weight:800;max-width:58%;position:relative;z-index:2}.dhb h2 span{color:#f5b53d}
-.dhb p{margin:10px 0 18px;font-size:15.5px;color:#d6e2ff;position:relative;z-index:2;max-width:52%}
+.dhb h2{margin:0;font-size:clamp(24px,2.2vw,36px);line-height:1.15;font-weight:800;max-width:92%;position:relative;z-index:2}.dhb h2 span{color:#f5b53d}
+.dhb p{margin:10px 0 18px;font-size:15.5px;color:#d6e2ff;position:relative;z-index:2;max-width:80%}
 .dhb button{position:relative;z-index:2;border:0;border-radius:12px;padding:11px 18px;font:inherit;font-weight:800;font-size:14.5px;background:#f5b53d;color:#3a2600;display:inline-flex;gap:8px;align-items:center;cursor:pointer}
 .dhb button svg{width:18px;height:18px}
 .dhb .bg{position:absolute;right:0;bottom:0;height:78%;width:48%;z-index:1;pointer-events:none}
@@ -1506,7 +1506,7 @@ async function dashHome(o){const{t,n,pr,R,M,A,a2,my,nT,ok,ttl}=o,ids=M.map(c=>c.
  const stat=`<div class="dhc"><h3>${ic('shield')}Maktab holati<span class="r">Bugun</span></h3><div class="dhst">${dhDonut([[pr||0,'#22c55e'],[Math.max(0,n-(pr||0)),'var(--ln)']],kel==null?'—':kel+'%','davomat')}
   <div class="rw"><span>Bugun kelgan</span><b>${pr==null?'—':pr+' / '+n}</b></div><div class="rw"><span>Ota-onalar ulangan</span><b>${A?pct+'%':'—'}</b></div><div class="rw"><span>Hozir onlayn</span><b>${A?A.on:'—'}</b></div><div class="rw"><span>Bugun kirgan</span><b>${A?A.bug:'—'}</b></div></div></div>`;
  return `<div class="dh">
- <section class="dhh"><div class="dhb"><h2>Yuksalish maktabi — <span>zamonaviy</span> reyting nazorat tizimi</h2><p>Bilim, tarbiya va muvaffaqiyat sari birgalikda!</p><button data-gox="agl">${ic('chart')}Tizim imkoniyatlari →</button>${DHBLD}</div>
+ <section class="dhh"><div class="dhb"><h2>Yuksalish maktabi — <span>zamonaviy</span> reyting nazorat tizimi</h2><p>Bilim, tarbiya va muvaffaqiyat sari birgalikda!</p><button data-gox="agl">${ic('chart')}Tizim imkoniyatlari →</button></div>
   <div class="dhg"><b>Assalomu alaykum, ${nm}!</b><p>${a2?'2-darajali admin':OBS()?'Kuzatuvchi (faqat ko\'rish)':'Bosh admin'} · ${t.lbl}</p><div class="wth" id="wth" aria-live="polite">${wthHtml()}</div></div></section>
  <section class="dhk">${K('cls','users','#2563eb',n,"Jami o'quvchilar",M.length+' ta sinf')}${K('abs','check','#16a34a',pr==null?'—':pr,'Bugun kelgan',kel==null?'soat 8:00 dan':kel+'% davomat',spark)}${ok('ota')?K('ota','link','#7c3aed',A?A.ul:'—','Ota-ona ulangan',A?pct+"% · jonli":''):K('cls','school','#7c3aed',M.length,'Sinflar soni','')}${nT!=null?K('tch','userx','#ea580c',nT,"O'qituvchisiz guruh",'Ingliz tili'):K('cls','school','#ea580c',M.length,'Sinflar soni',n+" o'quvchi")}</section>
  ${a2?`<div class="dhc"><h3>${ic('school')}Mening sinflarim</h3><div class="a2l">${my.map(x=>`<button class="chip" data-a2c="${x.id}">${esc(clsLbl(x))}</button>`).join('')||'<span class="mut">Sinf biriktirilmagan</span>'}</div></div>`:''}

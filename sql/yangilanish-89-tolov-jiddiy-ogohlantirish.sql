@@ -12,7 +12,7 @@ create or replace function public.pay_warn_now(p_class bigint default null) retu
 language plpgsql security definer set search_path = public as $$
 declare t date := (now() at time zone 'Asia/Tashkent')::date; m date := date_trunc('month', t)::date;
         due int := coalesce((select tolov_due from public.sms_config where id = 1), 5);
-        late int; q int; unp int; nopush int;
+        late int; q int; unp int; nopush int; nm date := t + (8 - extract(isodow from t)::int);
         oy text[] := array['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr'];
 begin
   if public.yk_role() <> 'admin' then raise exception 'Faqat admin' using errcode = '42501'; end if;
@@ -31,9 +31,10 @@ begin
   select p.id, 'ogoh', u.id::text,
          '⚠️ DIQQAT: to''lov kechikmoqda',
          u.full_name || ' uchun ' || oy[extract(month from t)::int] || ' oyi maktab to''lovi ' || late
-         || ' kundan beri to''lanmagan. Shartnomaning 5.2-bandiga ko''ra, to''lov oyning ' || due || '-sanasigacha amalga oshirilmasa, maktab shartnomani bir tomonlama bekor qilish huquqiga ega (bu to''lanmagan qismni to''lashdan ozod qilmaydi). '
-         || 'Shuningdek, Yuksalish ilovasida farzandingiz ma''lumotlarini ko''rish cheklanishi mumkin. Iltimos, to''lovni zudlik bilan amalga oshiring yoki maktab ma''muriyati bilan bog''laning.'
-    from _unp u join public.profiles p on p.student_id = u.id and p.role = 'parent'
+         || ' kundan beri to''lanmagan. Shartnomaning 5.2-bandiga ko''ra, to''lov oyning ' || due || '-sanasigacha amalga oshirilmasa, maktab shartnomani bir tomonlama bekor qilish huquqiga ega. '
+         || 'DIQQAT: agar to''lov ' || extract(day from nm)::int || '-' || oy[extract(month from nm)::int] || ', dushanba kunigacha amalga oshirilmasa, turniket to''lov qilmagan o''quvchini tanib o''tkazmaydi va farzandingiz dars mashg''ulotlarida qatnasha olmaydi. '
+         || 'Shuningdek, ilovada farzandingiz ma''lumotlarini ko''rish cheklanishi mumkin. Iltimos, to''lovni zudlik bilan amalga oshiring yoki maktab ma''muriyati bilan bog''laning.'
+  from _unp u join public.profiles p on p.student_id = u.id and p.role = 'parent'
    where exists (select 1 from public.push_subs ps where ps.user_id = p.id)
   on conflict do nothing;
   get diagnostics q = row_count;

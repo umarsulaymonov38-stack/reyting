@@ -1248,7 +1248,8 @@ async function tKidView(){const k=ME.kids.find(x=>x.id==S.kidv),c=CL.find(x=>x.i
  const pay=`<div class="card"><b>${ic('card')}To'lovlar — ${sy}–${sy+1} o'quv yili</b><div class="pmc" style="margin-top:8px">${PMS.map((mm,i)=>{const kk=(mm>=9?sy:sy+1)+'-'+String(mm).padStart(2,'0');return`<i class="${pm[kk]?'ok':''}" title="${MON[mm-1]}: ${pm[kk]?"to'langan":"to'lanmagan"}">${PMN[i]}</i>`}).join('')}</div></div>`;
  await loadJadval().catch(()=>null);const key=schedKey(c),jl=key&&JAD&&JAD.classes[key]?jadToday(key):null,jad=jl&&jl.length?`<div class="jwrap">${jadLiveCard(jl)}<div class="jsh"><b>${ic('cal')}Bugungi dars jadvali</b></div>${jadDayList(jl,true)}</div>`:'';
  const rk=`<div class="psec rksec">${ic('award')}Reyting va o'rinlar</div><div id="rkbox" class="rkhome"><div class="ld"><i class="spin"></i>Yuklanmoqda…</div></div>`;
- return hd+bug+rk+jad+grd+dly+fan+pay}
+ const wkc=await wkForKid(k.id).catch(()=>'');
+ return hd+wkc+bug+rk+jad+grd+dly+fan+pay}
 // To'lovlar hisoboti: kunlik / oylik — sinflar kesimida, naqd va karta alohida, yopish (muhrlash) va PDF
 const rPer=()=>S.rk=='kun'?[S.pdd,S.pdd]:[S.rmo+'-01',mr(S.rmo).b],fN=v=>Number(v||0).toLocaleString('ru-RU').replace(/,/g,' ');
 function repBody(R,cl,pdf){const mo=r=>r.yearly?"Yillik (sentyabr–iyun)":MON[+String(r.month).slice(5,7)-1]+' '+String(r.month).slice(0,4),
@@ -1765,6 +1766,7 @@ async function wkpCard(){let w;try{const r=await sb.rpc('parent_week_all');if(r.
  catch(e){const r2=await sb.rpc('parent_week_status').catch(()=>({}));const sx=r2&&r2.data;if(!sx||!sx.ok)return '';w={open:sx.open,kids:sx.ok?[{sid:sx.sid,name:sx.name,answered:sx.ans}]:[]}}
  if(!w||!w.open)return '';const kids=(w.kids||[]);if(!kids.length)return '';
  const multi=kids.length>1;return kids.map(k=>wkOne(k.sid,k.name,k.answered,multi)).join('');}
+async function wkForKid(sid){const r=await sb.rpc('parent_week_all');if(r.error||!r.data||!r.data.open)return '';return (r.data.kids||[]).filter(x=>x.sid==sid).map(x=>wkOne(x.sid,x.name,x.answered,false)).join('')}
 function wkOne(sid,name,ans,multi){
  if(ans)return `<div class="card ckd"><div class="top"><span class="pti" style="--c:#2f9e44">${ic('heart')}</span><div><b>Haftalik so'rovnoma${multi?' · '+esc(name):''}: javobingiz qabul qilindi</b><br><span class="mut">${WKM[ans.mood][0]} ${esc(WKM[ans.mood][2])}${ans.note?' · '+esc(ans.note):''}</span></div></div></div>`;
  return `<div class="card ckq" data-sid="${esc(sid)}" data-mood=""><div class="top"><span class="pti" style="--c:#e8590c">${ic('heart')}</span><div><b>Haftalik so'rovnoma · Ota-onaga yaxshilik</b><br><span class="mut">${esc(name||'')} · har hafta juma kuni</span></div></div>
